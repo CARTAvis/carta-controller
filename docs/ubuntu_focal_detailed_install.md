@@ -6,7 +6,7 @@
 # assuming user "ubuntu" with home directory /home/ubuntu
 sudo apt update
 sudo apt upgrade
-sudo apt install -y cmake pkg-config g++ gfortran libzstd-dev libfmt-dev libprotobuf-dev \
+sudo apt install -y cmake pkg-config subversion g++ gfortran libzstd-dev libfmt-dev libprotobuf-dev \
 protobuf-compiler libhdf5-dev libtbb-dev libssl-dev libcurl4-openssl-dev libglsl-dev\
 nginx build-essential libncurses5-dev libreadline-dev flex bison libblas-dev \
 liblapacke-dev libcfitsio-dev wcslib-dev mongodb libgrpc++-dev protobuf-compiler-grpc \
@@ -35,7 +35,11 @@ sudo make install
 sudo cp libuWS.so /usr/local/lib/
 sudo ldconfig
 
-# carta-casacore
+# cascore-data (To be replaced by kern-7 PPA package soon)
+wget get https://launchpad.net/~kernsuite/+archive/ubuntu/kern-dev/+files/casacore-data_20200817-163550-3_all.deb
+sudo dpkg -i casacore-data_20200817-163550-3_all.deb
+
+# carta-casacore (To be replaced by PPA package soon)
 cd ~/repos
 git clone https://github.com/CARTAvis/carta-casacore.git
 cd carta-casacore
@@ -44,7 +48,7 @@ cd casa6
 git submodule init && git submodule update
 cd ../
 mkdir -p build && cd build
-cmake -DUSE_FFTW3=ON -DUSE_HDF5=ON -DUSE_THREADS=ON -DUSE_OPENMP=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_PYTHON=OFF -DUseCcache=1 -DHAS_CXX11=1 ..
+cmake -DUSE_FFTW3=ON -DUSE_HDF5=ON -DUSE_THREADS=ON -DUSE_OPENMP=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF -DBUILD_PYTHON=OFF -DUseCcache=1 -DHAS_CXX11=1 -DDATA_DIR=/usr/share/casacore/data ..
 # Use as many cores as you can here
 make -j`nproc`
 sudo make install
@@ -78,6 +82,7 @@ git submodule init && git submodule update
 mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release -DEnableAvx=On ../
 make -j`nproc`
+mkdir -p ~/bin
 cp carta_backend ~/bin/
 ```  
 
@@ -107,7 +112,6 @@ nvm install-latest-npm
 
 # Install carta-node-server (includes frontend config)
 npm install -g carta-node-server
-mkdir -p ~/bin
 cp ${NVM_BIN}/../lib/node_modules/carta-node-server/scripts/carta_kill_script.sh
 
 # ensure bin folder is added to path
