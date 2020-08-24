@@ -5,12 +5,10 @@
 ```shell script
 # assuming user "ubuntu" with home directory /home/ubuntu
 sudo apt update
-sudo apt upgrade -y, so 
-sudo apt install -y cmake pkg-config subversion g++ gfortran libzstd-dev libfmt-dev libprotobuf-dev \
-protobuf-compiler libhdf5-dev libtbb-dev libssl-dev libcurl4-openssl-dev libgsl-dev\
-nginx build-essential libncurses5-dev libreadline-dev flex bison libblas-dev \
-liblapacke-dev libcfitsio-dev wcslib-dev mongodb libgrpc++-dev protobuf-compiler-grpc \
-libpugixml-dev
+sudo apt install -y git software-properties-common cmake pkg-config subversion g++ gfortran libzstd-dev \
+libfmt-dev libprotobuf-dev protobuf-compiler libhdf5-dev libtbb-dev libssl-dev libcurl4-openssl-dev \
+libgsl-dev nginx build-essential libncurses5-dev libreadline-dev flex bison libblas-dev \
+liblapacke-dev libcfitsio-dev wcslib-dev mongodb libgrpc++-dev protobuf-compiler-grpc libpugixml-dev
 ```
 
 ### Compile other dependencies 
