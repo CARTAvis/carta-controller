@@ -5,7 +5,7 @@
 ```shell script
 # assuming user "ubuntu" with home directory /home/ubuntu
 sudo apt update
-sudo apt upgrade
+sudo apt upgrade -y, so 
 sudo apt install -y cmake pkg-config subversion g++ gfortran libzstd-dev libfmt-dev libprotobuf-dev \
 protobuf-compiler libhdf5-dev libtbb-dev libssl-dev libcurl4-openssl-dev libglsl-dev\
 nginx build-essential libncurses5-dev libreadline-dev flex bison libblas-dev \
@@ -35,9 +35,10 @@ sudo make install
 sudo cp libuWS.so /usr/local/lib/
 sudo ldconfig
 
-# cascore-data (To be replaced by kern-7 PPA package soon)
-wget get https://launchpad.net/~kernsuite/+archive/ubuntu/kern-dev/+files/casacore-data_20200817-163550-3_all.deb
-sudo dpkg -i casacore-data_20200817-163550-3_all.deb
+# cascore-data (From KERN-7 PPA)
+sudo add-apt-repository -y ppa:kernsuite/kern-7
+sudo apt update
+sudo apt install -y casacore-data
 
 # carta-casacore (To be replaced by PPA package soon)
 cd ~/repos
