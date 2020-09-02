@@ -4,6 +4,7 @@ import * as bearerToken from "express-bearer-token"
 import * as cookieParser from "cookie-parser";
 import * as httpProxy from "http-proxy";
 import * as http from "http";
+import * as url from "url";
 import * as cors from "cors";
 import * as path from "path";
 import * as compression from "compression";
@@ -49,13 +50,23 @@ app.use("/config", (req: express.Request, res: express.Response) => {
 if (ServerConfig.frontendPath) {
     console.log(chalk.green.bold(`Serving CARTA frontend from ${ServerConfig.frontendPath}`));
     app.use("/", express.static(ServerConfig.frontendPath));
-    app.use("/frontend", express.static(ServerConfig.frontendPath));
 } else {
     const frontendPackage = require("../node_modules/carta-frontend/package.json");
     const frontendVersion = frontendPackage?.version;
     console.log(chalk.green.bold(`Serving packaged CARTA frontend (Version ${frontendVersion})`));
     app.use("/", express.static(path.join(__dirname, "../node_modules/carta-frontend/build")));
 }
+
+app.get("/frontend", (req, res) => {
+    const oldUrl = url.parse(req.url, false);
+    let newUrl: string;
+    if (oldUrl.query) {
+        newUrl = ServerConfig.serverAddress + "/?" + oldUrl.query;
+    } else {
+        newUrl = ServerConfig.serverAddress;
+    }
+    return res.redirect(newUrl);
+});
 
 app.get("/dashboard", function (req, res) {
     res.render("index", {clientId: ServerConfig.authProviders.google?.clientId, hostedDomain: ServerConfig.authProviders.google?.validDomain});
