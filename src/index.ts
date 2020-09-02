@@ -58,14 +58,12 @@ if (ServerConfig.frontendPath) {
 }
 
 app.get("/frontend", (req, res) => {
-    const oldUrl = url.parse(req.url, false);
-    let newUrl: string;
-    if (oldUrl.query) {
-        newUrl = ServerConfig.serverAddress + "/?" + oldUrl.query;
+    const queryString = url.parse(req.url, false)?.query;
+    if (queryString) {
+        return res.redirect(ServerConfig.serverAddress + "/?" + queryString);
     } else {
-        newUrl = ServerConfig.serverAddress;
+        return res.redirect(ServerConfig.serverAddress);
     }
-    return res.redirect(newUrl);
 });
 
 app.get("/dashboard", function (req, res) {
