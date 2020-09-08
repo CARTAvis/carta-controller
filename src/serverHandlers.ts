@@ -38,7 +38,7 @@ async function nextAvailablePort() {
         existingPorts.set(value.port, true);
     })
 
-    for (let p = 3002; p < ServerConfig.backendPorts.max; p++) {
+    for (let p = ServerConfig.backendPorts.min; p < ServerConfig.backendPorts.max; p++) {
         if (!existingPorts.has(p)) {
             try {
                 const portUsed = await tcpPortUsed.check(p);
