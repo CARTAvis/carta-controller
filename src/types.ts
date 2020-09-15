@@ -79,6 +79,15 @@ export interface CartaServerConfig {
     killCommand: string;
     // How long to wait before checking whether started process is still running and sending res
     startDelay: number;
+    // Dashboard appearance configuration
+    dashboard?: {
+        // Background color for the dashboard
+        backgroundColor: string;
+        // Background color for the institutional logo banner
+        bannerColor: string;
+        // Path to institutional logo in PNG format
+        bannerImage?: string;
+    }
 }
 
 

@@ -6,6 +6,7 @@ import * as httpProxy from "http-proxy";
 import * as http from "http";
 import * as url from "url";
 import * as cors from "cors";
+import * as fs from "fs";
 import * as path from "path";
 import * as compression from "compression";
 import * as chalk from "chalk";
@@ -41,6 +42,11 @@ if (ServerConfig.frontendPath) {
     app.use("/", express.static(path.join(__dirname, "../node_modules/carta-frontend/build")));
 }
 
+let bannerDataBase64: string;
+if (ServerConfig.dashboard?.bannerImage) {
+    bannerDataBase64 = fs.readFileSync(ServerConfig.dashboard?.bannerImage, 'base64');
+}
+
 app.get("/frontend", (req, res) => {
     const queryString = url.parse(req.url, false)?.query;
     if (queryString) {
@@ -51,7 +57,16 @@ app.get("/frontend", (req, res) => {
 });
 
 app.get("/dashboard", function (req, res) {
-    res.render("index", {clientId: ServerConfig.authProviders.google?.clientId, hostedDomain: ServerConfig.authProviders.google?.validDomain});
+    res.render("templated", {
+        clientId: ServerConfig.authProviders.google?.clientId,
+        hostedDomain: ServerConfig.authProviders.google?.validDomain,
+        bannerColor: ServerConfig.dashboard?.bannerColor,
+        backgroundColor: ServerConfig.dashboard?.backgroundColor,
+        bannerImage: bannerDataBase64,
+        welcomeText: `Welcome to the IDIA CARTA server.`,
+        loginText: `Please enter your ilifu credentials to log in.`,
+        footerText: `<span>If you would like to access the IDIA CARTA server, or have any problems, comments or suggestions, please <a href='mailto:test@test.com'>contact us.</a></span>`
+    });
 });
 
 app.use("/dashboard", express.static(path.join(__dirname, "../public")));
