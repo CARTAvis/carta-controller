@@ -20,7 +20,7 @@ html
             .signin-dialog
                 if bannerImage
                     .banner(style="background-color: " + bannerColor)
-                        img(src="data:image/png;base64," + bannerImage height="60" style="display: block; margin: auto" alt="site_banner")
+                        img(src=bannerImage height="60" style="display: block; margin: auto" alt="site_banner")
                 .logo
                     img(src="dashboard/images/carta_logo.svg" alt="carta_logo")
                     .titletext
@@ -30,8 +30,8 @@ html
                         br
                 .login-form
                     .bodytext
-                        if welcomeText
-                            | !{welcomeText}
+                        if infoText
+                            | !{infoText}
                             br
                         if loginText
                             | !{loginText}
@@ -48,6 +48,9 @@ html
                             .g-signin2(data-onsuccess='onSignIn' data-theme='dark' data-width="220" data-height="46")
                     p#login-status(style='display: none')
                 .carta-form(style='display: none')
+                    .bodytext
+                        if infoText
+                            | !{infoText}
                     .formcontainer
                         button#open.button.button-newsession NEW CARTA SESSION
                         br

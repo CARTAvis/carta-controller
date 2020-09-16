@@ -87,6 +87,12 @@ export interface CartaServerConfig {
         bannerColor: string;
         // Path to institutional logo in PNG format
         bannerImage?: string;
+        // Text displayed before and after sign-in. Plain text or HTML
+        infoText?: string;
+        // Text displayed before sign-in only. Plain text or HTML
+        loginText?: string;
+        // Footer text. Plain text or HTML
+        footerText?: string;
     }
 }
 
