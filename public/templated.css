@@ -31,6 +31,10 @@ body {
 	margin: 30px -20px 15px 0;
 }
 
+.spacer {
+	width: 0px;
+}
+
 .titletext {
 	display: block;
 	text-align: left;
