@@ -18,7 +18,7 @@ MongoDB is required for storing user preferences, layouts and (in the near futur
 
 ## Installation
 
-To install from NPM, simply run `npm install -g carta-node-server` and then run `carta-node-server`.
+You can install the CARTA server from NPM by running `npm install -g carta-node-server` and then running `carta-node-server`.
 You can also install the server from GitHub by cloning this repository, running `npm install` and then `npm run start`.
 
 ## Authentication support
@@ -35,11 +35,11 @@ openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
 ```
 
 ## Server Configuration
-Server configuration is handled by a configuration file in JSON format, adhering to the [CARTA config schema](config/config_schema.json). Additional details can be found in the auto-generated [config documentation](docs/config_schema.html) or the [example config](config/example_config.json). By default, the server assumes the config file is located at `/etc/carta/config.json`, but you can change this with the `--config` or `-c` command line argument when running the server. 
+Server configuration is handled by a configuration file in JSON format, adhering to the [CARTA config schema](config/config_schema.json). Additional details can be found in the auto-generated config documentation in the `docs` folder, or the [example config](config/example_config.json). By default, the server assumes the config file is located at `/etc/carta/config.json`, but you can change this with the `--config` or `-c` command line argument when running the server. 
 
 For external authentication systems, you may need to translate a unique ID (such as email or username) from the authenticated user information to the system user. You can do this by providing a [user lookup table](config/usertable.txt.stub), which is watched by the server and reloaded whenever it is updated.
 
-The server dashboard's appearance can be altered by adjusting the `dashboard` field in the config file. You can change the banner image and background, and add login instructions or institutional notices.
+You can alter the server's dashboard appearance by adjusting the `dashboard` field in the config file. You can change the banner image and background, and add login instructions or institutional notices.
 
 ## System Configuration
 
@@ -64,7 +64,7 @@ By default, the server attempts to write log files to the `/var/log/carta` direc
     - Adjust the sudoers configuration
     - Redirect traffic to port 8000
 
-After you have built the backend and edited the server configuration, you can start the server with `npm run start` (if cloning from the git repository) or just running `carta-node-server` (if installing from NPM pacakge via `npm install -g carta-node-server`). You can use a utility such as [forever](https://github.com/foreversd/forever) or [pm2](https://pm2.keymetrics.io/) to keep the server running.
+After you have built the backend and edited the server configuration, you can start the server with `npm run start` (if cloning from the git repository) or just running `carta-node-server` (if installing from NPM). You can use a utility such as [forever](https://github.com/foreversd/forever) or [pm2](https://pm2.keymetrics.io/) to keep the server running.
 
 ## Getting help
 
