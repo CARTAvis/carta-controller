@@ -18,8 +18,7 @@ MongoDB is required for storing user preferences, layouts and (in the near futur
 
 ## Installation
 
-The CARTA server can be installed from NPM by simply running `npm install -g carta-node-server`. To run the server, run `carta-node-server`.
-
+To install from NPM, simply run `npm install -g carta-node-server` and then run `carta-node-server`.
 You can also install the server from GitHub by cloning this repository, running `npm install` and then `npm run start`.
 
 ## Authentication support
