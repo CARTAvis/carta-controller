@@ -10,11 +10,17 @@ The CARTA server provides a simple dashboard which authenticates users and allow
 
 ## Dependencies
 
-To allow the server to serve CARTA sessions, you must give it access to an executable CARTA backend, which can be either a compiled executable or a container. If you want to use a non-standard version of the CARTA frontend, you must also build it, and adjust the server configuration to point to it. You should use the `v1.4.0-rc.0` tag of [`carta-backend`](https://github.com/CARTAvis/carta-backend).
+To allow the server to serve CARTA sessions, you must give it access to an executable CARTA backend, which can be either a compiled executable or a container. If you want to use a non-standard version of the CARTA frontend, you must also build it, and adjust the server configuration to point to it. You should use the `v1.4.0` tag of [`carta-backend`](https://github.com/CARTAvis/carta-backend).
 
 By default, the server runs on port 8000. It should be run behind a proxy, so that it can be accessed via HTTP and HTTPS. 
 
 MongoDB is required for storing user preferences, layouts and (in the near future) server metrics. You also need a working [NodeJS LTS](https://github.com/nvm-sh/nvm#long-term-support) installation with NPM. Use `npm install` to install all Node dependencies.
+
+## Installation
+
+The CARTA server can be installed from NPM by simply running `npm install -g carta-node-server`. To run the server, run `carta-node-server`.
+
+You can also install the server from GitHub by cloning this repository, running `npm install` and then `npm run start`.
 
 ## Authentication support
 
@@ -34,6 +40,8 @@ Server configuration is handled by a configuration file in JSON format, adhering
 
 For external authentication systems, you may need to translate a unique ID (such as email or username) from the authenticated user information to the system user. You can do this by providing a [user lookup table](config/usertable.txt.stub), which is watched by the server and reloaded whenever it is updated.
 
+The server dashboard's appearance can be altered by adjusting the `dashboard` field in the config file. You can change the banner image and background, and add login instructions or institutional notices.
+
 ## System Configuration
 
 The user under which the CARTA server is running (assumed to be `carta`) must be given permission to use `sudo` to start `carta_backend` processes as any authenticated user and stop running `carta_backend` processes belonging to authenticated users. We provide a [kill script](scripts/carta_kill_script.sh) which is only able to kill processes matching the name `carta_backend`. This makes it possible to restrict what processes the `carta` user is permitted to kill.
@@ -50,7 +58,7 @@ By default, the server attempts to write log files to the `/var/log/carta` direc
 
 ## Running the server
 
-- Checkout and build [carta-backend](https://github.com/CARTAvis/carta-backend) using the `v1.4.0-rc.0` tag (or create the appropriate container). Detailed instructions for Ubuntu 20.04 are available [here](docs/ubuntu_focal_detailed_install.md).
+- Checkout and build [carta-backend](https://github.com/CARTAvis/carta-backend) using the `v1.4.0` tag (or create the appropriate container). Detailed instructions for Ubuntu 20.04 are available [here](docs/ubuntu_focal_detailed_install.md).
 - Edit the server configuration file at `/etc/carta/config.json`
 - Perform system configuration:
     - Ensure `/var/log/carta` exists and is writeable by the appropriate user    
