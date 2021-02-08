@@ -214,6 +214,15 @@ handleOpenCarta = () => {
 }
 
 handleLog = async () => {
+    // Disable log buttons for 5 seconds
+    setButtonDisabled("show-logs", true);
+    setButtonDisabled("refresh-logs", true);
+
+    setTimeout(() => {
+        setButtonDisabled("show-logs", false);
+        setButtonDisabled("refresh-logs", false);
+    }, 5000);
+
     try {
         const res = await apiCall("server/log", undefined, "get", true);
         const body = await res.json();

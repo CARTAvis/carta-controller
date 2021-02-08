@@ -116,6 +116,7 @@ button {
 	border: 0;
 	cursor: pointer;
 	width: 220px;
+	transition: 100ms;
 }
 
 .button-signin {
@@ -143,8 +144,8 @@ button {
 }
 
 .button-restart:disabled {
-	color: rgba(120 131 142 .3);
-	background: rgba(120 131 142 .3);
+	color: rgba(120, 131, 142, .3);
+	background: rgba(120, 131, 142, .3);
 }
 
 .button-logs {
@@ -153,6 +154,11 @@ button {
 
 .button-logs:hover, .button-logs:active, .button-logs:focus {
 	background: #7d396c;
+}
+
+.button-logs:disabled {
+	color: rgba(120, 131, 142, .3);
+	background: rgba(120, 131, 142, .3);
 }
 
 .button-logout {
