@@ -147,6 +147,14 @@ button {
 	background: rgba(120 131 142 .3);
 }
 
+.button-logs {
+	background: #964582;
+}
+
+.button-logs:hover, .button-logs:active, .button-logs:focus {
+	background: #7d396c;
+}
+
 .button-logout {
 	background: #2c649e;
 }
@@ -173,4 +181,43 @@ button {
 
 a {
 	color: #000000;
+}
+
+#log-modal {
+	display: none;
+	background: rgba(3, 17, 3, 0.8);
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	border-radius: 3px;
+	border: 0;
+	margin: 20px;
+}
+
+#log-output {
+	margin: 20px;
+	color: #bbbbbb;
+	overflow: auto;
+	font-family: Courier, monospace;
+	font-size: 12px;
+	white-space: nowrap;
+	line-height: 16px;
+	height: calc(100% - 150px);
+}
+
+.log-buttons {
+	position: absolute;
+	bottom: 0;
+	margin: 0;
+	left: 50%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+	display: flex;
+}
+
+.log-buttons .button {
+	margin-left: 10px;
+	margin-right: 10px;
 }
