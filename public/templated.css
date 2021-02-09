@@ -14,6 +14,11 @@ body {
 	transform: translate(-50%, -50%);
 }
 
+.blurred {
+	transition: 100ms;
+	filter: blur(16px);
+}
+
 .signin-dialog {
 	background-color: #ffffff;
 	width: 640px;
@@ -146,6 +151,7 @@ button {
 .button-restart:disabled {
 	color: rgba(120, 131, 142, .3);
 	background: rgba(120, 131, 142, .3);
+	cursor: not-allowed;
 }
 
 .button-logs {
@@ -159,6 +165,7 @@ button {
 .button-logs:disabled {
 	color: rgba(120, 131, 142, .3);
 	background: rgba(120, 131, 142, .3);
+	cursor: not-allowed;
 }
 
 .button-logout {

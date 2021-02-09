@@ -228,6 +228,7 @@ handleLog = async () => {
         const body = await res.json();
         if (body.success && body.log) {
             document.getElementById("log-modal").style.display = "block"
+            document.getElementById("main-div").classList.add("blurred");
             const outputElement = document.getElementById("log-output");
             if (outputElement) {
                 outputElement.innerText = body.log;
@@ -244,6 +245,7 @@ handleLog = async () => {
 
 handleHideLog = () => {
     document.getElementById("log-modal").style.display = "none"
+    document.getElementById("main-div").classList.remove("blurred");
 }
 
 initGoogleAuth = () => {
