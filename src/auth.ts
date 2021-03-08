@@ -200,7 +200,7 @@ if (ServerConfig.authProviders.ldap) {
 
     ldap = new LdapAuth(authConf.ldapOptions);
     ldap.on('error', err => console.error('LdapAuth: ', err));
-    ldap.on('connect', v => console.log(`Ldap connected: ${v}`));
+    ldap.on('connection', v => console.log(`Ldap connected: ${v}`));
     setTimeout(() => {
         const ldapConnected = (ldap as any)?._userClient?.connected;
         if (ldapConnected) {
@@ -210,17 +210,6 @@ if (ServerConfig.authProviders.ldap) {
         }
     }, 2000);
 
-    setInterval(() => {
-        ldap.authenticate("dummy", "dummy", (err, user) => {
-            const error = err as Error;
-            if (error.name?.includes("ConfidentialityRequiredError")) {
-                console.log(`TLS error encountered. Need to recreate the LDAP server!`);
-                ldap.close();
-                ldap = new LdapAuth(authConf.ldapOptions);
-            }
-        });
-    }, 10000);
-
     loginHandler = (req: express.Request, res: express.Response) => {
         let username = req.body?.username;
         const password = req.body?.password;
@@ -229,7 +218,7 @@ if (ServerConfig.authProviders.ldap) {
             return res.status(400).json({statusCode: 400, message: "Malformed login request"});
         }
 
-        ldap.authenticate(username, password, (err, user) => {
+        const handleAuth = (err: Error | string, user: any) => {
             if (err) {
                 console.error(err);
             }
@@ -270,6 +259,22 @@ if (ServerConfig.authProviders.ldap) {
                 } catch (e) {
                     return res.status(403).json({statusCode: 403, message: "User does not exist"});
                 }
+            }
+        }
+
+        ldap.authenticate(username, password, (errOrString, user) => {
+            const error = errOrString as Error;
+            // Need to reconnect to LDAP when we get a TLS error
+            if (error.name?.includes("ConfidentialityRequiredError")) {
+                console.log(`TLS error encountered. Reconnecting to the LDAP server!`);
+                ldap.close();
+                ldap = new LdapAuth(authConf.ldapOptions);
+                // Wait for the connection to be re-established
+                setTimeout(() => {
+                    ldap.authenticate(username, password, handleAuth);
+                }, 2000);
+            } else {
+                handleAuth(errOrString, user);
             }
         });
     };
