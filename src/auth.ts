@@ -201,6 +201,9 @@ if (ServerConfig.authProviders.ldap) {
     ldap = new LdapAuth(authConf.ldapOptions);
     ldap.on('error', err => console.error('LdapAuth: ', err));
     ldap.on('connection', v => console.log(`Ldap connected: ${v}`));
+    ldap.on('idle', v => console.log(`Ldap idle: ${v}`));
+    ldap.on('close', v => console.log(`LDAP closed${v}`));
+
     setTimeout(() => {
         const ldapConnected = (ldap as any)?._userClient?.connected;
         if (ldapConnected) {
