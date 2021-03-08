@@ -192,11 +192,13 @@ export async function authGuard(req: AuthenticatedRequest, res: express.Response
 let loginHandler: RequestHandler;
 let refreshHandler: AsyncRequestHandler;
 
+let ldap: LdapAuth;
+
 if (ServerConfig.authProviders.ldap) {
     const authConf = ServerConfig.authProviders.ldap;
     const privateKey = fs.readFileSync(authConf.privateKeyLocation);
 
-    const ldap = new LdapAuth(authConf.ldapOptions);
+    ldap = new LdapAuth(authConf.ldapOptions);
     ldap.on('error', err => console.error('LdapAuth: ', err));
     ldap.on('connect', v => console.log(`Ldap connected: ${v}`));
     setTimeout(() => {
@@ -208,6 +210,17 @@ if (ServerConfig.authProviders.ldap) {
         }
     }, 2000);
 
+    setInterval(() => {
+        ldap.authenticate("dummy", "dummy", (err, user) => {
+            const error = err as Error;
+            if (error.name?.includes("ConfidentialityRequiredError")) {
+                console.log(`TLS error encountered. Need to recreate the LDAP server!`);
+                ldap.close();
+                ldap = new LdapAuth(authConf.ldapOptions);
+            }
+        });
+    }, 10000);
+
     loginHandler = (req: express.Request, res: express.Response) => {
         let username = req.body?.username;
         const password = req.body?.password;
@@ -217,6 +230,9 @@ if (ServerConfig.authProviders.ldap) {
         }
 
         ldap.authenticate(username, password, (err, user) => {
+            if (err) {
+                console.error(err);
+            }
             if (err || user?.uid !== username) {
                 return res.status(403).json({statusCode: 403, message: "Invalid username/password combo"});
             } else {
