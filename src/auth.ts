@@ -200,10 +200,6 @@ if (ServerConfig.authProviders.ldap) {
 
     ldap = new LdapAuth(authConf.ldapOptions);
     ldap.on('error', err => console.error('LdapAuth: ', err));
-    ldap.on('connection', v => console.log(`Ldap connected: ${v}`));
-    ldap.on('idle', v => console.log(`Ldap idle: ${v}`));
-    ldap.on('close', v => console.log(`LDAP closed${v}`));
-
     setTimeout(() => {
         const ldapConnected = (ldap as any)?._userClient?.connected;
         if (ldapConnected) {
@@ -272,10 +268,11 @@ if (ServerConfig.authProviders.ldap) {
                 console.log(`TLS error encountered. Reconnecting to the LDAP server!`);
                 ldap.close();
                 ldap = new LdapAuth(authConf.ldapOptions);
+                ldap.on('error', err => console.error('LdapAuth: ', err));
                 // Wait for the connection to be re-established
                 setTimeout(() => {
                     ldap.authenticate(username, password, handleAuth);
-                }, 2000);
+                }, 500);
             } else {
                 handleAuth(errOrString, user);
             }
