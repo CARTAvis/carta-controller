@@ -265,7 +265,7 @@ if (ServerConfig.authProviders.ldap) {
         ldap.authenticate(username, password, (errOrString, user) => {
             const error = errOrString as Error;
             // Need to reconnect to LDAP when we get a TLS error
-            if (error.name?.includes("ConfidentialityRequiredError")) {
+            if (error?.name?.includes("ConfidentialityRequiredError")) {
                 console.log(`TLS error encountered. Reconnecting to the LDAP server!`);
                 ldap.close();
                 ldap = new LdapAuth(authConf.ldapOptions);
