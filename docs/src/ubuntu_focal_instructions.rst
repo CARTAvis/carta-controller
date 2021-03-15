@@ -1,7 +1,7 @@
 .. _focal_instructions:
 
-Detailed instructions for Ubuntu 20.04.2 (Focal Fossa)
-======================================================
+Step-by-step instructions for Ubuntu 20.04.2 (Focal Fossa)
+==========================================================
 
 Dependencies
 ------------
@@ -39,11 +39,7 @@ Set up directories and permissions
 Configure nginx
 ~~~~~~~~~~~~~~~
 
-This bit should be entirely adapted to fit your server configuration. The relevant part of the config is for forwarding ``/`` to port 8000.
-
-.. literalinclude:: _static/config/example_nginx.conf.stub
-   :language: nginx
-   :emphasize-lines: 7-15
+This should be adapted to your server configuration. The relevant part of the config is for forwarding ``/`` to port 8000. A :ref:`sample configuration file<example_nginx>` is provided in the configuration section.
 
 Install CARTA controller
 ------------------------
@@ -65,12 +61,26 @@ Assuming this runs as user ``carta``.
 
     # Ensure bin folder is added to path
     source ~/.profile
+    
+Generate keys
+~~~~~~~~~~~~~
 
-    # Generate JWT keys and edit config
+.. code-block:: shell
+
+    # Generate private/public keys
     cd /etc/carta
     openssl genrsa -out carta_private.pem 4096
     openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
-    nano config.json
+    
+Configure controller
+~~~~~~~~~~~~~~~~~~~~
+    
+Edit ``/etc/carta/config.json`` to customise the appearance of the dashboard and other options. A :ref:`sample configuration file<example_config>` is provided in the configuration section.
+    
+Run controller
+~~~~~~~~~~~~~~
+
+.. code-block:: shell
 
     # Install PM2 node service
     npm install -g pm2
