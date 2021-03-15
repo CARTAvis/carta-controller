@@ -66,7 +66,7 @@ Assuming this runs as user ``carta``.
     nvm install-latest-npm
 
     # Install carta-controller (includes frontend config)
-    npm install -g carta-controller
+    npm install -g carta-controller@dev
     cp ${NVM_BIN}/../lib/node_modules/carta-controller/scripts/carta_kill_script.sh
 
     # Ensure bin folder is added to path

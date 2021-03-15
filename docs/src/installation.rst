@@ -24,7 +24,7 @@ If you install the controller from NPM, the corresponding packaged version of th
 Installing the controller
 -------------------------
 
-You can install the CARTA controller from NPM by running ``npm install -g carta-controller``, or from GitHub by cloning the `controller repository <https://github.com/CARTAvis/carta-controller/>`_ and running ``npm install``.
+You can install the development version of the CARTA controller from NPM by running ``npm install -g carta-controller@dev``, or from GitHub by cloning the `controller repository <https://github.com/CARTAvis/carta-controller/>`_ and running ``npm install``.
 
 .. _run_controller:
 
