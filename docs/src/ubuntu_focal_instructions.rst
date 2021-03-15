@@ -36,10 +36,20 @@ Set up directories and permissions
     # by the carta user  
     sudo visudo -f /etc/sudoers.d/carta_controller
 
+Generate keys
+~~~~~~~~~~~~~
+
+.. code-block:: shell
+
+    # Generate private/public keys
+    cd /etc/carta
+    openssl genrsa -out carta_private.pem 4096
+    openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
+
 Configure nginx
 ~~~~~~~~~~~~~~~
 
-This should be adapted to your server configuration. The relevant part of the config is for forwarding ``/`` to port 8000. A :ref:`sample configuration file<example_nginx>` is provided in the configuration section.
+A :ref:`sample configuration file<example_nginx>` is provided in the configuration section. This should be adapted to your server configuration. The relevant part of the config is for forwarding ``/`` to port 8000.
 
 Install CARTA controller
 ------------------------
@@ -61,16 +71,6 @@ Assuming this runs as user ``carta``.
 
     # Ensure bin folder is added to path
     source ~/.profile
-    
-Generate keys
-~~~~~~~~~~~~~
-
-.. code-block:: shell
-
-    # Generate private/public keys
-    cd /etc/carta
-    openssl genrsa -out carta_private.pem 4096
-    openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
     
 Configure controller
 ~~~~~~~~~~~~~~~~~~~~
