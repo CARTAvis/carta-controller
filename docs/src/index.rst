@@ -20,7 +20,6 @@ Detailed :ref:`step-by-step instructions<focal_instructions>` are provided for U
    installation
    configuration
    ubuntu_focal_instructions
-   running
 
 .. |backend-github| image:: https://img.shields.io/badge/CARTA%20Version-2.0.0--dev.21.03.05-brightgreen
         :alt: View this backend version on GitHub

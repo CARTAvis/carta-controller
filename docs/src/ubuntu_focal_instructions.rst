@@ -41,17 +41,9 @@ Configure nginx
 
 This bit should be entirely adapted to fit your server configuration. The relevant part of the config is for forwarding ``/`` to port 8000.
 
-.. code-block:: nginx
-
-    location / {
-            proxy_set_header X-Forwarded-For $remote_addr;
-            proxy_pass http://localhost:8000/;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-            proxy_cache_bypass $http_upgrade;
-        }
+.. literalinclude:: _static/config/example_nginx.conf.stub
+   :language: nginx
+   :emphasize-lines: 7-15
 
 Install CARTA controller
 ------------------------
