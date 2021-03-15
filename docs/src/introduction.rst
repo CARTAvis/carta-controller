@@ -14,7 +14,9 @@ To allow the controller to serve CARTA sessions, you must give it access to an e
 
 By default, the controller runs on port 8000. It should be run behind a proxy, so that it can be accessed via HTTP and HTTPS. 
 
-MongoDB is required for storing user preferences, layouts and (in the near future) controller metrics. You also need a working `NodeJS LTS <https://github.com/nvm-sh/nvm#long-term-support>`_ installation with NPM. Use ``npm install`` to install all Node dependencies.
+MongoDB is required for storing user preferences, layouts and (in the near future) controller metrics.
+
+You also need a working `NodeJS LTS <https://github.com/nvm-sh/nvm#long-term-support>`_ installation with NPM. Use ``npm install`` to install all Node dependencies.
 
 .. _authentication:
 
@@ -22,6 +24,7 @@ Authentication support
 ----------------------
 
 The CARTA controller supports three modes for authentication. All three modes use refresh and access tokens, as described in the `OAuth2 Authorization flow <https://tools.ietf.org/html/rfc6749#section-1.3.1>`_, stored in `JWT <https://jwt.io/>`_ format. The modes are:
+
 * **LDAP-based authentication**: An existing LDAP server is used for user authentication. After the user's username and password configuration are validated by the LDAP server, ``carta-controller`` returns a long-lived refresh token, signed with a private key, which can be exchanged by the CARTA dashboard or the CARTA frontend client for a short-lived access token.
 * **Google authentication**: Google's authentication libraries are used for handling authentication. You must create a new web application in the `Google API console <https://console.developers.google.com/apis/credentials>`_. You will then use the  client ID provided by this application in a number of places during the configuration.
 * **External authentication**: This allows users to authenticate with some external OAuth2-based authentication system. This requires a fair amount of configuration, and has not been well-tested. It is assumed that the refresh token passed by the authentication system is stored as an ``HttpOnly`` cookie.

@@ -39,7 +39,7 @@ Set up directories and permissions
 Configure nginx
 ~~~~~~~~~~~~~~~
 
-This bit should be entirely adapted to fit your server configuration. The relevant part of the config is for forwarding `/` to port 8000.
+This bit should be entirely adapted to fit your server configuration. The relevant part of the config is for forwarding ``/`` to port 8000.
 
 .. code-block:: nginx
 
@@ -54,9 +54,9 @@ This bit should be entirely adapted to fit your server configuration. The releva
         }
 
 Install CARTA controller
-~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
-Assuming this runs as user `carta`.
+Assuming this runs as user ``carta``.
 
 .. code-block:: shell
 
