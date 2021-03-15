@@ -64,7 +64,7 @@ By default, the controller attempts to write log files to the ``/var/log/carta``
 Controller Configuration
 ------------------------
 
-Controller configuration is handled by a configuration file in JSON format, adhering to the `CARTA config schema <_static/config/config_schema.json>`_. Additional details can be found in the `auto-generated config documentation <_static/config_schema.html>`_, or the `example config <_static/config/example_config.json>`_:
+Controller configuration is handled by a configuration file in JSON format, adhering to the :ref:`CARTA configuration schema<schema>`. An `example configuration file <_static/config/example_config.json>`_ is provided:
 
 .. literalinclude:: _static/config/example_config.json
    :language: json
