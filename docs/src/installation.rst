@@ -31,4 +31,4 @@ You can install the development version of the CARTA controller from NPM by runn
 Running the controller
 ----------------------
 
-After you have :ref:`installed<installation>` the backend and the controller and edited the controller :ref:`configuration<configuration>`, you can start the controller with ``npm run start`` (if installing from the source on GitHub) or just by running ``carta-controller`` (if installing the package from NPM). You can use a utility such as `forever <https://github.com/foreversd/forever>`_ or `pm2 <https://pm2.keymetrics.io/>`_ to keep the controller running.
+After you have installed the backend and the controller and edited the controller :ref:`configuration<configuration>`, you can start the controller with ``npm run start`` (if installing from the source on GitHub) or just by running ``carta-controller`` (if installing the package from NPM). You can use a utility such as `forever <https://github.com/foreversd/forever>`_ or `pm2 <https://pm2.keymetrics.io/>`_ to keep the controller running.
