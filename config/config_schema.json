@@ -1,5 +1,5 @@
 {
-    "$id": "https://example.com/person.schema.json",
+    "$id": "carta_config",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "CARTA configuration schema",
     "description": "Schema defining configuration options for the CARTA server",
