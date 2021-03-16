@@ -22,6 +22,7 @@ To provide the ``carta`` user with these privileges, you must make modifications
 
 .. literalinclude:: _static/config/example_sudoers_conf.stub
    :language: cfg
+   :name: example_sudoers
 
 .. warning::
     Please only edit your sudoers configuration with ``visudo`` or equivalent.

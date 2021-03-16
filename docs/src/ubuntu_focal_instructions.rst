@@ -12,7 +12,7 @@ Install the CARTA backend
 .. code-block:: shell
 
     # Add CARTA PPA
-    sudo add-apt-repository ppa:confluence/idia-carta
+    sudo add-apt-repository ppa:cartavis-team/carta
     sudo apt-get update
 
     # Install the development backend package with all dependencies
@@ -20,6 +20,8 @@ Install the CARTA backend
 
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Ensure that you have created a CARTA user (assumed here to be called ``carta``), and that all users who should have access to CARTA belong to a group that identifies them (assumed here to be called ``carta-users``).
 
 .. code-block:: shell
 
@@ -35,6 +37,8 @@ Set up directories and permissions
     # /home/carta/bin/carta_kill_script.sh and /home/carta/bin/carta_backend
     # by the carta user  
     sudo visudo -f /etc/sudoers.d/carta_controller
+    
+An :ref:`example sudoers configuration<example_sudoers>` is provided in the configuration section.
 
 Generate keys
 ~~~~~~~~~~~~~
