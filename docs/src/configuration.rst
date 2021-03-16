@@ -31,7 +31,7 @@ To provide the ``carta`` user with these privileges, you must make modifications
 Authentication
 ~~~~~~~~~~~~~~
 
-You can generate a private/public key pair in PEM format using ``openssl``:
+When configured to use LDAP authentication, the controller signs and validates refresh and access tokens with SSL keys. You can generate a private/public key pair in PEM format using ``openssl``:
 
 .. code-block:: shell
 
