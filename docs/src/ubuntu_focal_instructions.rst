@@ -93,3 +93,9 @@ Run controller
     # Install PM2 node service
     npm install -g pm2
     pm2 start carta-controller
+
+Create pm2 startup script
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This service will start the controller automatically after a reboot. Please refer to the `pm2 documentation <https://pm2.keymetrics.io/docs/usage/startup/>`_ for detailed instructions. You should run ``pm2 startup`` as ``carta``, execute the generated command as a user with ``sudo`` access, and finally run ``pm2 save`` as ``carta`` to save the running controller process.
+
