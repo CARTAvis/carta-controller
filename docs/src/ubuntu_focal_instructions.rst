@@ -43,16 +43,6 @@ Ensure that all users who should have access to CARTA belong to a group that ide
     
 An :ref:`example sudoers configuration<example_sudoers>` is provided in the configuration section.
 
-Generate keys
-~~~~~~~~~~~~~
-
-.. code-block:: shell
-
-    # Generate private/public keys
-    cd /etc/carta
-    openssl genrsa -out carta_private.pem 4096
-    openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
-
 Configure nginx
 ~~~~~~~~~~~~~~~
 
@@ -78,6 +68,11 @@ Assuming this runs as user ``carta``.
 
     # Ensure bin folder is added to path
     source ~/.profile
+
+    # Generate private/public keys
+    cd /etc/carta
+    openssl genrsa -out carta_private.pem 4096
+    openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
     
 Configure controller
 ~~~~~~~~~~~~~~~~~~~~
