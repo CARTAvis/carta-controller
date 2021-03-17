@@ -2,8 +2,8 @@ import * as fs from "fs";
 import * as url from "url";
 import * as jwt from "jsonwebtoken";
 import * as express from "express";
-import * as userid from "userid";
 import * as LdapAuth from "ldapauth-fork";
+import { execSync } from "child_process";
 import {OAuth2Client} from "google-auth-library";
 import {VerifyOptions} from "jsonwebtoken";
 import ms = require('ms');
@@ -15,6 +15,20 @@ import {ServerConfig, RuntimeConfig} from "./config";
 const tokenVerifiers = new Map<string, Verifier>();
 // maps JWT claim "iss" to a user map
 const userMaps = new Map<string, UserMap>();
+
+// Determine the uid from the username using the unix id utility
+function getUserId(username: string): number {
+    const validUsername = /^[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}\$)$/.test(username);
+    if (validUsername) {
+        const output = execSync(`id -u ${username}`).toString();
+        const matchedOutput = /^(\d+)\n?$/.exec(output);
+        const uid = Number.parseInt(matchedOutput?.[1] ?? "");
+        if (isFinite(uid)) {
+            return uid;
+        }
+    }
+    throw new Error("Invalid user");
+}
 
 // Authentication schemes may have multiple valid issuers
 function readUserTable(issuer: string | string[], filename: string) {
@@ -225,7 +239,7 @@ if (ServerConfig.authProviders.ldap) {
                 return res.status(403).json({statusCode: 403, message: "Invalid username/password combo"});
             } else {
                 try {
-                    const uid = userid.uid(username);
+                    const uid = getUserId(username);
                     console.log(`Authenticated as user ${username} with uid ${uid}`);
                     const refreshToken = jwt.sign({
                             iss: authConf.issuer,
@@ -307,7 +321,7 @@ function generateLocalRefreshHandler(authConf: CartaLdapAuthConfig) {
                 if (!refreshToken || !refreshToken.username || !refreshToken.refreshToken) {
                     next({statusCode: 403, message: "Not authorized"});
                 } else {
-                    const uid = userid.uid(refreshToken.username);
+                    const uid = getUserId(refreshToken.username);
                     const access_token = jwt.sign({iss: authConf.issuer, username: refreshToken.username}, privateKey, {
                         algorithm: authConf.keyAlgorithm,
                         expiresIn: authConf.accessTokenAge
