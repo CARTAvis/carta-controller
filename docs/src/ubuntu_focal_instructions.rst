@@ -18,8 +18,8 @@ Install the CARTA backend and other required packages
     # Install the development backend package with all dependencies
     sudo apt-get install carta-backend-beta
     
-    # Install curl
-    sudo apt-get install curl
+    # Install additional packages
+    sudo apt-get install nginx curl g++
 
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -40,7 +40,7 @@ Ensure that all users who should have access to CARTA belong to a group that ide
     sudo chown carta: /etc/carta
 
     # edit sudoers file to allow passwordless sudo execution of 
-    # /home/carta/bin/carta_kill_script.sh and /home/carta/bin/carta_backend
+    # /usr/local/bin/carta_kill_script.sh and /usr/bin/carta_backend
     # by the carta user  
     sudo visudo -f /etc/sudoers.d/carta_controller
     
@@ -54,9 +54,10 @@ A :ref:`sample configuration file<example_nginx>` is provided in the configurati
 Install CARTA controller
 ------------------------
 
-From this point, commands should be executed as user ``carta``.
-
 .. code-block:: shell
+
+    # Most of these commands should be executed as the carta user
+    sudo su - carta
 
     # Install NVM and NPM
     cd ~
@@ -67,11 +68,13 @@ From this point, commands should be executed as user ``carta``.
 
     # Install carta-controller (includes frontend config)
     npm install -g carta-controller@dev
-    cp ${NVM_BIN}/../lib/node_modules/carta-controller/scripts/carta_kill_script.sh
-
-    # Ensure bin folder is added to path
-    source ~/.profile
-
+    
+    # For security reasons, copy the kill script to a system bin directory
+    cp ${NVM_BIN}/../lib/node_modules/carta-controller/scripts/carta_kill_script.sh ~
+    exit
+    sudo mv /home/carta/carta_kill_script.sh /usr/local/bin/
+    sudo su - carta
+    
     # Generate private/public keys
     cd /etc/carta
     openssl genrsa -out carta_private.pem 4096
