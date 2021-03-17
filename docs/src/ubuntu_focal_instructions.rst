@@ -21,9 +21,12 @@ Install the CARTA backend
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Ensure that you have created a CARTA user (assumed here to be called ``carta``), and that all users who should have access to CARTA belong to a group that identifies them (assumed here to be called ``carta-users``).
+Ensure that all users who should have access to CARTA belong to a group that identifies them (assumed here to be called ``carta-users``).
 
 .. code-block:: shell
+
+    # create a 'carta' user to run the controller
+    sudo adduser carta
 
     # log directory owned by carta
     sudo mkdir -p /var/log/carta
