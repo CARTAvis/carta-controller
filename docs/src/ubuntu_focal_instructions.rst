@@ -54,7 +54,7 @@ A :ref:`sample configuration file<example_nginx>` is provided in the configurati
 Install CARTA controller
 ------------------------
 
-Assuming this runs as user ``carta``.
+From this point, commands should be executed as user ``carta``.
 
 .. code-block:: shell
 
