@@ -24,7 +24,7 @@ Install the CARTA backend and other required packages
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Ensure that all users who should have access to CARTA belong to a group that identifies them (assumed here to be called ``carta-users``).
+Ensure that all users who should have access to CARTA belong to a group that identifies them (assumed here to be called ``carta-users``). Also ensure that LDAP has been set up correctly.
 
 .. code-block:: shell
 
