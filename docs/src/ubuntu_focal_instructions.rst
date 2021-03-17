@@ -6,8 +6,8 @@ Step-by-step instructions for Ubuntu 20.04.2 (Focal Fossa)
 Dependencies
 ------------
 
-Install the CARTA backend
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Install the CARTA backend and other required packages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: shell
 
@@ -17,6 +17,9 @@ Install the CARTA backend
 
     # Install the development backend package with all dependencies
     sudo apt-get install carta-backend-beta
+    
+    # Install curl
+    sudo apt-get install curl
 
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
