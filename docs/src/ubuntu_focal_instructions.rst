@@ -19,7 +19,7 @@ Install the CARTA backend and other required packages
     sudo apt-get install carta-backend-beta
     
     # Install additional packages
-    sudo apt-get install nginx curl g++
+    sudo apt-get install nginx curl g++ mongodb
 
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -29,7 +29,7 @@ Ensure that all users who should have access to CARTA belong to a group that ide
 .. code-block:: shell
 
     # create a 'carta' user to run the controller
-    sudo adduser carta
+    sudo adduser --disabled-login --gecos "" carta
 
     # log directory owned by carta
     sudo mkdir -p /var/log/carta
