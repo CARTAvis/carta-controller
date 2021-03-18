@@ -76,7 +76,7 @@ By default, the controller assumes the config file is located at ``/etc/carta/co
 
 The controller automatically executes the backend with the ``--no_http`` flag, to suppress the backend's built-in HTTP server. If the ``logFileTemplate`` configuration option is set, ``--no_log`` is also used to suppress user-level logs. ``--port`` is used to override the default port. ``--top_level_folder`` and a positional argument are used to set the top-level and starting data directories for the user, as specified in the ``rootFolderTemplate`` and ``baseFolderTemplate`` options, respectively. Additional backend flags may be specified with ``additionalArgs``.
 
-If you use an external authentication system, you may need to translate a unique ID (such as email or username) from the authenticated external user information to an internal system user. You can do this by providing a `user lookup table <_static/config/usertable.txt.stub>`_, which is watched by the controller and reloaded whenever it is updated:
+If you use an external :ref:`authentication<authentication>` system, you may need to translate a unique ID (such as email or username) from the authenticated external user information to an internal system user. You can do this by providing a `user lookup table <_static/config/usertable.txt.stub>`_, which is watched by the controller and reloaded whenever it is updated:
 
 .. literalinclude:: _static/config/usertable.txt.stub
    :language: cfg
