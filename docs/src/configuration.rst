@@ -36,6 +36,7 @@ When configured to use LDAP authentication, the controller signs and validates r
 
 .. code-block:: shell
 
+    cd /etc/carta
     openssl genrsa -out carta_private.pem 4096
     openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
     
