@@ -88,6 +88,8 @@ Edit ``/etc/carta/config.json`` to customise the appearance of the dashboard and
 Run controller
 ~~~~~~~~~~~~~~
 
+This should be executed as the ``carta`` user.
+
 .. code-block:: shell
 
     # Install PM2 node service
