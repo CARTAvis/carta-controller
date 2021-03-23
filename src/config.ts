@@ -8,8 +8,18 @@ const argv = yargs.options({
         default: "/etc/carta/config.json",
         alias: "c",
         description: "Path to config file in JSON format"
+    },
+    test: {
+        type: "string",
+        alias: "t",
+        description: "User to test configuration with"
     }
 }).argv as CartaCommandLineOptions;
+
+const testUser = argv.test;
+if (testUser) {
+    console.log(`Testing configuration with user ${testUser}`);
+}
 
 const configSchema = require("../config/config_schema.json");
 const ajv = new Ajv({useDefaults: true});
@@ -45,4 +55,4 @@ if (serverConfig.authProviders.google) {
     runtimeConfig.logoutAddress = runtimeConfig.apiAddress + "/auth/logout";
 }
 
-export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig};
+export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser};
