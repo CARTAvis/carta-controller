@@ -73,6 +73,7 @@ Install CARTA controller
     cp ${NVM_BIN}/../lib/node_modules/carta-controller/scripts/carta_kill_script.sh ~
     exit
     sudo mv /home/carta/carta_kill_script.sh /usr/local/bin/
+    sudo chown root: /usr/local/bin/carta_kill_script.sh
     sudo su - carta
     
     # Generate private/public keys
