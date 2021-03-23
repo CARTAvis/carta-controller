@@ -37,9 +37,11 @@
         "mongodb": "^3.6.2",
         "ms": "^2.1.2",
         "pug": "^3.0.0",
+        "read": "^1.0.7",
         "tcp-port-used": "^1.0.1",
         "userid": "^1.0.0-beta.8",
         "uuid": "^8.3.1",
+        "websocket": "^1.0.33",
         "yargs": "^15.4.1"
     },
     "devDependencies": {
@@ -53,6 +55,7 @@
         "@types/ms": "^0.7.31",
         "@types/node": "^14.14.6",
         "@types/uuid": "^8.3.0",
+        "@types/websocket": "^1.0.2",
         "@types/yargs": "^15.0.9",
         "ts-node": "^8.10.2",
         "typescript": "^3.9.7"

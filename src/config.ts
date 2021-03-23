@@ -12,15 +12,12 @@ const argv = yargs.options({
     test: {
         type: "string",
         alias: "t",
-        description: "User to test configuration with"
+        requiresArg: true,
+        description: "Test configuration with the provided user"
     }
 }).argv as CartaCommandLineOptions;
 
 const testUser = argv.test;
-if (testUser) {
-    console.log(`Testing configuration with user ${testUser}`);
-}
-
 const configSchema = require("../config/config_schema.json");
 const ajv = new Ajv({useDefaults: true});
 const validateConfig = ajv.compile(configSchema);
