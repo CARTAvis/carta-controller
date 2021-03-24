@@ -16,8 +16,10 @@ const tokenVerifiers = new Map<string, Verifier>();
 // maps JWT claim "iss" to a user map
 const userMaps = new Map<string, UserMap>();
 
+export const validGoogleIssuers = ["accounts.google.com", "https://accounts.google.com"]
+
 // Authentication schemes may have multiple valid issuers
-function readUserTable(issuer: string | string[], filename: string) {
+export function readUserTable(issuer: string | string[], filename: string) {
     const userMap = new Map<string, string>();
     try {
         const contents = fs.readFileSync(filename).toString();
@@ -58,7 +60,6 @@ if (RuntimeConfig.tokenRefreshAddress) {
     authPath = authUrl.pathname;
 }
 
-
 function generateLocalVerifier(authConf: CartaLdapAuthConfig) {
     const publicKey = fs.readFileSync(authConf.publicKeyLocation);
     tokenVerifiers.set(authConf.issuer, (cookieString) => {
@@ -78,7 +79,6 @@ if (ServerConfig.authProviders.ldap) {
 
 if (ServerConfig.authProviders.google) {
     const authConf = ServerConfig.authProviders.google;
-    const validIssuers = ["accounts.google.com", "https://accounts.google.com"]
     const googleAuthClient = new OAuth2Client(authConf.clientId);
     const verifier = async (cookieString: string) => {
         const ticket = await googleAuthClient.verifyIdToken({
@@ -105,13 +105,13 @@ if (ServerConfig.authProviders.google) {
         return {...payload, username};
     };
 
-    for (const iss of validIssuers) {
+    for (const iss of validGoogleIssuers) {
         tokenVerifiers.set(iss, verifier);
     }
 
     if (authConf.userLookupTable) {
-        readUserTable(validIssuers, authConf.userLookupTable);
-        fs.watchFile(authConf.userLookupTable, () => readUserTable(validIssuers, authConf.userLookupTable));
+        readUserTable(validGoogleIssuers, authConf.userLookupTable);
+        fs.watchFile(authConf.userLookupTable, () => readUserTable(validGoogleIssuers, authConf.userLookupTable));
     }
 }
 
@@ -193,10 +193,28 @@ let loginHandler: RequestHandler;
 let refreshHandler: AsyncRequestHandler;
 
 let ldap: LdapAuth;
+let privateKey: Buffer;
+
+export function generateToken(username: string, refreshToken: boolean) {
+    const authConf = ServerConfig.authProviders.ldap;
+    if (!authConf || !privateKey) {
+        return null;
+    }
+    return jwt.sign({
+            iss: authConf.issuer,
+            username,
+            refreshToken
+        },
+        privateKey, {
+            algorithm: authConf.keyAlgorithm,
+            expiresIn: refreshToken ? authConf.refreshTokenAge: authConf.accessTokenAge
+        }
+    );
+}
 
 if (ServerConfig.authProviders.ldap) {
     const authConf = ServerConfig.authProviders.ldap;
-    const privateKey = fs.readFileSync(authConf.privateKeyLocation);
+    privateKey = fs.readFileSync(authConf.privateKeyLocation);
 
     ldap = new LdapAuth(authConf.ldapOptions);
     ldap.on('error', err => console.error('LdapAuth: ', err));
@@ -227,16 +245,7 @@ if (ServerConfig.authProviders.ldap) {
                 try {
                     const uid = userid.uid(username);
                     console.log(`Authenticated as user ${username} with uid ${uid}`);
-                    const refreshToken = jwt.sign({
-                            iss: authConf.issuer,
-                            username,
-                            refreshToken: true
-                        },
-                        privateKey, {
-                            algorithm: authConf.keyAlgorithm,
-                            expiresIn: authConf.refreshTokenAge
-                        }
-                    );
+                    const refreshToken = generateToken(username, true);
                     res.cookie("Refresh-Token", refreshToken, {
                         path: authPath ?? "",
                         maxAge: ms(authConf.refreshTokenAge as string),
@@ -245,11 +254,7 @@ if (ServerConfig.authProviders.ldap) {
                         sameSite: "strict"
                     });
 
-                    const access_token = jwt.sign({iss: authConf.issuer, username}, privateKey, {
-                        algorithm: authConf.keyAlgorithm,
-                        expiresIn: authConf.accessTokenAge
-                    });
-
+                    const access_token = generateToken(username, false);
                     res.json({
                         access_token,
                         token_type: "bearer",
@@ -308,10 +313,7 @@ function generateLocalRefreshHandler(authConf: CartaLdapAuthConfig) {
                     next({statusCode: 403, message: "Not authorized"});
                 } else {
                     const uid = userid.uid(refreshToken.username);
-                    const access_token = jwt.sign({iss: authConf.issuer, username: refreshToken.username}, privateKey, {
-                        algorithm: authConf.keyAlgorithm,
-                        expiresIn: authConf.accessTokenAge
-                    });
+                    const access_token = generateToken(refreshToken.username, false);
                     console.log(`Refreshed access token for user ${refreshToken.username} with uid ${uid}`);
                     res.json({
                         access_token,

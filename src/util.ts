@@ -1,5 +1,6 @@
 import * as express from "express";
 
+// Delay for the specified number of milliseconds
 export async function delay(delay: number) {
     return new Promise<void>(resolve => {
         setTimeout(() => resolve(), delay);
