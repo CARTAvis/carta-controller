@@ -100,6 +100,7 @@ export interface CartaServerConfig {
 export interface CartaCommandLineOptions {
     [x: string]: unknown;
     config: string;
+    test: string;
 }
 
 export interface CartaRuntimeConfig {
