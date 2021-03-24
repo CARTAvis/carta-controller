@@ -19,7 +19,7 @@ Install the CARTA backend and other required packages
     sudo apt-get install carta-backend-beta
     
     # Install additional packages
-    sudo apt-get install nginx curl g++ mongodb make
+    sudo apt-get install nginx g++ mongodb make nodejs npm
 
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,24 +56,13 @@ Install CARTA controller
 
 .. code-block:: shell
 
-    # Most of these commands should be executed as the carta user
-    sudo su - carta
-
-    # Install NVM and NPM
-    cd ~
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-    source .bashrc
-    nvm install --lts
-    nvm install-latest-npm
-
     # Install carta-controller (includes frontend config)
-    npm install -g carta-controller@dev
+    sudo npm install -g carta-controller@dev
     
-    # For security reasons, copy the kill script to a system bin directory
-    cp ${NVM_BIN}/../lib/node_modules/carta-controller/scripts/carta_kill_script.sh ~
-    exit
-    sudo mv /home/carta/carta_kill_script.sh /usr/local/bin/
-    sudo chown root: /usr/local/bin/carta_kill_script.sh
+    # Install PM2 node service
+    sudo npm install -g pm2
+    
+    # Switch to carta user
     sudo su - carta
     
     # Generate private/public keys
@@ -93,8 +82,6 @@ This should be executed as the ``carta`` user.
 
 .. code-block:: shell
 
-    # Install PM2 node service
-    npm install -g pm2
     pm2 start carta-controller
 
 Create pm2 startup script
