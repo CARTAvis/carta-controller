@@ -2,7 +2,7 @@ import * as yargs from "yargs";
 import * as Ajv from "ajv";
 import * as url from "url";
 import * as fs from "fs";
-import {jsonc} from "jsonc";
+import {parse} from "jsonc-parser";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
 
 const argv = yargs.options({
@@ -30,7 +30,7 @@ let serverConfig: CartaServerConfig;
 try {
     console.log(`Checking config file ${argv.config}`);
     const jsonString = fs.readFileSync(argv.config).toString();
-    serverConfig = jsonc.parse(jsonString);
+    serverConfig = parse(jsonString);
     const isValid = validateConfig(serverConfig);
     if (!isValid) {
         console.error(validateConfig.errors);
