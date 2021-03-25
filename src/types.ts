@@ -1,13 +1,16 @@
 import * as express from "express";
 import {Algorithm} from "jsonwebtoken";
 
-export interface CartaLdapAuthConfig {
+export interface CartaLocalAuthConfig {
     publicKeyLocation: string;
     privateKeyLocation: string;
     keyAlgorithm: Algorithm;
     issuer: string;
     refreshTokenAge: string;
     accessTokenAge: string;
+}
+
+export interface CartaLdapAuthConfig extends CartaLocalAuthConfig {
     // Options to pass through to the LDAP Auth instance
     ldapOptions: {
         url: string;
@@ -44,7 +47,7 @@ export interface CartaExternalAuthConfig {
 export interface CartaServerConfig {
     // One authProvider must be defined
     authProviders: {
-        // LDAP-based username/password authentication and token signing
+        pam?: CartaLocalAuthConfig;
         ldap?: CartaLdapAuthConfig;
         google?: CartaGoogleAuthConfig;
         external?: CartaExternalAuthConfig;
@@ -109,6 +112,7 @@ export interface CartaRuntimeConfig {
     googleClientId?: string;
     tokenRefreshAddress?: string;
     logoutAddress?: string;
+    authPath?: string;
 }
 
 export type RequestHandler = (req: express.Request, res: express.Response) => void;
