@@ -7,7 +7,6 @@
     "required": [
         "authProviders",
         "database",
-        "serverAddress",
         "processCommand",
         "killCommand",
         "rootFolderTemplate",
@@ -74,6 +73,64 @@
                     "type": "string",
                     "examples": [
                         "/etc/carta/userlookup.txt"
+                    ]
+                }
+            }
+        },
+        "pamAuthProvider": {
+            "type": "object",
+            "title": "Local AuthProvider",
+            "description": "Authentication configuration when using PAM-based authentication",
+            "additionalProperties": false,
+            "required": [
+                "publicKeyLocation",
+                "privateKeyLocation",
+                "issuer"
+            ],
+            "properties": {
+                "publicKeyLocation": {
+                    "description": "Path to public key (in PEM format) used for verifying JWTs",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/carta_public.pem"
+                    ]
+                },
+                "privateKeyLocation": {
+                    "description": "Path to private key (in PEM format) used for signing JWTs",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/carta_private.pem"
+                    ]
+                },
+                "keyAlgorithm": {
+                    "$ref": "#/definitions/keyAlgorithm",
+                    "default": "RS256"
+                },
+                "issuer": {
+                    "description": "Issuer field for JWT",
+                    "type": "string",
+                    "examples": [
+                        "my-carta-server"
+                    ]
+                },
+                "refreshTokenAge": {
+                    "description": "Lifetime of refresh tokens",
+                    "type": "string",
+                    "default": "1w",
+                    "examples": [
+                        "1w",
+                        "15h",
+                        "2d"
+                    ]
+                },
+                "accessTokenAge": {
+                    "description": "Lifetime of access tokens",
+                    "type": "string",
+                    "default": "15m",
+                    "examples": [
+                        "90s",
+                        "1h",
+                        "15m"
                     ]
                 }
             }
@@ -254,6 +311,10 @@
                 "google": {
                     "description": "Google AuthProvider",
                     "$ref": "#/definitions/googleAuthProvider"
+                },
+                "pam": {
+                    "description": "PAM AuthProvider",
+                    "$ref": "#/definitions/pamAuthProvider"
                 },
                 "ldap": {
                     "description": "LDAP AuthProvider",

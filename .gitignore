@@ -1,7 +1,7 @@
 .idea/*
 .vscode/*
 node_modules/*
-dist/*.js
-dist/*.js.map
+dist/**/*.js
+dist/**/*.js.map
 carta-controller-*.tgz
 docs/_build

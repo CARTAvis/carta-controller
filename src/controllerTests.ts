@@ -7,19 +7,24 @@ import * as userid from "userid";
 import * as chalk from "chalk";
 import * as moment from "moment";
 import {ServerConfig, testUser} from "./config";
-import {generateToken} from "./auth";
 import {ChildProcess, spawn, spawnSync} from "child_process";
 import {delay} from "./util";
 import {client} from "websocket";
+import {CartaLdapAuthConfig, CartaLocalAuthConfig} from "./types";
+import {generateToken} from "./auth/local";
 
 const read = require("read");
 
 export async function runTests(username: string) {
     console.log(`Testing configuration with user ${chalk.bold(testUser)}`);
     if (ServerConfig.authProviders?.ldap) {
-        await testLdap(username);
+        await testLdap(ServerConfig.authProviders.ldap, username);
         testUid(username);
-        testToken(username);
+        testToken(ServerConfig.authProviders.ldap, username);
+    } else if (ServerConfig.authProviders?.pam) {
+        await testPam(ServerConfig.authProviders.pam, username);
+        testUid(username);
+        testToken(ServerConfig.authProviders.pam, username);
     }
     await testDatabase();
     if (ServerConfig.logFileTemplate) {
@@ -47,13 +52,12 @@ function testLog(username: string) {
     }
 }
 
-function testLdap(username: string) {
+function testLdap(authConf: CartaLdapAuthConfig, username: string) {
     return new Promise<void>((resolve, reject) => {
-        const ldapAuth = ServerConfig.authProviders?.ldap;
-        if (ldapAuth) {
+        if (authConf) {
             let ldap: LdapAuth;
             try {
-                ldap = new LdapAuth(ldapAuth.ldapOptions);
+                ldap = new LdapAuth(authConf.ldapOptions);
                 setTimeout(() => {
                     read({prompt: `Password for user ${username}:`, silent: true}, (er: any, password: string) => {
                         ldap.authenticate(username, password, (error, result) => {
@@ -69,6 +73,25 @@ function testLdap(username: string) {
             } catch (e) {
                 reject(new Error("Cannot create LDAP object. Please check your config file's ldapOptions section!"));
             }
+        }
+    });
+}
+
+function testPam(authConf: CartaLocalAuthConfig, username: string) {
+    const {pamAuthenticate} = require('node-linux-pam');
+
+    return new Promise<void>((resolve, reject) => {
+        if (authConf) {
+            read({prompt: `Password for user ${username}:`, silent: true}, (er: any, password: string) => {
+                pamAuthenticate({username, password}, (err: Error | string, code: number) => {
+                    if (err) {
+                        reject(new Error(`Could not authenticate as user ${username}`));
+                    } else {
+                        console.log(logSymbols.success, `Checked LDAP connection for user ${username}`);
+                        resolve();
+                    }
+                });
+            });
         }
     });
 }
@@ -97,11 +120,12 @@ function testUid(username: string) {
     console.log(logSymbols.success, `Verified uid (${uid}) for user ${username}`);
 }
 
-function testToken(username: string) {
+function testToken(authConf: CartaLocalAuthConfig, username: string) {
     let token;
     try {
-        token = generateToken(username, false);
+        token = generateToken(authConf, username, false);
     } catch (e) {
+        console.log(e);
         throw new Error(`Cannot generate access token. Please check your config file's ldap auth section!`);
     }
     if (!token) {

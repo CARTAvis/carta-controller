@@ -1,6 +1,7 @@
 import * as yargs from "yargs";
-import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
 import * as Ajv from "ajv";
+import * as url from "url";
+import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
 
 const argv = yargs.options({
     config: {
@@ -40,8 +41,8 @@ try {
 
 // Construct runtime config
 const runtimeConfig: CartaRuntimeConfig = {};
-runtimeConfig.dashboardAddress = serverConfig.dashboardAddress || (serverConfig.serverAddress + "/dashboard");
-runtimeConfig.apiAddress = serverConfig.apiAddress || (serverConfig.serverAddress + "/api");
+runtimeConfig.dashboardAddress = serverConfig.dashboardAddress || "/dashboard";
+runtimeConfig.apiAddress = serverConfig.apiAddress || "/api";
 if (serverConfig.authProviders.google) {
     runtimeConfig.googleClientId = serverConfig.authProviders.google.clientId;
 } else if (serverConfig.authProviders.external) {
@@ -50,6 +51,10 @@ if (serverConfig.authProviders.google) {
 } else {
     runtimeConfig.tokenRefreshAddress = runtimeConfig.apiAddress + "/auth/refresh";
     runtimeConfig.logoutAddress = runtimeConfig.apiAddress + "/auth/logout";
+}
+if (runtimeConfig.tokenRefreshAddress) {
+    const authUrl = url.parse(runtimeConfig.tokenRefreshAddress);
+    runtimeConfig.authPath = authUrl.pathname ?? "";
 }
 
 export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser};
