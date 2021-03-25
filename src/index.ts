@@ -75,9 +75,9 @@ if (testUser) {
     app.get("/frontend", (req, res) => {
         const queryString = url.parse(req.url, false)?.query;
         if (queryString) {
-            return res.redirect(ServerConfig.serverAddress + "/?" + queryString);
+            return res.redirect((ServerConfig.serverAddress ?? "") + "/?" + queryString);
         } else {
-            return res.redirect(ServerConfig.serverAddress);
+            return res.redirect(ServerConfig.serverAddress ?? "");
         }
     });
 
@@ -130,7 +130,7 @@ if (testUser) {
         expressServer.listen(ServerConfig.serverPort, () => console.log(`Started listening for login requests on port ${ServerConfig.serverPort}`));
     }
 
-    init().then(() => console.log(chalk.green.bold(`Server initialised successfully at ${ServerConfig.serverAddress}`)));
+    init().then(() => console.log(chalk.green.bold(`Server initialised successfully at ${ServerConfig.serverAddress ?? "localhost"}`)));
 }
 
 

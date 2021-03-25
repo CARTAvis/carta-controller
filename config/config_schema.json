@@ -7,7 +7,6 @@
     "required": [
         "authProviders",
         "database",
-        "serverAddress",
         "processCommand",
         "killCommand",
         "rootFolderTemplate",

@@ -41,8 +41,8 @@ try {
 
 // Construct runtime config
 const runtimeConfig: CartaRuntimeConfig = {};
-runtimeConfig.dashboardAddress = serverConfig.dashboardAddress || (serverConfig.serverAddress + "/dashboard");
-runtimeConfig.apiAddress = serverConfig.apiAddress || (serverConfig.serverAddress + "/api");
+runtimeConfig.dashboardAddress = serverConfig.dashboardAddress || "/dashboard";
+runtimeConfig.apiAddress = serverConfig.apiAddress || "/api";
 if (serverConfig.authProviders.google) {
     runtimeConfig.googleClientId = serverConfig.authProviders.google.clientId;
 } else if (serverConfig.authProviders.external) {

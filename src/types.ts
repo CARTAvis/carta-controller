@@ -59,7 +59,7 @@ export interface CartaServerConfig {
     // Port to listen on. It is advised to listen on a port other than 80 or 443, behind an SSL proxy
     serverPort: number;
     // Public-facing server address
-    serverAddress: string;
+    serverAddress?: string;
     // If you need to optionally specify a different API or dashboard address
     dashboardAddress: string;
     apiAddress?: string;
