@@ -32,14 +32,16 @@ To provide the ``carta`` user with these privileges, you must make modifications
 Authentication
 ~~~~~~~~~~~~~~
 
-When configured to use LDAP authentication, the controller signs and validates refresh and access tokens with SSL keys. You can generate a private/public key pair in PEM format using ``openssl``:
+When configured to use PAM or LDAP authentication, the controller signs and validates refresh and access tokens with SSL keys. You can generate a private/public key pair in PEM format using ``openssl``:
 
 .. code-block:: shell
 
     cd /etc/carta
     openssl genrsa -out carta_private.pem 4096
     openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
-    
+
+PAM may be configured to use the host's local UNIX user authentication, or to communicate with an LDAP server. If PAM is used for authentication, the ``carta`` user must be given read-only access to ``/etc/shadow``.  This is not required if you use the direct LDAP authentication method.
+
 .. _config-nginx:
 
 Nginx

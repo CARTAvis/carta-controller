@@ -19,17 +19,20 @@ Install the CARTA backend and other required packages
     sudo apt-get install carta-backend-beta
     
     # Install additional packages
-    sudo apt-get install nginx g++ mongodb make nodejs npm
+    sudo apt-get install nginx g++ mongodb make nodejs npm libpam0g-dev
 
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Ensure that all users who should have access to CARTA belong to a group that identifies them (assumed here to be called ``carta-users``). Also ensure that LDAP has been set up correctly.
+Ensure that all users who should have access to CARTA belong to a group that identifies them (assumed here to be called ``carta-users``).
 
 .. code-block:: shell
 
     # create a 'carta' user to run the controller
     sudo adduser --system --no-create-home --shell=/bin/bash --group carta
+    
+    # add 'carta' user to the shadow group (required for PAM authentication)
+    sudo usermod -a -G shadow carta
 
     # log directory owned by carta
     sudo mkdir -p /var/log/carta
@@ -61,7 +64,7 @@ Install CARTA controller
     
     # Install PM2 node service
     sudo npm install -g pm2
-    
+
     # Switch to carta user
     sudo su - carta
     
