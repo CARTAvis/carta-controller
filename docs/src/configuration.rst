@@ -32,14 +32,16 @@ To provide the ``carta`` user with these privileges, you must make modifications
 Authentication
 ~~~~~~~~~~~~~~
 
-When configured to use LDAP authentication, the controller signs and validates refresh and access tokens with SSL keys. You can generate a private/public key pair in PEM format using ``openssl``:
+When configured to use PAM or LDAP authentication, the controller signs and validates refresh and access tokens with SSL keys. You can generate a private/public key pair in PEM format using ``openssl``:
 
 .. code-block:: shell
 
     cd /etc/carta
     openssl genrsa -out carta_private.pem 4096
     openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
-    
+
+PAM may be configured to use the host's local UNIX user authentication, or to communicate with an LDAP server. If PAM is used for authentication, the ``carta`` user must be given read-only access to ``/etc/shadow``.  This is not required if you use the direct LDAP authentication method.
+
 .. _config-nginx:
 
 Nginx
@@ -74,7 +76,7 @@ Controller configuration is handled by a configuration file in JSON format, adhe
 
 By default, the controller assumes the config file is located at ``/etc/carta/config.json``, but you can change this with the ``--config`` or ``-c`` command line argument when running the controller.
 
-The controller automatically executes the backend with the ``--no_http`` flag, to suppress the backend's built-in HTTP server. If the ``logFileTemplate`` configuration option is set, ``--no_log`` is also used to suppress user-level logs. ``--port`` is used to override the default port. ``--top_level_folder`` and a positional argument are used to set the top-level and starting data directories for the user, as specified in the ``rootFolderTemplate`` and ``baseFolderTemplate`` options, respectively. Additional backend flags may be specified with ``additionalArgs``.
+The controller automatically executes the backend with the ``-port`` flag to override the default port. ``-root`` and ``-base`` are used to set the top-level and starting data directories for the user, as specified in the ``rootFolderTemplate`` and ``baseFolderTemplate`` options, respectively. Additional backend flags may be specified with ``additionalArgs``.
 
 If you use an external :ref:`authentication<authentication>` system, you may need to translate a unique ID (such as email or username) from the authenticated external user information to an internal system user. You can do this by providing a `user lookup table <_static/config/usertable.txt.stub>`_, which is watched by the controller and reloaded whenever it is updated:
 
