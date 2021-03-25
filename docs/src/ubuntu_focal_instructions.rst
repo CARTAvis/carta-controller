@@ -29,7 +29,7 @@ Ensure that all users who should have access to CARTA belong to a group that ide
 .. code-block:: shell
 
     # create a 'carta' user to run the controller
-    sudo adduser --disabled-login --gecos "" carta
+    sudo adduser --system --no-create-home --shell=/bin/bash --group carta
 
     # log directory owned by carta
     sudo mkdir -p /var/log/carta
