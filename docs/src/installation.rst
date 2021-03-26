@@ -30,8 +30,6 @@ Installing the controller
 
 You can install the release version of the CARTA controller from NPM by running ``npm install -g carta-controller``, or from GitHub by cloning the `controller repository <https://github.com/CARTAvis/carta-controller/>`_, checking out the ``release/1.4`` branch, and running ``npm install``.
 
-Specific authentication methods may have additional system dependencies. For example, the default PAM authentication method requires ``libpam0g-dev`` on Ubuntu.
-
 .. _run_controller:
 
 Running the controller
