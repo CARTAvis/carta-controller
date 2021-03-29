@@ -1,6 +1,7 @@
 import * as yargs from "yargs";
-import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
 import * as Ajv from "ajv";
+import * as url from "url";
+import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
 
 const argv = yargs.options({
     config: {
@@ -43,6 +44,10 @@ if (serverConfig.authProviders.google) {
 } else {
     runtimeConfig.tokenRefreshAddress = runtimeConfig.apiAddress + "/auth/refresh";
     runtimeConfig.logoutAddress = runtimeConfig.apiAddress + "/auth/logout";
+}
+if (runtimeConfig.tokenRefreshAddress) {
+    const authUrl = url.parse(runtimeConfig.tokenRefreshAddress);
+    runtimeConfig.authPath = authUrl.pathname ?? "";
 }
 
 export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig};
