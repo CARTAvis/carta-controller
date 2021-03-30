@@ -7,10 +7,11 @@ import * as JSONC from "jsonc-parser";
 import * as _ from "lodash";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
 
+const defaultConfigPath = "/etc/carta/config.json"
 const argv = yargs.options({
     config: {
         type: "string",
-        default: "/etc/carta/config.json",
+        default: defaultConfigPath,
         alias: "c",
         description: "Path to config file in JSON format"
     },
@@ -22,6 +23,7 @@ const argv = yargs.options({
     }
 }).argv as CartaCommandLineOptions;
 
+const usingCustomConfig = argv.config !== defaultConfigPath;
 const testUser = argv.test;
 const configSchema = require("../config/config_schema.json");
 const ajv = new Ajv({useDefaults: false});
@@ -33,8 +35,18 @@ let serverConfig: CartaServerConfig;
 
 try {
     console.log(`Checking config file ${argv.config}`);
-    let jsonString = fs.readFileSync(argv.config).toString();
-    serverConfig = JSONC.parse(jsonString);
+    if (fs.existsSync(argv.config)) {
+        const jsonString = fs.readFileSync(argv.config).toString();
+        serverConfig = JSONC.parse(jsonString);
+    } else {
+        if (!usingCustomConfig) {
+            serverConfig = {} as CartaServerConfig;
+            console.log(`Skipping missing config file ${defaultConfigPath}`);
+        } else {
+            console.log(new Error(`Unable to find config file ${argv.config}`));
+            process.exit(1);
+        }
+    }
 
     const configDir = path.join(path.dirname(argv.config), "config.d")
     if (fs.existsSync(configDir)) {
@@ -44,7 +56,7 @@ try {
                 console.log(`Skipping ${file}`);
                 continue;
             }
-            jsonString = fs.readFileSync(path.join(configDir, file)).toString();
+            const jsonString = fs.readFileSync(path.join(configDir, file)).toString();
             const additionalConfig: any = JSONC.parse(jsonString) as CartaServerConfig;
             const isPartialConfigValid = validateConfig(additionalConfig,);
             if (isPartialConfigValid) {
