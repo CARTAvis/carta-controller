@@ -13,7 +13,7 @@
     },
     "serverAddress": "https://my-carta-server.com",
     "processCommand": "/usr/bin/carta_backend",
-    "killCommand": "/usr/local/bin/carta_kill_script.sh",
+    "killCommand": "/usr/local/bin/carta-kill-script",
     "rootFolderTemplate": "/home/{username}",
     "baseFolderTemplate": "/home/{username}",
     "dashboard": {
