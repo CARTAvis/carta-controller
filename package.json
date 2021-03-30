@@ -30,6 +30,7 @@
         "google-auth-library": "^6.0.6",
         "hjson": "^3.2.1",
         "http-proxy": "^1.18.1",
+        "jsonc-parser": "^2.0.0",
         "jsonwebtoken": "^8.5.1",
         "ldapauth-fork": "^4.3.3",
         "moment": "^2.27.0",
