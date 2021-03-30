@@ -3,6 +3,10 @@
 Step-by-step instructions for Ubuntu 20.04.2 (Focal Fossa)
 ==========================================================
 
+.. note::
+
+    These instructions can be used almost unchanged on Ubuntu 18.04 (Bionic Badger). We note differences where they occur.
+
 Dependencies
 ------------
 
@@ -19,17 +23,20 @@ Install the CARTA backend and other required packages
     sudo apt-get install carta-backend
     
     # Install additional packages
-    sudo apt-get install nginx curl g++ mongodb make
+    sudo apt-get install nginx g++ mongodb make nodejs npm
 
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Ensure that all users who should have access to CARTA belong to a group that identifies them (assumed here to be called ``carta-users``). Also ensure that LDAP has been set up correctly.
+Ensure that all users who should have access to CARTA belong to a group that identifies them (assumed here to be called ``carta-users``).
 
 .. code-block:: shell
 
     # create a 'carta' user to run the controller
-    sudo adduser --disabled-login --gecos "" carta
+    sudo adduser --system --no-create-home --shell=/bin/bash --group carta
+    
+    # add 'carta' user to the shadow group (only required for PAM UNIX authentication)
+    sudo usermod -a -G shadow carta
 
     # log directory owned by carta
     sudo mkdir -p /var/log/carta
@@ -40,7 +47,7 @@ Ensure that all users who should have access to CARTA belong to a group that ide
     sudo chown carta: /etc/carta
 
     # edit sudoers file to allow passwordless sudo execution of 
-    # /usr/local/bin/carta_kill_script.sh and /usr/bin/carta_backend
+    # /usr/local/bin/carta-kill-script and /usr/bin/carta_backend
     # by the carta user  
     sudo visudo -f /etc/sudoers.d/carta_controller
     
@@ -54,26 +61,19 @@ A :ref:`sample configuration file<example_nginx>` is provided in the configurati
 Install CARTA controller
 ------------------------
 
+.. note::
+
+    On Ubuntu Bionic, do not pass the ``--unsafe-perm`` flag to ``npm``. This is also unnecessary if you use a custom local installation of ``npm`` with a version of at least 7.0.
+
 .. code-block:: shell
 
-    # Most of these commands should be executed as the carta user
-    sudo su - carta
-
-    # Install NVM and NPM
-    cd ~
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.2/install.sh | bash
-    source .bashrc
-    nvm install --lts
-    nvm install-latest-npm
-
     # Install carta-controller (includes frontend config)
-    npm install -g carta-controller
+    sudo npm install -g --unsafe-perm carta-controller
     
-    # For security reasons, copy the kill script to a system bin directory
-    cp ${NVM_BIN}/../lib/node_modules/carta-controller/scripts/carta_kill_script.sh ~
-    exit
-    sudo mv /home/carta/carta_kill_script.sh /usr/local/bin/
-    sudo chown root: /usr/local/bin/carta_kill_script.sh
+    # Install PM2 node service
+    sudo npm install -g pm2
+
+    # Switch to carta user
     sudo su - carta
     
     # Generate private/public keys
@@ -93,8 +93,6 @@ This should be executed as the ``carta`` user.
 
 .. code-block:: shell
 
-    # Install PM2 node service
-    npm install -g pm2
     pm2 start carta-controller
 
 Create pm2 startup script

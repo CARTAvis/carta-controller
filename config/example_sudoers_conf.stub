@@ -4,4 +4,4 @@
 carta ALL=(%carta-users) NOPASSWD:SETENV: /usr/bin/carta_backend
 
 # carta user can run the kill script as any user in the carta-users group without entering password
-carta ALL=(%carta-users) NOPASSWD: /usr/local/bin/carta_kill_script.sh
+carta ALL=(%carta-users) NOPASSWD: /usr/local/bin/carta-kill-script
