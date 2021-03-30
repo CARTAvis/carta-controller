@@ -428,7 +428,7 @@
                 "/home/{username}",
                 "/"
             ],
-            "default": "/home/{username}"
+            "default": "/usr/share/carta"
         },
         "baseFolderTemplate": {
             "description": "Starting directory of CARTA. Must be a subfolder of rootFolderTemplate. The `{username}` placeholder will be replaced with the username",
@@ -438,7 +438,7 @@
                 "/data",
                 "/"
             ],
-            "default": "/home/{username}"
+            "default": "/usr/share/carta"
         },
         "logFileTemplate": {
             "description": "Location of log file. The `{username}`, `{pid}` and `{datetime}` placeholders will be replaced with the username, process ID. and dat/time formatted as `YYYYMMDD.h_mm_ss` respectively",

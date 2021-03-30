@@ -24,8 +24,10 @@ const argv = yargs.options({
 
 const testUser = argv.test;
 const configSchema = require("../config/config_schema.json");
-const ajv = new Ajv({useDefaults: true});
+const ajv = new Ajv({useDefaults: false});
+const ajvWithDefaults = new Ajv({useDefaults: true});
 const validateConfig = ajv.compile(configSchema);
+const validateAndAddDefaults = ajvWithDefaults.compile(configSchema);
 
 let serverConfig: CartaServerConfig;
 
@@ -44,20 +46,20 @@ try {
             }
             jsonString = fs.readFileSync(path.join(configDir, file)).toString();
             const additionalConfig: any = JSONC.parse(jsonString) as CartaServerConfig;
-            const isPartialConfigValid = validateConfig(additionalConfig);
+            const isPartialConfigValid = validateConfig(additionalConfig,);
             if (isPartialConfigValid) {
                 serverConfig = _.merge(serverConfig, additionalConfig);
                 console.log(`Adding additional config file config.d/${file}`);
             } else {
                 console.log(`Skipping invalid configuration file ${file}`);
+                console.error(validateConfig.errors);
             }
-
         }
     }
 
-    const isValid = validateConfig(serverConfig);
+    const isValid = validateAndAddDefaults(serverConfig);
     if (!isValid) {
-        console.error(validateConfig.errors);
+        console.error(validateAndAddDefaults.errors);
         process.exit(1);
     }
 } catch (err) {
