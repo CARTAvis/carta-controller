@@ -2,7 +2,9 @@ import * as yargs from "yargs";
 import * as Ajv from "ajv";
 import * as url from "url";
 import * as fs from "fs";
-import {parse} from "jsonc-parser";
+import * as path from "path";
+import * as JSONC from "jsonc-parser";
+import * as _ from "lodash";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
 
 const argv = yargs.options({
@@ -29,8 +31,30 @@ let serverConfig: CartaServerConfig;
 
 try {
     console.log(`Checking config file ${argv.config}`);
-    const jsonString = fs.readFileSync(argv.config).toString();
-    serverConfig = parse(jsonString);
+    let jsonString = fs.readFileSync(argv.config).toString();
+    serverConfig = JSONC.parse(jsonString);
+
+    const configDir = path.join(path.dirname(argv.config), "config.d")
+    if (fs.existsSync(configDir)) {
+        const files = fs.readdirSync(configDir);
+        for (const file of files) {
+            if (!file.match(/.*\.json$/)) {
+                console.log(`Skipping ${file}`);
+                continue;
+            }
+            jsonString = fs.readFileSync(path.join(configDir, file)).toString();
+            const additionalConfig: any = JSONC.parse(jsonString) as CartaServerConfig;
+            const isPartialConfigValid = validateConfig(additionalConfig);
+            if (isPartialConfigValid) {
+                serverConfig = _.merge(serverConfig, additionalConfig);
+                console.log(`Adding additional config file config.d/${file}`);
+            } else {
+                console.log(`Skipping invalid configuration file ${file}`);
+            }
+
+        }
+    }
+
     const isValid = validateConfig(serverConfig);
     if (!isValid) {
         console.error(validateConfig.errors);
