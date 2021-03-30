@@ -3,6 +3,10 @@
 Step-by-step instructions for Ubuntu 20.04.2 (Focal Fossa)
 ==========================================================
 
+.. note::
+
+    These instructions can be used almost unchanged on Ubuntu 18.04 (Bionic Badger). We note differences where they occur.
+
 Dependencies
 ------------
 
@@ -57,10 +61,14 @@ A :ref:`sample configuration file<example_nginx>` is provided in the configurati
 Install CARTA controller
 ------------------------
 
+.. note::
+
+    On Ubuntu Bionic, do not pass the ``--unsafe-perm`` flag to ``npm``. This is also unnecessary if you use a custom local installation of ``npm`` with a version of at least 7.0.
+
 .. code-block:: shell
 
     # Install carta-controller (includes frontend config)
-    sudo npm install -g carta-controller@dev
+    sudo npm install -g --unsafe-perm carta-controller@dev
     
     # Install PM2 node service
     sudo npm install -g pm2
