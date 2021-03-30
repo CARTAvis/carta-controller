@@ -43,7 +43,7 @@ Ensure that all users who should have access to CARTA belong to a group that ide
     sudo chown carta: /etc/carta
 
     # edit sudoers file to allow passwordless sudo execution of 
-    # /usr/local/bin/carta_kill_script.sh and /usr/bin/carta_backend
+    # /usr/local/bin/carta-kill-script and /usr/bin/carta_backend
     # by the carta user  
     sudo visudo -f /etc/sudoers.d/carta_controller
     
