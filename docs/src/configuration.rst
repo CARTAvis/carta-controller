@@ -63,6 +63,8 @@ Directories
 
 By default, the controller attempts to write log files to the ``/var/log/carta`` directory. Please ensure that this directory exists and that the ``carta`` user has write permission.
 
+The default starting and top-level data directory is ``/usr/share/carta``. If you installed the backend from an Ubuntu package, this directory should contain a default welcome image. If this directory doesn't exist, the controller will attempt to fall back to ``/usr/local/share/carta``, which is the default install location for a backend built from source. If neither location exists, you must explicitly configure the starting and top-level directories.
+
 .. _config-controller:
 
 Controller Configuration
@@ -74,7 +76,7 @@ Controller configuration is handled by a configuration file in JSONC (JSON with 
    :language: json
    :name: example_config
 
-By default, the controller assumes the config file is located at ``/etc/carta/config.json``, but you can change this with the ``--config`` or ``-c`` command line argument when running the controller.
+By default, the controller assumes the config file is located at ``/etc/carta/config.json``, but you can change this with the ``--config`` or ``-c`` command line argument when running the controller. Configuration may additionally be placed in separate files in a ``config.d`` subdirectory located in the same directory as the main configuration file. Each file must conform to the schema, and have a name ending in ``.json``.
 
 The controller automatically executes the backend with the ``--no_http`` flag, to suppress the backend's built-in HTTP server. If the ``logFileTemplate`` configuration option is set, ``--no_log`` is also used to suppress user-level logs. ``--port`` is used to override the default port. ``--top_level_folder`` and a positional argument are used to set the top-level and starting data directories for the user, as specified in the ``rootFolderTemplate`` and ``baseFolderTemplate`` options, respectively. Additional backend flags may be specified with ``additionalArgs``.
 
