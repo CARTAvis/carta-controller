@@ -408,7 +408,7 @@
             "description": "Path to CARTA backend executable",
             "type": "string",
             "examples": [
-                "usr/bin/carta_backend",
+                "/usr/bin/carta_backend",
                 "/usr/local/bin/carta_backend"
             ],
             "default": "/usr/bin/carta_backend"
