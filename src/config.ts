@@ -79,6 +79,26 @@ try {
     process.exit(1);
 }
 
+// Check defaults:
+if (!serverConfig.rootFolderTemplate) {
+    console.log("No top-level folder was specified. Reverting to default location");
+    const defaultFolders = ["/usr/share/carta2", "/usr/local/share/carta"];
+    for (const f of defaultFolders) {
+        if (fs.existsSync(f)) {
+            serverConfig.rootFolderTemplate = f;
+            break;
+        }
+    }
+    if (!serverConfig.rootFolderTemplate) {
+        console.error("Could not find a default top-level folder!");
+        process.exit(1);
+    }
+}
+
+if (!serverConfig.baseFolderTemplate) {
+    serverConfig.baseFolderTemplate = serverConfig.rootFolderTemplate;
+}
+
 
 // Construct runtime config
 const runtimeConfig: CartaRuntimeConfig = {};

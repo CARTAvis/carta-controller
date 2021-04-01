@@ -11,6 +11,7 @@
     },
     "scripts": {
         "start": "npx ts-node src/index.ts",
+        "test": "npx ts-node src/index.ts --test",
         "prepare": "npx tsc"
     },
     "author": "",
