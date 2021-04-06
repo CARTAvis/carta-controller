@@ -50,7 +50,7 @@ try {
 
     const configDir = path.join(path.dirname(argv.config), "config.d")
     if (fs.existsSync(configDir)) {
-        const files = fs.readdirSync(configDir);
+        const files = fs.readdirSync(configDir)?.sort();
         for (const file of files) {
             if (!file.match(/.*\.json$/)) {
                 console.log(`Skipping ${file}`);
