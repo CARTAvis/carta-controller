@@ -21,7 +21,7 @@
         "backgroundColor": "#f6f8fa",
         "bannerImage": "/path/to/my/image.svg",
         "infoText": "Welcome to the CARTA server.",
-        "loginText": "<span>Click <b>Sign in</b> to log in via Google.</span>",
-        "footerText": "<span>If you would like to access the CARTA server, or have any problems, comments or suggestions, please <a href='mailto:test@test.com'>contact us.</a></span>"
+        "loginText": "<span>Please enter your login credentials:</span>",
+        "footerText": "<span>If you have any problems, comments or suggestions, please <a href='mailto:test@test.com'>contact us.</a></span>"
     }
 }
