@@ -4,14 +4,6 @@
     "title": "CARTA configuration schema",
     "description": "Schema defining configuration options for the CARTA server",
     "type": "object",
-    "required": [
-        "authProviders",
-        "database",
-        "processCommand",
-        "killCommand",
-        "rootFolderTemplate",
-        "baseFolderTemplate"
-    ],
     "definitions": {
         "keyAlgorithm": {
             "description": "Algorithm used for public/private keys",
@@ -324,6 +316,13 @@
                     "description": "External AuthProvider",
                     "$ref": "#/definitions/externalAuthProvider"
                 }
+            },
+            "default": {
+                "pam": {
+                    "publicKeyLocation": "/etc/carta/carta_public.pem",
+                    "privateKeyLocation": "/etc/carta/carta_private.pem",
+                    "issuer": "carta"
+                }
             }
         },
         "database": {
@@ -346,6 +345,10 @@
                     "type": "string",
                     "default": "CARTA"
                 }
+            },
+            "default": {
+                "uri": "mongodb://localhost:27017",
+                "databaseName": "CARTA"
             }
         },
         "serverPort": {
@@ -405,15 +408,18 @@
             "description": "Path to CARTA backend executable",
             "type": "string",
             "examples": [
+                "/usr/bin/carta_backend",
                 "/usr/local/bin/carta_backend"
-            ]
+            ],
+            "default": "/usr/bin/carta_backend"
         },
         "killCommand": {
             "description": "Path to CARTA kill script",
             "type": "string",
             "examples": [
-                "/usr/local/bin/carta_kill_script.sh"
-            ]
+                "/usr/local/bin/carta-kill-script"
+            ],
+            "default": "/usr/local/bin/carta-kill-script"
         },
         "rootFolderTemplate": {
             "description": "Top-level path of directories accessible to CARTA. The `{username}` placeholder will be replaced with the username",

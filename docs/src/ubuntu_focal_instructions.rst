@@ -33,7 +33,7 @@ Ensure that all users who should have access to CARTA belong to a group that ide
 .. code-block:: shell
 
     # create a 'carta' user to run the controller
-    sudo adduser --system --no-create-home --shell=/bin/bash --group carta
+    sudo adduser --system --home /var/lib/carta --shell=/bin/bash --group carta
     
     # add 'carta' user to the shadow group (only required for PAM UNIX authentication)
     sudo usermod -a -G shadow carta
