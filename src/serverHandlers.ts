@@ -333,6 +333,7 @@ export const createUpgradeHandler = (server: httpProxy) => async (req: IncomingM
             }
             console.log(`Redirecting to backend process for ${username} (port ${existingProcess.port})`);
             req.headers["carta-auth-token"] = existingProcess.headerToken;
+            req.url = "/";
             return server.ws(req, socket, head, {target: {host: "localhost", port: existingProcess.port}});
         } else {
             console.log(`Backend process could not be started`);
