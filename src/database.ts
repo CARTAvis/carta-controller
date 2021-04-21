@@ -6,9 +6,9 @@ import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
 import * as Ajv from "ajv";
 
-const PREFERENCE_SCHEMA_VERSION = 1;
+const PREFERENCE_SCHEMA_VERSION = 2;
 const LAYOUT_SCHEMA_VERSION = 2;
-const preferenceSchema = require("../config/preference_schema_1.json");
+const preferenceSchema = require("../config/preference_schema_2.json");
 const layoutSchema = require("../config/layout_schema_2.json");
 const ajv = new Ajv({useDefaults: true});
 const validatePreferences = ajv.compile(preferenceSchema);
