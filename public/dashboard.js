@@ -5,7 +5,7 @@ let redirectUrl;
 let autoRedirect = false;
 redirectUrl = `${strippedPath}`;
 if (urlParams.has("redirectParams")) {
-    redirectUrl+= atob(urlParams.get("redirectParams"));
+    redirectUrl += atob(urlParams.get("redirectParams"));
     autoRedirect = true;
 }
 
@@ -280,6 +280,15 @@ handleLocalLogout = async () => {
     await apiCall("auth/logout", undefined, "post", false);
 }
 
+handleKeyup = (e) => {
+    if (e.keyCode === 13) {
+        const loginButton = document.getElementById("login");
+        if (loginButton && !loginButton.disabled) {
+            handleLogin();
+        }
+    }
+}
+
 refreshGoogleToken = async () => {
     try {
         if (gapi && gapi.auth2) {
@@ -370,10 +379,20 @@ window.onload = async () => {
         }
     }
 
-    // Wire up buttons
+    // Wire up buttons and inputs
     const loginButton = document.getElementById("login");
     if (loginButton) {
         loginButton.onclick = handleLogin;
+    }
+
+    const usernameInput = document.getElementById("username");
+    if (usernameInput) {
+        usernameInput.onkeyup = handleKeyup;
+    }
+
+    const passwordInput = document.getElementById("password");
+    if (passwordInput) {
+        passwordInput.onkeyup = handleKeyup;
     }
 
     document.getElementById("stop").onclick = handleServerStop;
@@ -382,4 +401,5 @@ window.onload = async () => {
     document.getElementById("refresh-logs").onclick = handleLog;
     document.getElementById("hide-logs").onclick = handleHideLog;
     document.getElementById("logout").onclick = handleLogout;
+
 }

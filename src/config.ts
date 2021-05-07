@@ -27,8 +27,8 @@ const argv = yargs.options({
 const usingCustomConfig = argv.config !== defaultConfigPath;
 const testUser = argv.test;
 const configSchema = require("../config/config_schema.json");
-const ajv = new Ajv({useDefaults: false});
-const ajvWithDefaults = new Ajv({useDefaults: true});
+const ajv = new Ajv({useDefaults: false, allowUnionTypes: true});
+const ajvWithDefaults = new Ajv({useDefaults: true, allowUnionTypes: true});
 addFormats(ajv);
 addFormats(ajvWithDefaults);
 const validateConfig = ajv.compile(configSchema);
