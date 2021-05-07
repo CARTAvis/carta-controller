@@ -3,6 +3,7 @@
     "title": "Preferences",
     "description": "Schema for CARTA Preferences (Version 2)",
     "$id": "carta_preferences_2",
+    "type": "object",
     "required": [
         "version"
     ],
