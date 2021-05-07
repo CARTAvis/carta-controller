@@ -1,16 +1,18 @@
 import * as express from "express";
+import Ajv from "ajv";
+import addFormats from "ajv-formats"
 import {Collection, Db, MongoClient} from "mongodb";
 import {authGuard} from "./auth";
 import {noCache} from "./util";
 import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
-import * as Ajv from "ajv";
 
-const PREFERENCE_SCHEMA_VERSION = 1;
+const PREFERENCE_SCHEMA_VERSION = 2;
 const LAYOUT_SCHEMA_VERSION = 2;
-const preferenceSchema = require("../config/preference_schema_1.json");
+const preferenceSchema = require("../config/preference_schema_2.json");
 const layoutSchema = require("../config/layout_schema_2.json");
 const ajv = new Ajv({useDefaults: true});
+addFormats(ajv);
 const validatePreferences = ajv.compile(preferenceSchema);
 const validateLayout = ajv.compile(layoutSchema);
 

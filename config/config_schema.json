@@ -1,18 +1,9 @@
 {
-    "$id": "https://example.com/person.schema.json",
+    "$id": "carta_config",
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "CARTA configuration schema",
     "description": "Schema defining configuration options for the CARTA server",
     "type": "object",
-    "required": [
-        "authProviders",
-        "database",
-        "serverAddress",
-        "processCommand",
-        "killCommand",
-        "rootFolderTemplate",
-        "baseFolderTemplate"
-    ],
     "definitions": {
         "keyAlgorithm": {
             "description": "Algorithm used for public/private keys",
@@ -34,9 +25,9 @@
             ]
         },
         "googleAuthProvider": {
-            "type": "object",
             "title": "Google AuthProvider",
             "description": "Authentication configuration when using Google authentication",
+            "type": "object",
             "additionalProperties": false,
             "required": [
                 "clientId",
@@ -78,10 +69,68 @@
                 }
             }
         },
-        "ldapAuthProvider": {
+        "pamAuthProvider": {
+            "title": "Local AuthProvider",
+            "description": "Authentication configuration when using PAM-based authentication",
             "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "publicKeyLocation",
+                "privateKeyLocation",
+                "issuer"
+            ],
+            "properties": {
+                "publicKeyLocation": {
+                    "description": "Path to public key (in PEM format) used for verifying JWTs",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/carta_public.pem"
+                    ]
+                },
+                "privateKeyLocation": {
+                    "description": "Path to private key (in PEM format) used for signing JWTs",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/carta_private.pem"
+                    ]
+                },
+                "keyAlgorithm": {
+                    "$ref": "#/definitions/keyAlgorithm",
+                    "default": "RS256"
+                },
+                "issuer": {
+                    "description": "Issuer field for JWT",
+                    "type": "string",
+                    "examples": [
+                        "my-carta-server"
+                    ]
+                },
+                "refreshTokenAge": {
+                    "description": "Lifetime of refresh tokens",
+                    "type": "string",
+                    "default": "1w",
+                    "examples": [
+                        "1w",
+                        "15h",
+                        "2d"
+                    ]
+                },
+                "accessTokenAge": {
+                    "description": "Lifetime of access tokens",
+                    "type": "string",
+                    "default": "15m",
+                    "examples": [
+                        "90s",
+                        "1h",
+                        "15m"
+                    ]
+                }
+            }
+        },
+        "ldapAuthProvider": {
             "title": "LDAP AuthProvider",
             "description": "Authentication configuration when using LDAP-based authentication",
+            "type": "object",
             "additionalProperties": false,
             "required": [
                 "publicKeyLocation",
@@ -137,6 +186,7 @@
                 },
                 "ldapOptions": {
                     "description": "Options to path through to the LDAP auth instance",
+                    "type": "object",
                     "additionalProperties": false,
                     "required": [
                         "url",
@@ -173,9 +223,9 @@
             }
         },
         "externalAuthProvider": {
-            "type": "object",
             "title": "External AuthProvider",
             "description": "OAuth2-compatible authentication configuration",
+            "type": "object",
             "additionalProperties": false,
             "required": [
                 "issuers",
@@ -243,17 +293,21 @@
     "additionalProperties": false,
     "properties": {
         "$schema": {
-            "type": "string",
-            "description": "Reference to configuration schema file"
+            "description": "Reference to configuration schema file",
+            "type": "string"
         },
         "authProviders": {
-            "type": "object",
             "title": "AuthProviders",
             "description": "Configuration option for authentication providers",
+            "type": "object",
             "properties": {
                 "google": {
                     "description": "Google AuthProvider",
                     "$ref": "#/definitions/googleAuthProvider"
+                },
+                "pam": {
+                    "description": "PAM AuthProvider",
+                    "$ref": "#/definitions/pamAuthProvider"
                 },
                 "ldap": {
                     "description": "LDAP AuthProvider",
@@ -263,11 +317,18 @@
                     "description": "External AuthProvider",
                     "$ref": "#/definitions/externalAuthProvider"
                 }
+            },
+            "default": {
+                "pam": {
+                    "publicKeyLocation": "/etc/carta/carta_public.pem",
+                    "privateKeyLocation": "/etc/carta/carta_private.pem",
+                    "issuer": "carta"
+                }
             }
         },
         "database": {
-            "type": "object",
             "description": "Database configuration",
+            "type": "object",
             "additionalProperties": false,
             "required": [
                 "uri"
@@ -285,6 +346,10 @@
                     "type": "string",
                     "default": "CARTA"
                 }
+            },
+            "default": {
+                "uri": "mongodb://localhost:27017",
+                "databaseName": "CARTA"
             }
         },
         "serverPort": {
@@ -325,6 +390,7 @@
         },
         "backendPorts": {
             "description": "Port range to use for the CARTA backend process",
+            "type": "object",
             "additionalProperties": false,
             "default": {
                 "min": 3003,
@@ -351,15 +417,18 @@
             "description": "Path to CARTA backend executable",
             "type": "string",
             "examples": [
+                "/usr/bin/carta_backend",
                 "/usr/local/bin/carta_backend"
-            ]
+            ],
+            "default": "/usr/bin/carta_backend"
         },
         "killCommand": {
             "description": "Path to CARTA kill script",
             "type": "string",
             "examples": [
-                "/usr/local/bin/carta_kill_script.sh"
-            ]
+                "/usr/local/bin/carta-kill-script"
+            ],
+            "default": "/usr/local/bin/carta-kill-script"
         },
         "rootFolderTemplate": {
             "description": "Top-level path of directories accessible to CARTA. The `{username}` placeholder will be replaced with the username",
@@ -412,10 +481,11 @@
         },
         "dashboard": {
             "description": "Dashboard appearance configuration",
+            "type": "object",
             "properties": {
                 "backgroundColor": {
-                    "type": "string",
                     "description": "Background color for the dashboard",
+                    "type": "string",
                     "default": "#f6f8fa",
                     "examples": [
                         "red",
@@ -424,8 +494,8 @@
                     ]
                 },
                 "bannerColor": {
-                    "type": "string",
                     "description": "Background color for the institutional logo banner",
+                    "type": "string",
                     "default": "#606f7e",
                     "examples": [
                         "red",
@@ -434,28 +504,28 @@
                     ]
                 },
                 "bannerImage": {
-                    "type": "string",
-                    "description": "Path to institutional logo in PNG or SVG format"
+                    "description": "Path to institutional logo in PNG or SVG format",
+                    "type": "string"
                 },
                 "infoText": {
-                    "type": "string",
                     "description": "Text displayed before and after sign in. Plain text or HTML",
+                    "type": "string",
                     "examples": [
                         "Welcome to the server",
                         "<span>Welcome to <b>the</b> server</span>"
                     ]
                 },
                 "loginText": {
-                    "type": "string",
                     "description": "Text displayed before sign-in only. Plain text or HTML",
+                    "type": "string",
                     "examples": [
                         "Please enter your username and password",
                         "<span>Click <b>Sign in</b> to log in via Google</span>"
                     ]
                 },
                 "footerText": {
-                    "type": "string",
                     "description": "Footer text. Plain text or HTML",
+                    "type": "string",
                     "examples": [
                         "Please contact the CARTA helpdesk for more information",
                         "<span>If you would like to access the server, or have any problems, comments or suggestions, please <a href='mailto:test@test.com'>contact us.</a></span>"
