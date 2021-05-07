@@ -379,7 +379,7 @@ window.onload = async () => {
         }
     }
 
-    // Wire up buttons
+    // Wire up buttons and inputs
     const loginButton = document.getElementById("login");
     if (loginButton) {
         loginButton.onclick = handleLogin;
@@ -389,6 +389,7 @@ window.onload = async () => {
     if (usernameInput) {
         usernameInput.onkeyup = handleKeyup;
     }
+
     const passwordInput = document.getElementById("password");
     if (passwordInput) {
         passwordInput.onkeyup = handleKeyup;
