@@ -3,7 +3,7 @@
     "version": "2.0.0-dev.21.05.07",
     "description": "NodeJS-based controller for CARTA",
     "repository": "https://github.com/CARTAvis/carta-controller",
-    "homepage": "http://www.cartavis.org",
+    "homepage": "https://www.cartavis.org",
     "main": "dist/index.js",
     "bin": {
         "carta-controller": "dist/carta-controller",
