@@ -1,10 +1,11 @@
 import * as yargs from "yargs";
-import * as Ajv from "ajv";
 import * as url from "url";
 import * as fs from "fs";
 import * as path from "path";
 import * as JSONC from "jsonc-parser";
 import * as _ from "lodash";
+import Ajv from "ajv"
+import addFormats from "ajv-formats"
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
 
 const defaultConfigPath = "/etc/carta/config.json"
@@ -28,6 +29,8 @@ const testUser = argv.test;
 const configSchema = require("../config/config_schema.json");
 const ajv = new Ajv({useDefaults: false});
 const ajvWithDefaults = new Ajv({useDefaults: true});
+addFormats(ajv);
+addFormats(ajvWithDefaults);
 const validateConfig = ajv.compile(configSchema);
 const validateAndAddDefaults = ajvWithDefaults.compile(configSchema);
 
