@@ -385,12 +385,20 @@ window.onload = async () => {
         loginButton.onclick = handleLogin;
     }
 
+    const usernameInput = document.getElementById("username");
+    if (usernameInput) {
+        usernameInput.onkeyup = handleKeyup;
+    }
+    const passwordInput = document.getElementById("password");
+    if (passwordInput) {
+        passwordInput.onkeyup = handleKeyup;
+    }
+
     document.getElementById("stop").onclick = handleServerStop;
     document.getElementById("open").onclick = handleOpenCarta;
     document.getElementById("show-logs").onclick = handleLog;
     document.getElementById("refresh-logs").onclick = handleLog;
     document.getElementById("hide-logs").onclick = handleHideLog;
     document.getElementById("logout").onclick = handleLogout;
-    document.getElementById("username").onkeyup = handleKeyup;
-    document.getElementById("password").onkeyup = handleKeyup;
+
 }
