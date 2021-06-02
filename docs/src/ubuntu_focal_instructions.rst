@@ -68,7 +68,7 @@ Install CARTA controller
 .. code-block:: shell
 
     # Install carta-controller (includes frontend config)
-    sudo npm install -g --unsafe-perm carta-controller@beta
+    sudo npm install -g --unsafe-perm carta-controller@rc
     
     # Install PM2 node service
     sudo npm install -g pm2
