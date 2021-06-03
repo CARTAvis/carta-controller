@@ -16,7 +16,7 @@ By default, the controller runs on port 8000. It should be run behind a proxy, s
 
 MongoDB is required for storing user preferences, layouts and (in the near future) controller metrics.
 
-You also need a working `NodeJS LTS <https://github.com/nvm-sh/nvm#long-term-support>`_ installation with NPM. Use ``npm install`` to install all Node dependencies.
+You also need a working `NodeJS LTS <https://nodejs.org/en/about/releases/>`_ installation with NPM. Use ``npm install`` to install all Node dependencies.
 
 .. _authentication:
 
