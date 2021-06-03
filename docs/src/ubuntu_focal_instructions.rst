@@ -62,13 +62,14 @@ Install CARTA controller
 ------------------------
 
 .. note::
-	Currently supported versions of NodeJS are v12, v14 and v16. In the example below we install the latest LTS version of NodeJS from the NodeSource repo.
-.. code-block:: shell
-	# Install the latest NodeJS LTS repo
-	curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+    Currently supported versions of NodeJS are v12, v14 and v16. In the example below we install the latest LTS version of NodeJS from the NodeSource repo. Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a local install.
 
-	# Install NodeJS, NPM and tools required to compile native addons
-	sudo apt-get install -y nodejs build-essential
+.. code-block:: shell
+    # Install the latest NodeJS LTS repo
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+
+    # Install NodeJS, NPM and tools required to compile native addons
+    sudo apt-get install -y nodejs build-essential
 
     # Install carta-controller (includes frontend config)
     sudo npm install -g --unsafe-perm carta-controller@dev
