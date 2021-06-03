@@ -78,7 +78,7 @@ function testLdap(authConf: CartaLdapAuthConfig, username: string) {
 }
 
 function testPam(authConf: CartaLocalAuthConfig, username: string) {
-    const {pamAuthenticate} = require("node-linux-pam-fork");
+    const {pamAuthenticate} = require("node-linux-pam");
 
     return new Promise<void>((resolve, reject) => {
         if (authConf) {
