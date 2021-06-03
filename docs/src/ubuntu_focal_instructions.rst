@@ -23,7 +23,7 @@ Install the CARTA backend and other required packages
     sudo apt-get install carta-backend-beta
     
     # Install additional packages
-    sudo apt-get install nginx g++ mongodb make nodejs npm
+    sudo apt-get install nginx g++ mongodb make curl
 
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,9 +63,15 @@ Install CARTA controller
 
 .. note::
 
-    On Ubuntu Bionic, do not pass the ``--unsafe-perm`` flag to ``npm``. This is also unnecessary if you use a custom local installation of ``npm`` with a version of at least 7.0.
+    Currently supported versions of NodeJS are v12, v14 and v16. In the example below we install the latest LTS version of NodeJS from the NodeSource repo. Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a local install.
 
 .. code-block:: shell
+
+    # Install the latest NodeJS LTS repo
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+
+    # Install NodeJS, NPM and tools required to compile native addons
+    sudo apt-get install -y nodejs build-essential
 
     # Install carta-controller (includes frontend config)
     sudo npm install -g --unsafe-perm carta-controller@rc
