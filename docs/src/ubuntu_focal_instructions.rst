@@ -20,7 +20,7 @@ Install the CARTA backend and other required packages
     sudo apt-get update
 
     # Install the development backend package with all dependencies
-    sudo apt-get install carta-backend-beta
+    sudo apt-get install carta-backend
     
     # Install additional packages
     sudo apt-get install nginx g++ mongodb make curl
