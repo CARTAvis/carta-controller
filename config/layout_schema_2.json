@@ -2,7 +2,6 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Layout",
     "description": "Schema for CARTA Layout (Version 2)",
-    "type": "object",
     "$id": "carta_layout_2",
     "definitions": {
         "percentage-value": {
@@ -13,11 +12,7 @@
         },
         "plot-type": {
             "description": "Describes a plot type",
-            "enum": [
-                "Steps",
-                "Lines",
-                "Points"
-            ]
+            "enum": ["Steps", "Lines", "Points"]
         },
         "line-width": {
             "description": "Describes a plot line width",
@@ -40,54 +35,23 @@
         "spatial-coord": {
             "description": "Spatial coordinate",
             "type": "string",
-            "enum": [
-                "x",
-                "Ix",
-                "Qx",
-                "Ux",
-                "Vx",
-                "y",
-                "Iy",
-                "Qy",
-                "Uy",
-                "Vy"
-            ]
+            "enum": ["x", "Ix", "Qx", "Ux", "Vx", "y", "Iy", "Qy", "Uy", "Vy"]
         },
         "spectral-coord": {
             "description": "Spectral coordinate",
             "type": "string",
-            "enum": [
-                "z",
-                "Iz",
-                "Qz",
-                "Uz",
-                "Vz"
-            ]
+            "enum": ["z", "Iz", "Qz", "Uz", "Vz"]
         },
         "basic-widget": {
             "description": "Widgets that have no associated settings",
-            "type": "object",
-            "required": [
-                "type",
-                "id"
-            ],
+            "required": ["type", "id"],
             "properties": {
                 "type": {
                     "const": "component"
                 },
                 "id": {
                     "type": "string",
-                    "enum": [
-                        "layer-list",
-                        "log",
-                        "animator",
-                        "region-list",
-                        "image-view",
-                        "stats",
-                        "spectral-line-query",
-                        "catalog-overlay",
-                        "catalog-plot"
-                    ]
+                    "enum": ["floating-settings", "layer-list", "log", "animator", "region-list", "image-view", "stats", "spectral-line-query", "catalog-overlay", "catalog-plot"]
                 },
                 "width": {
                     "$ref": "#/definitions/percentage-value"
@@ -99,11 +63,7 @@
         },
         "spectral-profiler": {
             "description": "Spectral profiler widgets",
-            "type": "object",
-            "required": [
-                "type",
-                "id"
-            ],
+            "required": ["type", "id"],
             "properties": {
                 "type": {
                     "const": "component"
@@ -112,7 +72,6 @@
                     "const": "spectral-profiler"
                 },
                 "widgetSettings": {
-                    "type": "object",
                     "properties": {
                         "coordinate": {
                             "$ref": "#/definitions/spectral-coord"
@@ -156,11 +115,7 @@
         },
         "spatial-profiler": {
             "description": "Spatial profiler widgets",
-            "type": "object",
-            "required": [
-                "type",
-                "id"
-            ],
+            "required": ["type", "id"],
             "properties": {
                 "type": {
                     "const": "component"
@@ -169,7 +124,6 @@
                     "const": "spatial-profiler"
                 },
                 "widgetSettings": {
-                    "type": "object",
                     "properties": {
                         "coordinate": {
                             "$ref": "#/definitions/spatial-coord"
@@ -220,11 +174,7 @@
         },
         "render-config": {
             "description": "Render config widgets",
-            "type": "object",
-            "required": [
-                "type",
-                "id"
-            ],
+            "required": ["type", "id"],
             "properties": {
                 "type": {
                     "const": "component"
@@ -233,7 +183,6 @@
                     "const": "render-config"
                 },
                 "widgetSettings": {
-                    "type": "object",
                     "properties": {
                         "primaryLineColor": {
                             "type": "string"
@@ -280,11 +229,7 @@
         },
         "histogram": {
             "description": "Histogram widgets",
-            "type": "object",
-            "required": [
-                "type",
-                "id"
-            ],
+            "required": ["type", "id"],
             "properties": {
                 "type": {
                     "const": "component"
@@ -293,7 +238,6 @@
                     "const": "histogram"
                 },
                 "widgetSettings": {
-                    "type": "object",
                     "properties": {
                         "primaryLineColor": {
                             "type": "string"
@@ -334,11 +278,7 @@
         },
         "stokes": {
             "description": "Stokes analysis widgets",
-            "type": "object",
-            "required": [
-                "type",
-                "id"
-            ],
+            "required": ["type", "id"],
             "properties": {
                 "type": {
                     "const": "component"
@@ -347,7 +287,6 @@
                     "const": "stokes"
                 },
                 "widgetSettings": {
-                    "type": "object",
                     "properties": {
                         "primaryLineColor": {
                             "type": "string"
@@ -412,18 +351,11 @@
         "gl-container": {
             "description": "A GoldenLayout container",
             "type": "object",
-            "required": [
-                "type",
-                "content"
-            ],
+            "required": ["type", "content"],
             "additionalProperties": false,
             "properties": {
                 "type": {
-                    "enum": [
-                        "row",
-                        "column",
-                        "stack"
-                    ]
+                    "enum": ["row", "column", "stack"]
                 },
                 "content": {
                     "type": "array",
@@ -444,15 +376,15 @@
                 },
                 "height": {
                     "$ref": "#/definitions/percentage-value"
+                },
+                "activeItemIndex": {
+                    "type": "integer",
+                    "minimum": 0
                 }
             }
         }
     },
-    "required": [
-        "layoutVersion",
-        "docked",
-        "floating"
-    ],
+    "required": ["layoutVersion", "docked", "floating"],
     "properties": {
         "layoutVersion": {
             "description": "The version of the layout contained",
@@ -473,7 +405,6 @@
                         "$ref": "#/definitions/carta-widget"
                     },
                     {
-                        "type": "object",
                         "properties": {
                             "defaultX": {
                                 "type": "number"
