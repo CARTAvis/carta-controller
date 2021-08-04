@@ -187,7 +187,7 @@
                 "ldapOptions": {
                     "description": "Options to path through to the LDAP auth instance",
                     "type": "object",
-                    "additionalProperties": false,
+                    "additionalProperties": true,
                     "required": [
                         "url",
                         "searchBase"
@@ -217,6 +217,39 @@
                             "description": "Whether to automatically reconnect to LDAP",
                             "type": "boolean",
                             "default": true
+                        },
+                        "bindProperty": {
+                            "description": "Property of the LDAP user object to use when binding to verify the password",
+                            "type": "string",
+                            "default": "dn"
+                        },
+                        "searchScope" : {
+                            "description": "Scope of the search",
+                            "type": "string",
+                            "enum": ["base", "one", "sub"],
+                            "default": "sub"
+                        },
+                        "bindDN": {
+                            "description": "Admin connection DN, e.g. uid=myapp,ou=users,dc=example,dc=org. If not given at all, admin client is not bound.",
+                            "type": "string"
+                        },
+                        "bindCredentials": {
+                            "description": "Password for bindDN",
+                            "type": "string"
+                        },
+                        "cache": {
+                            "description": "If true, then up to 100 credentials at a time will be cached for 5 minutes",
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "strictDN": {
+                            "description": "Force strict DN parsing for client methods",
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "idleTimeout": {
+                            "description": "Milliseconds after last activity before client emits idle event",
+                            "type": "number"
                         }
                     }
                 }
