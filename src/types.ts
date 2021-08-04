@@ -1,4 +1,5 @@
 import * as express from "express";
+import * as LdapAuth from "ldapauth-fork";
 import {Algorithm} from "jsonwebtoken";
 
 export interface CartaLocalAuthConfig {
@@ -12,13 +13,7 @@ export interface CartaLocalAuthConfig {
 
 export interface CartaLdapAuthConfig extends CartaLocalAuthConfig {
     // Options to pass through to the LDAP Auth instance
-    ldapOptions: {
-        url: string;
-        searchBase: string;
-        searchFilter: string;
-        starttls: boolean;
-        reconnect: boolean;
-    }
+    ldapOptions: LdapAuth.Options
 }
 
 export interface CartaGoogleAuthConfig {
