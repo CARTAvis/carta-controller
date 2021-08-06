@@ -10,7 +10,7 @@ import * as tcpPortUsed from "tcp-port-used";
 import {ChildProcess, spawn, spawnSync} from "child_process";
 import {IncomingMessage} from "http";
 import {LinkedList} from "mnemonist";
-import {delay, noCache} from "./util";
+import {delay, noCache, verboseError} from "./util";
 import {authGuard, getUser, verifyToken} from "./auth";
 import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
@@ -84,6 +84,7 @@ async function nextAvailablePort() {
                     console.log(`Skipping stale port ${p}`)
                 }
             } catch (err) {
+                verboseError(err);
                 console.log(`Error checking status for port ${p}: ${err.message}`);
             }
         }
@@ -151,6 +152,7 @@ async function handleStartServer(req: AuthenticatedRequest, res: express.Respons
                     deleteProcess(username);
                 }
             } catch (e) {
+                verboseError(e);
                 console.log(`Error killing existing process belonging to user ${username}`);
                 return next({statusCode: 400, message: "Problem killing existing process"});
             }
@@ -162,6 +164,7 @@ async function handleStartServer(req: AuthenticatedRequest, res: express.Respons
             await startServer(username);
             return res.json({success: true});
         } catch (e) {
+            verboseError(e);
             return next(e);
         }
     }
@@ -217,6 +220,7 @@ async function startServer(username: string) {
                     appendLog(username, line);
                 });
             } catch (err) {
+                verboseError(err);
                 console.error(`Could not create log file at ${logLocation}. Please ensure folder exists and permissions are set correctly`);
             }
         } else {
@@ -250,6 +254,7 @@ async function startServer(username: string) {
             return;
         }
     } catch (e) {
+        verboseError(e);
         console.log(`Problem starting process for user ${username}`);
         logStream?.close();
         if (e.statusCode && e.message) {
@@ -281,6 +286,7 @@ async function handleStopServer(req: AuthenticatedRequest, res: express.Response
             return next({statusCode: 400, message: `No existing process belonging to user ${req.username}`});
         }
     } catch (e) {
+        verboseError(e);
         console.log(`Error killing existing process belonging to user ${req.username}`);
         return next({statusCode: 500, message: "Problem killing existing process"});
     }
