@@ -21,11 +21,16 @@ const argv = yargs.options({
         alias: "t",
         requiresArg: true,
         description: "Test configuration with the provided user"
+    },
+    verbose: {
+        type: "boolean",
+        alias: "v"
     }
 }).argv as CartaCommandLineOptions;
 
 const usingCustomConfig = argv.config !== defaultConfigPath;
 const testUser = argv.test;
+const verboseOutput = argv.verbose;
 const configSchema = require("../config/config_schema.json");
 const ajv = new Ajv({useDefaults: false, allowUnionTypes: true});
 const ajvWithDefaults = new Ajv({useDefaults: true, allowUnionTypes: true});
@@ -121,4 +126,4 @@ if (runtimeConfig.tokenRefreshAddress) {
     runtimeConfig.authPath = authUrl.pathname ?? "";
 }
 
-export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser};
+export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser, verboseOutput};

@@ -3,6 +3,7 @@ import * as userid from "userid";
 import * as LdapAuth from "ldapauth-fork";
 import {CartaLdapAuthConfig} from "../types";
 import {addTokensToResponse} from "./local";
+import {verboseError, verboseLog} from "../util";
 
 
 let ldap: LdapAuth;
@@ -30,17 +31,19 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
         const handleAuth = (err: Error | string, user: any) => {
             if (err) {
                 console.error(err);
-            }
-            if (err || user?.uid !== username) {
                 return res.status(403).json({statusCode: 403, message: "Invalid username/password combo"});
-            } else {
-                try {
-                    const uid = userid.uid(username);
-                    console.log(`Authenticated as user ${username} with uid ${uid} using LDAP`);
-                    return addTokensToResponse(authConf, username, res);
-                } catch (e) {
-                    return res.status(403).json({statusCode: 403, message: "User does not exist"});
-                }
+            }
+            if (user?.uid !== username) {
+                console.warn(`Returned user "uid ${user?.uid}" does not match username "${username}"`);
+                verboseLog(user);
+            }
+            try {
+                const uid = userid.uid(username);
+                console.log(`Authenticated as user ${username} with uid ${uid} using LDAP`);
+                return addTokensToResponse(authConf, username, res);
+            } catch (e) {
+                verboseError(e);
+                return res.status(403).json({statusCode: 403, message: "User does not exist"});
             }
         }
 

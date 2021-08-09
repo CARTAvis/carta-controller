@@ -101,6 +101,7 @@ export interface CartaCommandLineOptions {
     [x: string]: unknown;
     config: string;
     test: string;
+    verbose: boolean;
 }
 
 export interface CartaRuntimeConfig {

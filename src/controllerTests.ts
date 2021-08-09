@@ -8,7 +8,7 @@ import * as chalk from "chalk";
 import * as moment from "moment";
 import {ServerConfig, testUser} from "./config";
 import {ChildProcess, spawn, spawnSync} from "child_process";
-import {delay} from "./util";
+import {delay, verboseError, verboseLog} from "./util";
 import {client} from "websocket";
 import {CartaLdapAuthConfig, CartaLocalAuthConfig} from "./types";
 import {generateToken} from "./auth/local";
@@ -48,6 +48,7 @@ function testLog(username: string) {
         fs.unlinkSync(logLocation);
         console.log(logSymbols.success, `Checked log writing for user ${username}`);
     } catch (err) {
+        verboseError(err);
         throw new Error(`Could not create log file at ${logLocation} for user ${username}. Please check your config file's logFileTemplate option`);
     }
 }
@@ -60,17 +61,23 @@ function testLdap(authConf: CartaLdapAuthConfig, username: string) {
                 ldap = new LdapAuth(authConf.ldapOptions);
                 setTimeout(() => {
                     read({prompt: `Password for user ${username}:`, silent: true}, (er: any, password: string) => {
-                        ldap.authenticate(username, password, (error, result) => {
+                        ldap.authenticate(username, password, (error, user) => {
                             if (error) {
+                                verboseError(error);
                                 reject(new Error(`Could not authenticate as user ${username}. Please check your config file's ldapOptions section!`));
                             } else {
                                 console.log(logSymbols.success, `Checked LDAP connection for user ${username}`);
+                                if (user?.uid !== username) {
+                                    console.warn(logSymbols.warning, `Returned user "uid ${user?.uid}" does not match username "${username}"`);
+                                    verboseLog(user);
+                                }
                                 resolve();
                             }
                         });
                     })
                 }, 5000);
             } catch (e) {
+                verboseError(e);
                 reject(new Error("Cannot create LDAP object. Please check your config file's ldapOptions section!"));
             }
         }
@@ -85,9 +92,10 @@ function testPam(authConf: CartaLocalAuthConfig, username: string) {
             read({prompt: `Password for user ${username}:`, silent: true}, (er: any, password: string) => {
                 pamAuthenticate({username, password}, (err: Error | string, code: number) => {
                     if (err) {
-                        reject(new Error(`Could not authenticate as user ${username}`));
+                        verboseError(err);
+                        reject(new Error(`Could not authenticate as user ${username}. Error code ${code}`));
                     } else {
-                        console.log(logSymbols.success, `Checked LDAP connection for user ${username}`);
+                        console.log(logSymbols.success, `Checked PAM connection for user ${username}`);
                         resolve();
                     }
                 });
@@ -102,6 +110,7 @@ async function testDatabase() {
         const db = await client.db(ServerConfig.database.databaseName);
         await db.listCollections({}, {nameOnly: true}).hasNext();
     } catch (e) {
+        verboseError(e);
         throw new Error("Cannot connect to MongoDB. Please check your config file's database section!");
     }
     console.log(logSymbols.success, "Checked database connection");
@@ -112,6 +121,7 @@ function testUid(username: string) {
     try {
         uid = userid.uid(username);
     } catch (e) {
+        verboseError(e);
         throw new Error(`Cannot verify uid of user ${username}`);
     }
     if (!uid) {
@@ -125,7 +135,7 @@ function testToken(authConf: CartaLocalAuthConfig, username: string) {
     try {
         token = generateToken(authConf, username, false);
     } catch (e) {
-        console.log(e);
+        verboseError(e);
         throw new Error(`Cannot generate access token. Please check your config file's ldap auth section!`);
     }
     if (!token) {
@@ -143,6 +153,7 @@ function testFrontend() {
     try {
         indexContents = fs.readFileSync(ServerConfig.frontendPath + "/index.html").toString();
     } catch (e) {
+        verboseError(e);
         throw new Error(`Cannot access frontend at ${ServerConfig.frontendPath}`);
     }
 
@@ -172,10 +183,12 @@ async function testBackendStartup(username: string) {
         args = args.concat(ServerConfig.additionalArgs);
     }
 
+    verboseLog(`running sudo ${args.join(" ")}`);
+
     const backendProcess = spawn("sudo", args);
     await delay(2000);
     if (backendProcess.signalCode) {
-        throw new Error("Backend process terminated. Please check your sudoers config, processCommand option and additionalArgs section")
+        throw new Error(`Backend process terminated with code ${backendProcess.signalCode}. Please check your sudoers config, processCommand option and additionalArgs section`);
     } else {
         console.log(logSymbols.success, "Backend process started successfully");
     }
@@ -199,11 +212,13 @@ async function testBackendStartup(username: string) {
 
 async function testKillScript(username: string, existingProcess: ChildProcess) {
     if (existingProcess.signalCode) {
-        throw new Error("Backend process already killed");
+        throw new Error(`Backend process already killed, signal code ${existingProcess.signalCode}`);
     }
-    const res = spawnSync("sudo", ["-u", `${username}`, ServerConfig.killCommand, `${existingProcess.pid}`]);
+    const args = ["-u", `${username}`, ServerConfig.killCommand, `${existingProcess.pid}`];
+    verboseLog(`running sudo ${args.join(" ")}`);
+    const res = spawnSync("sudo", args);
     if (res.status) {
-        throw  new Error("Cannot execute kill script. Please check your killCommand option");
+        throw  new Error(`Cannot execute kill script (error status ${res.status}. Please check your killCommand option`);
     }
     // Delay to allow the parent process to exit
     await delay(1000);

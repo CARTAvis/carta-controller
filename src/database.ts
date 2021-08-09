@@ -3,7 +3,7 @@ import Ajv from "ajv";
 import addFormats from "ajv-formats"
 import {Collection, Db, MongoClient} from "mongodb";
 import {authGuard} from "./auth";
-import {noCache} from "./util";
+import {noCache, verboseError} from "./util";
 import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
 
@@ -52,7 +52,7 @@ export async function initDB() {
             await updateUsernameIndex(preferenceCollection, true);
             console.log(`Connected to server ${ServerConfig.database.uri} and database ${ServerConfig.database.databaseName}`);
         } catch (err) {
-            console.log(err);
+            verboseError(err);
             console.error("Error connecting to database");
             process.exit(1);
         }
@@ -79,7 +79,7 @@ async function handleGetPreferences(req: AuthenticatedRequest, res: express.Resp
             return next({statusCode: 500, message: "Problem retrieving preferences"});
         }
     } catch (err) {
-        console.log(err);
+        verboseError(err);
         return next({statusCode: 500, message: "Problem retrieving preferences"});
     }
 }
@@ -115,7 +115,7 @@ async function handleSetPreferences(req: AuthenticatedRequest, res: express.Resp
             return next({statusCode: 500, message: "Problem updating preferences"});
         }
     } catch (err) {
-        console.log(err.errmsg);
+        verboseError(err);
         return next({statusCode: 500, message: err.errmsg});
     }
 }
@@ -148,7 +148,7 @@ async function handleClearPreferences(req: AuthenticatedRequest, res: express.Re
             return next({statusCode: 500, message: "Problem clearing preferences"});
         }
     } catch (err) {
-        console.log(err);
+        verboseError(err);
         return next({statusCode: 500, message: "Problem clearing preferences"});
     }
 }
@@ -172,7 +172,7 @@ async function handleGetLayouts(req: AuthenticatedRequest, res: express.Response
         }
         res.json({success: true, layouts});
     } catch (err) {
-        console.log(err);
+        verboseError(err);
         return next({statusCode: 500, message: "Problem retrieving layouts"});
     }
 }
@@ -207,7 +207,7 @@ async function handleSetLayout(req: AuthenticatedRequest, res: express.Response,
             return next({statusCode: 500, message: "Problem updating layout"});
         }
     } catch (err) {
-        console.log(err.errmsg);
+        verboseError(err);
         return next({statusCode: 500, message: err.errmsg});
     }
 }
