@@ -16,20 +16,19 @@ import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
 
 type ProcessInfo = {
-    process: ChildProcess,
-    port: number,
-    headerToken: string,
-    ready: boolean
+    process: ChildProcess;
+    port: number;
+    headerToken: string;
+    ready: boolean;
 };
-
 
 const processMap = new Map<string, ProcessInfo>();
 const logMap = new Map<string, LinkedList<string>>();
 const LOG_LIMIT = 1000;
 
 const userProcessesMetric = io.metric({
-    name: 'Active Backend Processes',
-    id: 'app/realtime/backend',
+    name: "Active Backend Processes",
+    id: "app/realtime/backend"
 });
 
 function appendLog(username: string, output: string) {
@@ -72,7 +71,7 @@ async function nextAvailablePort() {
     let existingPorts = new Map<number, boolean>();
     processMap.forEach(value => {
         existingPorts.set(value.port, true);
-    })
+    });
 
     for (let p = ServerConfig.backendPorts.min; p < ServerConfig.backendPorts.max; p++) {
         if (!existingPorts.has(p)) {
@@ -81,7 +80,7 @@ async function nextAvailablePort() {
                 if (!portUsed) {
                     return p;
                 } else {
-                    console.log(`Skipping stale port ${p}`)
+                    console.log(`Skipping stale port ${p}`);
                 }
             } catch (err) {
                 verboseError(err);
@@ -102,7 +101,7 @@ function handleCheckServer(req: AuthenticatedRequest, res: express.Response) {
     if (existingProcess) {
         res.json({
             success: true,
-            running: true,
+            running: true
         });
     } else {
         res.json({
@@ -181,13 +180,18 @@ async function startServer(username: string) {
 
         let args = [
             "--preserve-env=CARTA_AUTH_TOKEN",
-            "-u", `${username}`,
+            "-u",
+            `${username}`,
             ServerConfig.processCommand,
-            "--no_http", "true",
-            "--no_log", ServerConfig.logFileTemplate ? "true" : "false",
-            "--port", `${port}`,
-            "--top_level_folder", ServerConfig.rootFolderTemplate.replace("{username}", username),
-            ServerConfig.baseFolderTemplate.replace("{username}", username),
+            "--no_http",
+            "true",
+            "--no_log",
+            ServerConfig.logFileTemplate ? "true" : "false",
+            "--port",
+            `${port}`,
+            "--top_level_folder",
+            ServerConfig.rootFolderTemplate.replace("{username}", username),
+            ServerConfig.baseFolderTemplate.replace("{username}", username)
         ];
 
         if (ServerConfig.additionalArgs) {
@@ -201,21 +205,18 @@ async function startServer(username: string) {
         let logLocation;
 
         if (ServerConfig.logFileTemplate) {
-            logLocation = ServerConfig.logFileTemplate
-                .replace("{username}", username)
-                .replace("{pid}", child.pid.toString())
-                .replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
+            logLocation = ServerConfig.logFileTemplate.replace("{username}", username).replace("{pid}", child.pid.toString()).replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
 
             try {
                 logStream = fs.createWriteStream(logLocation, {flags: "a"});
                 child.stdout.pipe(logStream);
                 child.stderr.pipe(logStream);
-                child.stdout.on('data', function (data) {
+                child.stdout.on("data", function (data) {
                     const line = data.toString() as string;
                     appendLog(username, line);
                 });
 
-                child.stderr.on('data', function (data) {
+                child.stderr.on("data", function (data) {
                     const line = data.toString() as string;
                     appendLog(username, line);
                 });
@@ -225,13 +226,13 @@ async function startServer(username: string) {
             }
         } else {
             logLocation = "stdout";
-            child.stdout.on('data', function (data) {
+            child.stdout.on("data", function (data) {
                 const line = data.toString() as string;
                 appendLog(username, line);
                 console.log(line);
             });
 
-            child.stderr.on('data', function (data) {
+            child.stderr.on("data", function (data) {
                 const line = data.toString() as string;
                 appendLog(username, line);
                 console.log(line);
@@ -350,7 +351,7 @@ export const createUpgradeHandler = (server: httpProxy) => async (req: IncomingM
         console.log(err);
         return socket.end();
     }
-}
+};
 
 export const serverRouter = express.Router();
 serverRouter.post("/start", authGuard, noCache, handleStartServer);

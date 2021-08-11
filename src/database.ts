@@ -1,6 +1,6 @@
 import * as express from "express";
 import Ajv from "ajv";
-import addFormats from "ajv-formats"
+import addFormats from "ajv-formats";
 import {Collection, Db, MongoClient} from "mongodb";
 import {authGuard} from "./auth";
 import {noCache, verboseError} from "./util";

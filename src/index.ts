@@ -1,6 +1,6 @@
-import * as express from 'express';
+import * as express from "express";
 import * as bodyParser from "body-parser";
-import * as bearerToken from "express-bearer-token"
+import * as bearerToken from "express-bearer-token";
 import * as cookieParser from "cookie-parser";
 import * as httpProxy from "http-proxy";
 import * as http from "http";
@@ -18,14 +18,17 @@ import {runTests} from "./controllerTests";
 import logSymbols = require("log-symbols");
 
 if (testUser) {
-    runTests(testUser).then(() => {
-        console.log(chalk.green.bold(`Controller tests with user ${testUser} succeeded`));
-        process.exit(0);
-    }, err => {
-        console.error(logSymbols.error, chalk.red.bold(err));
-        console.log(chalk.red.bold(`Controller tests with user ${testUser} failed`));
-        process.exit(1);
-    });
+    runTests(testUser).then(
+        () => {
+            console.log(chalk.green.bold(`Controller tests with user ${testUser} succeeded`));
+            process.exit(0);
+        },
+        err => {
+            console.error(logSymbols.error, chalk.red.bold(err));
+            console.log(chalk.red.bold(`Controller tests with user ${testUser} failed`));
+            process.exit(1);
+        }
+    );
 } else {
     let app = express();
     app.use(bodyParser.urlencoded({extended: true}));
@@ -47,9 +50,9 @@ if (testUser) {
     // Prevent caching of the frontend HTML code
     const staticHeaderHandler = (res: express.Response, path: string) => {
         if (path.endsWith(".html")) {
-            res.setHeader("Cache-Control", 'no-cache');
+            res.setHeader("Cache-Control", "no-cache");
         }
-    }
+    };
 
     if (ServerConfig.frontendPath) {
         console.log(chalk.green.bold(`Serving CARTA frontend from ${ServerConfig.frontendPath}`));
@@ -64,7 +67,7 @@ if (testUser) {
     let bannerDataUri: string;
     if (ServerConfig.dashboard?.bannerImage) {
         const isBannerSvg = ServerConfig.dashboard.bannerImage.toLowerCase().endsWith(".svg");
-        const bannerDataBase64 = fs.readFileSync(ServerConfig.dashboard.bannerImage, 'base64');
+        const bannerDataBase64 = fs.readFileSync(ServerConfig.dashboard.bannerImage, "base64");
         if (isBannerSvg) {
             bannerDataUri = "data:image/svg+xml;base64," + bannerDataBase64;
         } else {
@@ -124,7 +127,6 @@ if (testUser) {
         }
     });
 
-
     async function init() {
         await initDB();
         const onListenStart = () => {
@@ -141,5 +143,3 @@ if (testUser) {
 
     init().then(() => console.log(chalk.green.bold(`Server initialised successfully at ${ServerConfig.serverAddress ?? "localhost"}`)));
 }
-
-

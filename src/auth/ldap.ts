@@ -5,12 +5,11 @@ import {CartaLdapAuthConfig} from "../types";
 import {addTokensToResponse} from "./local";
 import {verboseError, verboseLog} from "../util";
 
-
 let ldap: LdapAuth;
 
 export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
     ldap = new LdapAuth(authConf.ldapOptions);
-    ldap.on('error', err => console.error('LdapAuth: ', err));
+    ldap.on("error", err => console.error("LdapAuth: ", err));
     setTimeout(() => {
         const ldapConnected = (ldap as any)?._userClient?.connected;
         if (ldapConnected) {
@@ -45,7 +44,7 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
                 verboseError(e);
                 return res.status(403).json({statusCode: 403, message: "User does not exist"});
             }
-        }
+        };
 
         ldap.authenticate(username, password, (error, user) => {
             const errorObj = error as Error;
@@ -54,7 +53,7 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
                 console.log(`TLS error encountered. Reconnecting to the LDAP server!`);
                 ldap.close();
                 ldap = new LdapAuth(authConf.ldapOptions);
-                ldap.on('error', err => console.error('LdapAuth: ', err));
+                ldap.on("error", err => console.error("LdapAuth: ", err));
                 // Wait for the connection to be re-established
                 setTimeout(() => {
                     ldap.authenticate(username, password, handleAuth);

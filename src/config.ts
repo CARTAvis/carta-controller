@@ -4,11 +4,11 @@ import * as fs from "fs";
 import * as path from "path";
 import * as JSONC from "jsonc-parser";
 import * as _ from "lodash";
-import Ajv from "ajv"
-import addFormats from "ajv-formats"
+import Ajv from "ajv";
+import addFormats from "ajv-formats";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
 
-const defaultConfigPath = "/etc/carta/config.json"
+const defaultConfigPath = "/etc/carta/config.json";
 const argv = yargs.options({
     config: {
         type: "string",
@@ -56,7 +56,7 @@ try {
         }
     }
 
-    const configDir = path.join(path.dirname(argv.config), "config.d")
+    const configDir = path.join(path.dirname(argv.config), "config.d");
     if (fs.existsSync(configDir)) {
         const files = fs.readdirSync(configDir)?.sort();
         for (const file of files) {
@@ -66,7 +66,7 @@ try {
             }
             const jsonString = fs.readFileSync(path.join(configDir, file)).toString();
             const additionalConfig: any = JSONC.parse(jsonString) as CartaServerConfig;
-            const isPartialConfigValid = validateConfig(additionalConfig,);
+            const isPartialConfigValid = validateConfig(additionalConfig);
             if (isPartialConfigValid) {
                 serverConfig = _.merge(serverConfig, additionalConfig);
                 console.log(`Adding additional config file config.d/${file}`);
@@ -106,7 +106,6 @@ if (!serverConfig.rootFolderTemplate) {
 if (!serverConfig.baseFolderTemplate) {
     serverConfig.baseFolderTemplate = serverConfig.rootFolderTemplate;
 }
-
 
 // Construct runtime config
 const runtimeConfig: CartaRuntimeConfig = {};

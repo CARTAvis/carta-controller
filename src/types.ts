@@ -13,7 +13,7 @@ export interface CartaLocalAuthConfig {
 
 export interface CartaLdapAuthConfig extends CartaLocalAuthConfig {
     // Options to pass through to the LDAP Auth instance
-    ldapOptions: LdapAuth.Options
+    ldapOptions: LdapAuth.Options;
 }
 
 export interface CartaGoogleAuthConfig {
@@ -50,7 +50,7 @@ export interface CartaServerConfig {
     database: {
         uri: string;
         databaseName?: string;
-    }
+    };
     // Port to listen on. It is advised to listen on a port other than 80 or 443, behind an SSL proxy
     serverPort: number | string;
     // Host interface to listen on. If empty, all interfaces are used
@@ -65,7 +65,7 @@ export interface CartaServerConfig {
     backendPorts: {
         min: number;
         max: number;
-    }
+    };
     processCommand: string;
     // The {username} placeholder will be replaced with the username
     rootFolderTemplate: string;
@@ -93,9 +93,8 @@ export interface CartaServerConfig {
         loginText?: string;
         // Footer text. Plain text or HTML
         footerText?: string;
-    }
+    };
 }
-
 
 export interface CartaCommandLineOptions {
     [x: string]: unknown;
@@ -115,7 +114,7 @@ export interface CartaRuntimeConfig {
 
 export type RequestHandler = (req: express.Request, res: express.Response) => void;
 export type AsyncRequestHandler = (req: express.Request, res: express.Response, next: express.NextFunction) => void;
-export type AuthenticatedRequest = express.Request & { username?: string };
+export type AuthenticatedRequest = express.Request & {username?: string};
 
 // Token verifier function
 export type Verifier = (cookieString: string) => any;
