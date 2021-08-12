@@ -24,7 +24,7 @@ Detailed :ref:`step-by-step instructions<focal_instructions>` are provided for U
 
 .. |backend-github| image:: https://img.shields.io/badge/CARTA%20Version-3.0.0--beta.1-brightgreen
         :alt: View this backend version on GitHub
-        :target: https://github.com/CARTAvis/carta-backend/releases/tag/v3.0.0-beta.1
+        :target: https://github.com/CARTAvis/carta-backend/releases/tag/v3.0.0-beta.1b
 
 .. |npm-package| image:: https://img.shields.io/npm/v/carta-controller/dev.svg?style=flat
         :alt: View this project on npm
