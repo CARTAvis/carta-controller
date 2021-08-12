@@ -36,10 +36,7 @@ export async function runTests(username: string) {
 }
 
 function testLog(username: string) {
-    const logLocation = ServerConfig.logFileTemplate
-        .replace("{username}", username)
-        .replace("{pid}", "9999")
-        .replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
+    const logLocation = ServerConfig.logFileTemplate.replace("{username}", username).replace("{pid}", "9999").replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
 
     try {
         const logStream = fs.createWriteStream(logLocation, {flags: "a"});
@@ -74,7 +71,7 @@ function testLdap(authConf: CartaLdapAuthConfig, username: string) {
                                 resolve();
                             }
                         });
-                    })
+                    });
                 }, 5000);
             } catch (e) {
                 verboseError(e);
@@ -164,19 +161,24 @@ function testFrontend() {
     }
 }
 
-
 async function testBackendStartup(username: string) {
     const port = ServerConfig.backendPorts.max - 1;
     let args = [
         "--preserve-env=CARTA_AUTH_TOKEN",
-        "-u", `${username}`,
+        "-u",
+        `${username}`,
         ServerConfig.processCommand,
-        "--no_http", "true",
-        "--debug_no_auth", "true",
-        "--no_log", ServerConfig.logFileTemplate ? "true" : "false",
-        "--port", `${port}`,
-        "--top_level_folder", ServerConfig.rootFolderTemplate.replace("{username}", username),
-        ServerConfig.baseFolderTemplate.replace("{username}", username),
+        "--no_http",
+        "true",
+        "--debug_no_auth",
+        "true",
+        "--no_log",
+        ServerConfig.logFileTemplate ? "true" : "false",
+        "--port",
+        `${port}`,
+        "--top_level_folder",
+        ServerConfig.rootFolderTemplate.replace("{username}", username),
+        ServerConfig.baseFolderTemplate.replace("{username}", username)
     ];
 
     if (ServerConfig.additionalArgs) {
@@ -218,13 +220,13 @@ async function testKillScript(username: string, existingProcess: ChildProcess) {
     verboseLog(`running sudo ${args.join(" ")}`);
     const res = spawnSync("sudo", args);
     if (res.status) {
-        throw  new Error(`Cannot execute kill script (error status ${res.status}. Please check your killCommand option`);
+        throw new Error(`Cannot execute kill script (error status ${res.status}. Please check your killCommand option`);
     }
     // Delay to allow the parent process to exit
     await delay(1000);
     if (existingProcess.signalCode === "SIGKILL") {
         console.log(logSymbols.success, "Backend process killed correctly");
     } else {
-        throw  new Error("Failed to kill process. Please check your killCommand option. If sudo is prompting you for a password, please check your sudoers config")
+        throw new Error("Failed to kill process. Please check your killCommand option. If sudo is prompting you for a password, please check your sudoers config");
     }
 }

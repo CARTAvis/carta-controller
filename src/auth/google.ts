@@ -1,7 +1,7 @@
 import {CartaGoogleAuthConfig, Verifier} from "../types";
 import {OAuth2Client} from "google-auth-library";
 
-export const validGoogleIssuers = ["accounts.google.com", "https://accounts.google.com"]
+export const validGoogleIssuers = ["accounts.google.com", "https://accounts.google.com"];
 
 export function generateGoogleVerifier(verifierMap: Map<string, Verifier>, authConf: CartaGoogleAuthConfig) {
     const googleAuthClient = new OAuth2Client(authConf.clientId);

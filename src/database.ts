@@ -1,6 +1,6 @@
 import * as express from "express";
 import Ajv from "ajv";
-import addFormats from "ajv-formats"
+import addFormats from "ajv-formats";
 import {Collection, Db, MongoClient} from "mongodb";
 import {authGuard} from "./auth";
 import {noCache, verboseError} from "./util";
@@ -9,16 +9,20 @@ import {ServerConfig} from "./config";
 
 const PREFERENCE_SCHEMA_VERSION = 2;
 const LAYOUT_SCHEMA_VERSION = 2;
+const SNIPPET_SCHEMA_VERSION = 1;
 const preferenceSchema = require("../config/preference_schema_2.json");
 const layoutSchema = require("../config/layout_schema_2.json");
+const snippetSchema = require("../config/snippet_schema.json");
 const ajv = new Ajv({useDefaults: true, strictTypes: false});
 addFormats(ajv);
 const validatePreferences = ajv.compile(preferenceSchema);
 const validateLayout = ajv.compile(layoutSchema);
+const validateSnippet = ajv.compile(snippetSchema);
 
 let client: MongoClient;
 let preferenceCollection: Collection;
 let layoutsCollection: Collection;
+let snippetsCollection: Collection;
 
 async function updateUsernameIndex(collection: Collection, unique: boolean) {
     const hasIndex = await collection.indexExists("username");
@@ -44,11 +48,13 @@ export async function initDB() {
             client = await MongoClient.connect(ServerConfig.database.uri, {useUnifiedTopology: true});
             const db = await client.db(ServerConfig.database.databaseName);
             layoutsCollection = await createOrGetCollection(db, "layouts");
+            snippetsCollection = await createOrGetCollection(db, "snippets");
             preferenceCollection = await createOrGetCollection(db, "preferences");
             // Remove any existing validation in preferences collection
             await db.command({collMod: "preferences", validator: {}, validationLevel: "off"});
             // Update collection indices if necessary
             await updateUsernameIndex(layoutsCollection, false);
+            await updateUsernameIndex(snippetsCollection, false);
             await updateUsernameIndex(preferenceCollection, true);
             console.log(`Connected to server ${ServerConfig.database.uri} and database ${ServerConfig.database.databaseName}`);
         } catch (err) {
@@ -235,6 +241,88 @@ async function handleClearLayout(req: AuthenticatedRequest, res: express.Respons
     }
 }
 
+async function handleGetSnippets(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    if (!snippetsCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    try {
+        const snippetList = await snippetsCollection.find({username: req.username}, {projection: {_id: 0, username: 0}}).toArray();
+        const snippets = {} as any;
+        for (const entry of snippetList) {
+            if (entry.name && entry.snippet) {
+                snippets[entry.name] = entry.snippet;
+            }
+        }
+        res.json({success: true, snippets});
+    } catch (err) {
+        verboseError(err);
+        return next({statusCode: 500, message: "Problem retrieving snippets"});
+    }
+}
+
+async function handleSetSnippet(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    if (!snippetsCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    const snippetName = req.body?.snippetName;
+    const snippet = req.body?.snippet;
+    // Check for malformed update
+    if (!snippetName || !snippet || snippet.snippetVersion !== SNIPPET_SCHEMA_VERSION) {
+        return next({statusCode: 400, message: "Malformed snippet update"});
+    }
+
+    const validUpdate = validateSnippet(snippet);
+    if (!validUpdate) {
+        console.log(validateSnippet.errors);
+        return next({statusCode: 400, message: "Malformed snippet update"});
+    }
+
+    try {
+        const updateResult = await snippetsCollection.updateOne({username: req.username, name: snippetName, snippet}, {$set: {snippet}}, {upsert: true});
+        if (updateResult.result?.ok) {
+            res.json({success: true});
+        } else {
+            return next({statusCode: 500, message: "Problem updating snippet"});
+        }
+    } catch (err) {
+        verboseError(err);
+        return next({statusCode: 500, message: err.errmsg});
+    }
+}
+
+async function handleClearSnippet(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    if (!snippetsCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    const snippetName = req.body?.snippetName;
+    try {
+        const deleteResult = await snippetsCollection.deleteOne({username: req.username, name: snippetName});
+        if (deleteResult.result?.ok) {
+            res.json({success: true});
+        } else {
+            return next({statusCode: 500, message: "Problem clearing snippet"});
+        }
+    } catch (err) {
+        console.log(err);
+        return next({statusCode: 500, message: "Problem clearing snippet"});
+    }
+}
+
 export const databaseRouter = express.Router();
 
 databaseRouter.get("/preferences", authGuard, noCache, handleGetPreferences);
@@ -244,3 +332,7 @@ databaseRouter.delete("/preferences", authGuard, noCache, handleClearPreferences
 databaseRouter.get("/layouts", authGuard, noCache, handleGetLayouts);
 databaseRouter.put("/layout", authGuard, noCache, handleSetLayout);
 databaseRouter.delete("/layout", authGuard, noCache, handleClearLayout);
+
+databaseRouter.get("/snippets", authGuard, noCache, handleGetSnippets);
+databaseRouter.put("/snippet", authGuard, noCache, handleSetSnippet);
+databaseRouter.delete("/snippet", authGuard, noCache, handleClearSnippet);

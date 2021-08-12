@@ -17,12 +17,14 @@ export function generateToken(authConf: CartaLocalAuthConfig, username: string, 
     if (!authConf || !privateKey) {
         return null;
     }
-    return jwt.sign({
+    return jwt.sign(
+        {
             iss: authConf.issuer,
             username,
             refreshToken
         },
-        privateKey, {
+        privateKey,
+        {
             algorithm: authConf.keyAlgorithm,
             expiresIn: refreshToken ? authConf.refreshTokenAge : authConf.accessTokenAge
         }
@@ -49,7 +51,7 @@ export function addTokensToResponse(authConf: CartaLocalAuthConfig, username: st
 
 export function generateLocalVerifier(verifierMap: Map<string, Verifier>, authConf: CartaLocalAuthConfig) {
     const publicKey = fs.readFileSync(authConf.publicKeyLocation);
-    verifierMap.set(authConf.issuer, (cookieString) => {
+    verifierMap.set(authConf.issuer, cookieString => {
         const payload: any = jwt.verify(cookieString, publicKey, {algorithm: authConf.keyAlgorithm} as VerifyOptions);
         if (payload && payload.iss === authConf.issuer) {
             return payload;
@@ -85,5 +87,5 @@ export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
         } else {
             next({statusCode: 400, message: "Missing refresh token"});
         }
-    }
+    };
 }

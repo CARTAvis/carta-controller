@@ -27,5 +27,5 @@ export function getPamLoginHandler(authConf: CartaLocalAuthConfig) {
                 }
             }
         });
-    }
+    };
 }

@@ -108,7 +108,7 @@ function logoutHandler(req: express.Request, res: express.Response) {
 function handleCheckAuth(req: AuthenticatedRequest, res: express.Response) {
     res.json({
         success: true,
-        username: req.username,
+        username: req.username
     });
 }
 
