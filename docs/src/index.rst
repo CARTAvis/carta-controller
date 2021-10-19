@@ -22,9 +22,9 @@ Detailed :ref:`step-by-step instructions<focal_instructions>` are provided for U
    ubuntu_focal_instructions
    schema
 
-.. |backend-github| image:: https://img.shields.io/badge/CARTA%20Version-3.0.0--beta.1-brightgreen
+.. |backend-github| image:: https://img.shields.io/badge/CARTA%20Version-3.0.0--beta.1c-brightgreen
         :alt: View this backend version on GitHub
-        :target: https://github.com/CARTAvis/carta-backend/releases/tag/v3.0.0-beta.1b
+        :target: https://github.com/CARTAvis/carta-backend/releases/tag/v3.0.0-beta.1c
 
 .. |npm-package| image:: https://img.shields.io/npm/v/carta-controller/dev.svg?style=flat
         :alt: View this project on npm
