@@ -99,7 +99,7 @@ function logoutHandler(req: express.Request, res: express.Response) {
         path: RuntimeConfig.authPath,
         maxAge: 0,
         httpOnly: true,
-        secure: true,
+        secure: !ServerConfig.httpOnly,
         sameSite: "strict"
     });
     return res.json({success: true});
