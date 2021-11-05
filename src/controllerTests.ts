@@ -28,23 +28,21 @@ export async function runTests(username: string) {
     }
     await testDatabase();
     if (ServerConfig.logFileTemplate) {
-        testLog(username);
+        await testLog(username);
     }
     testFrontend();
     const backendProcess = await testBackendStartup(username);
     await testKillScript(username, backendProcess);
 }
 
-function testLog(username: string) {
-    const logLocation = ServerConfig.logFileTemplate
-        .replace("{username}", username)
-        .replace("{pid}", "9999")
-        .replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
+async function testLog(username: string) {
+    const logLocation = ServerConfig.logFileTemplate.replace("{username}", username).replace("{pid}", "9999").replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
 
     try {
         const logStream = fs.createWriteStream(logLocation, {flags: "a"});
-        logStream.write("test");
-        logStream.close();
+        // Transform callbacks into awaits
+        await new Promise(res => logStream.write("test", res));
+        await new Promise(res => logStream.end(res));
         fs.unlinkSync(logLocation);
         console.log(logSymbols.success, `Checked log writing for user ${username}`);
     } catch (err) {
@@ -167,25 +165,40 @@ function testFrontend() {
 
 async function testBackendStartup(username: string) {
     const port = ServerConfig.backendPorts.max - 1;
-    let args = [
-        "--preserve-env=CARTA_AUTH_TOKEN",
-        "-u", `${username}`,
+
+    let args: string[] = [];
+    if (ServerConfig.preserveEnv) {
+        args.push("--preserve-env=CARTA_AUTH_TOKEN");
+    }
+
+    args = args.concat([
+        "-n", // run non-interactively. If password is required, sudo will bail
+        "-u",
+        `${username}`,
         ServerConfig.processCommand,
-        "--no_http", "true",
-        "--debug_no_auth", "true",
-        "--no_log", ServerConfig.logFileTemplate ? "true" : "false",
-        "--port", `${port}`,
-        "--top_level_folder", ServerConfig.rootFolderTemplate.replace("{username}", username),
-        ServerConfig.baseFolderTemplate.replace("{username}", username),
-    ];
+        "--no_http",
+        "--debug_no_auth",
+        "--port",
+        `${port}`,
+        "--top_level_folder",
+        ServerConfig.rootFolderTemplate.replace("{username}", username)
+    ]);
+
+    if (ServerConfig.logFileTemplate) {
+        args.push("--no_log");
+    }
 
     if (ServerConfig.additionalArgs) {
         args = args.concat(ServerConfig.additionalArgs);
     }
 
+    // Finally, add the positional argument for the base folder
+    args.push(ServerConfig.baseFolderTemplate.replace("{username}", username));
+
     verboseLog(`running sudo ${args.join(" ")}`);
 
-    const backendProcess = spawn("sudo", args);
+    // Use same stdout and stderr stream for the backend process
+    const backendProcess = spawn("sudo", args, {stdio: "inherit"});
     await delay(2000);
     if (backendProcess.signalCode) {
         throw new Error(`Backend process terminated with code ${backendProcess.signalCode}. Please check your sudoers config, processCommand option and additionalArgs section`);

@@ -179,20 +179,33 @@ async function startServer(username: string) {
             throw {statusCode: 500, message: "No available ports for the backend process"};
         }
 
-        let args = [
-            "--preserve-env=CARTA_AUTH_TOKEN",
-            "-u", `${username}`,
+        let args: string[] = [];
+        if (ServerConfig.preserveEnv) {
+            args.push("--preserve-env=CARTA_AUTH_TOKEN");
+        }
+
+        args = args.concat([
+            "-n", // run non-interactively. If password is required, sudo will bail
+            "-u",
+            `${username}`,
             ServerConfig.processCommand,
-            "--no_http", "true",
-            "--no_log", ServerConfig.logFileTemplate ? "true" : "false",
-            "--port", `${port}`,
-            "--top_level_folder", ServerConfig.rootFolderTemplate.replace("{username}", username),
-            ServerConfig.baseFolderTemplate.replace("{username}", username),
-        ];
+            "--no_http",
+            "--port",
+            `${port}`,
+            "--top_level_folder",
+            ServerConfig.rootFolderTemplate.replace("{username}", username)
+        ]);
+
+        if (ServerConfig.logFileTemplate) {
+            args.push("--no_log");
+        }
 
         if (ServerConfig.additionalArgs) {
             args = args.concat(ServerConfig.additionalArgs);
         }
+
+        // Finally, add the positional argument for the base folder
+        args.push(ServerConfig.baseFolderTemplate.replace("{username}", username));
 
         const headerToken = v4();
         const child = spawn("sudo", args, {env: {CARTA_AUTH_TOKEN: headerToken}});
@@ -241,7 +254,7 @@ async function startServer(username: string) {
         child.on("exit", code => {
             console.log(`Process ${child.pid} exited with code ${code} and signal ${child.signalCode}`);
             deleteProcess(username);
-            logStream?.close();
+            logStream?.end();
         });
 
         // Check for early exit of backend process
@@ -256,7 +269,7 @@ async function startServer(username: string) {
     } catch (e) {
         verboseError(e);
         console.log(`Problem starting process for user ${username}`);
-        logStream?.close();
+        logStream?.end();
         if (e.statusCode && e.message) {
             throw e;
         } else {
