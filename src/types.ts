@@ -68,7 +68,10 @@ export interface CartaServerConfig {
         min: number;
         max: number;
     };
+    // Command to execute when starting the backend process
     processCommand: string;
+    // Use the --preserveEnv argument when calling sudo
+    preserveEnv: boolean;
     // The {username} placeholder will be replaced with the username
     rootFolderTemplate: string;
     baseFolderTemplate: string;
