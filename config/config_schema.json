@@ -399,6 +399,11 @@
             "type": "string",
             "examples": ["localhost", "127.0.0.1"]
         },
+        "httpOnly": {
+            "description": "Allow HTTP-only connections. For testing or internal networks only",
+            "type": "boolean",
+            "default": false
+        },
         "serverAddress": {
             "description": "Public-facing server address",
             "type": "string",

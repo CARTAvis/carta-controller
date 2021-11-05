@@ -55,6 +55,8 @@ export interface CartaServerConfig {
     serverPort: number | string;
     // Host interface to listen on. If empty, all interfaces are used
     serverInterface: string;
+    // Allow HTTP-only connections. For testing or internal networks only.
+    httpOnly: boolean;
     // Public-facing server address
     serverAddress?: string;
     // If you need to optionally specify a different API or dashboard address

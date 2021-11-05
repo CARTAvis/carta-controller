@@ -6,7 +6,7 @@ import * as express from "express";
 import * as userid from "userid";
 import {verifyToken} from "./index";
 import ms = require("ms");
-import {RuntimeConfig} from "../config";
+import {RuntimeConfig, ServerConfig} from "../config";
 
 let privateKey: Buffer;
 
@@ -37,7 +37,7 @@ export function addTokensToResponse(authConf: CartaLocalAuthConfig, username: st
         path: RuntimeConfig.authPath,
         maxAge: ms(authConf.refreshTokenAge as string),
         httpOnly: true,
-        secure: true,
+        secure: !ServerConfig.httpOnly,
         sameSite: "strict"
     });
 
