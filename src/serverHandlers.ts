@@ -178,7 +178,12 @@ async function startServer(username: string) {
             throw {statusCode: 500, message: "No available ports for the backend process"};
         }
 
-        let args = [
+        let args: string[] = [];
+        if (ServerConfig.preserveEnv) {
+            args.push("--preserve-env=CARTA_AUTH_TOKEN");
+        }
+
+        args = args.concat([
             "-n", // run non-interactively. If password is required, sudo will bail
             "-u",
             `${username}`,
@@ -188,7 +193,7 @@ async function startServer(username: string) {
             `${port}`,
             "--top_level_folder",
             ServerConfig.rootFolderTemplate.replace("{username}", username)
-        ];
+        ]);
 
         if (ServerConfig.logFileTemplate) {
             args.push("--no_log");

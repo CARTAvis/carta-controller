@@ -164,7 +164,13 @@ function testFrontend() {
 
 async function testBackendStartup(username: string) {
     const port = ServerConfig.backendPorts.max - 1;
-    let args = [
+
+    let args: string[] = [];
+    if (ServerConfig.preserveEnv) {
+        args.push("--preserve-env=CARTA_AUTH_TOKEN");
+    }
+
+    args = args.concat([
         "-n", // run non-interactively. If password is required, sudo will bail
         "-u",
         `${username}`,
@@ -175,7 +181,7 @@ async function testBackendStartup(username: string) {
         `${port}`,
         "--top_level_folder",
         ServerConfig.rootFolderTemplate.replace("{username}", username)
-    ];
+    ]);
 
     if (ServerConfig.logFileTemplate) {
         args.push("--no_log");
