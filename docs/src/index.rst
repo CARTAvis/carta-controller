@@ -21,6 +21,7 @@ Detailed :ref:`step-by-step instructions<focal_instructions>` are provided for U
    configuration
    ubuntu_focal_instructions
    schema
+   schema_backend
 
 .. |backend-github| image:: https://img.shields.io/badge/CARTA%20Version-3.0.0--beta.1c-brightgreen
         :alt: View this backend version on GitHub
