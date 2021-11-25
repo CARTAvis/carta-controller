@@ -26,7 +26,10 @@ To provide the ``carta`` user with these privileges, you must make modifications
 
 .. warning::
     Please only edit your sudoers configuration with ``visudo`` or equivalent.
-    
+
+.. note::
+    Older versions of ``sudo`` do not support the ``--preserve-env=VARIABLE`` argument. If your version of ``sudo`` is too old, set ``"preserveEnv"`` to ``false`` in your controller configuration, and add ``Defaults env_keep += "CARTA_AUTH_TOKEN"`` to your sudoers configuration.
+
 .. _config-authentication:
 
 Authentication

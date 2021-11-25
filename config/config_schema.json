@@ -455,6 +455,11 @@
             ],
             "default": "/usr/bin/carta_backend"
         },
+        "preserveEnv": {
+            "description": "Use the --preserve-env argument when calling sudo",
+            "type": "boolean",
+            "default": true
+        },
         "killCommand": {
             "description": "Path to CARTA kill script",
             "type": "string",
