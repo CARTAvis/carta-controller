@@ -68,7 +68,7 @@ By default, the controller attempts to write log files to the ``/var/log/carta``
 
 .. _config-controller:
 
-Controller Configuration
+Controller configuration
 ------------------------
 
 Controller configuration is handled by a configuration file in JSONC (JSON with JavaScript style comments) format, adhering to the :ref:`CARTA controller configuration schema<schema>`. An `example controller configuration file <_static/config/example_config.json>`_ is provided:
@@ -92,9 +92,11 @@ If you use an external :ref:`authentication<authentication>` system, you may nee
 
 You can alter the controller's dashboard appearance by adjusting the ``dashboard`` field in the config file. You can change the banner image and background, and add login instructions or institutional notices.
 
+The ``httpOnly`` flag can be used to disable secure signing of authentication tokens. This should only be used during initial deployment and testing, or debugging.
+
 .. _config-backend:
 
-Backend Configuration
+Backend configuration
 ---------------------
 
 The global configuration file for the CARTA backend is located at ``/etc/carta/backend.json``. A per-user configuration file can also be placed in each user's local CARTA preferences directory (typically ``.carta`` or ``.carta-beta`` in the user's home directory, depending on how the CARTA backend was installed). On a multi-user system, if users have write access to this location, you may wish to disable the use of per-user configuration files, to prevent users from bypassing the root directory configuration set by the controller. This must be done through the ``additionalArgs`` field in the :ref:`controller configuration<config-controller>`.
@@ -104,3 +106,35 @@ The backend configuration file must adhere to the :ref:`CARTA backend configurat
 .. literalinclude:: _static/config/example_backend.json
    :language: json
    :name: example_backend
+   
+.. _test-config:
+
+Testing the configuration
+-------------------------
+
+To test the configuration of the controller, you can use the built-in test feature. Run ``carta-controller --verbose --test <username>`` as the ``carta`` user (or whichever user has the :ref:`added sudoers permissions<config-backend-permissions>`). ``<username>`` should be a user in the ``carta-users`` group. The expected output looks like this:
+
+.. code-block::
+
+    Checking config file /etc/carta/config.json
+    Adding additional config file config.d/pam.json
+    No top-level folder was specified. Reverting to default location
+    Testing configuration with user alice
+    Password for user alice: 
+    ✔ Checked PAM connection for user alice
+    ✔ Verified uid (1000) for user alice
+    ✔ Generated access token for user alice
+    ✔ Checked database connection
+    ✔ Checked log writing for user alice
+    ✔ Read frontend index.html from /custom/frontend/path/build
+    [
+    'running sudo --preserve-env=CARTA_AUTH_TOKEN -n -u alice /usr/bin/carta_backend --no_http --debug_no_auth --port 3499 --top_level_folder /usr/share/carta --no_log /usr/share/carta'
+    ]
+    [2021-11-30 12:28:48.207] [info] /usr/bin/carta_backend: Version 3.0.0-beta.1c
+    [2021-11-30 12:28:48.209] [info] Listening on port 3499 with top level folder /usr/share/carta, starting folder /usr/share/carta. The number of OpenMP worker threads will be handled automatically.
+    ✔ Backend process started successfully
+    [2021-11-30 12:28:50.169] [info] Session 1 [127.0.0.1] Connected. Num sessions: 1
+    ✔ Backend process accepted connection
+    [ 'running sudo -u alice ./scripts/carta_kill_script.sh 54275' ]
+    ✔ Backend process killed correctly
+    Controller tests with user alice succeeded
