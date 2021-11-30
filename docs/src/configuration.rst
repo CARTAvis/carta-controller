@@ -8,7 +8,7 @@ Configuration
 System Configuration
 --------------------
 
-.. _config-backend:
+.. _config-backend-permissions:
 
 CARTA backend permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -68,10 +68,10 @@ By default, the controller attempts to write log files to the ``/var/log/carta``
 
 .. _config-controller:
 
-Controller Configuration
+Controller configuration
 ------------------------
 
-Controller configuration is handled by a configuration file in JSONC (JSON with JavaScript style comments) format, adhering to the :ref:`CARTA configuration schema<schema>`. An `example configuration file <_static/config/example_config.json>`_ is provided:
+Controller configuration is handled by a configuration file in JSONC (JSON with JavaScript style comments) format, adhering to the :ref:`CARTA controller configuration schema<schema>`. An `example controller configuration file <_static/config/example_config.json>`_ is provided:
 
 .. literalinclude:: _static/config/example_config.json
    :language: json
@@ -79,7 +79,11 @@ Controller configuration is handled by a configuration file in JSONC (JSON with 
 
 By default, the controller assumes the config file is located at ``/etc/carta/config.json``, but you can change this with the ``--config`` or ``-c`` command line argument when running the controller.
 
-The controller automatically executes the backend with the ``--no_http`` flag, to suppress the backend's built-in HTTP server. If the ``logFileTemplate`` configuration option is set, ``--no_log`` is also used to suppress user-level logs. ``--port`` is used to override the default port. ``--top_level_folder`` and a positional argument are used to set the top-level and starting data directories for the user, as specified in the ``rootFolderTemplate`` and ``baseFolderTemplate`` options, respectively. Additional backend flags may be specified with ``additionalArgs``.
+Configuration may also be added in separate files in a ``config.d`` directory in the same parent directory as the specified config file. Each file in this directory must be a valid configuration file. Any files found will be processed in alphabetical order, after the main configuration file.
+
+The controller automatically executes the backend with the ``--no_http`` flag, to suppress the backend's built-in HTTP server. If the ``logFileTemplate`` configuration option is set, ``--no_log`` is also used to suppress user-level logs. ``--port`` is used to override the default port. ``--top_level_folder`` and a positional argument are used to set the top-level and starting data directories for the user, as specified in the ``rootFolderTemplate`` and ``baseFolderTemplate`` options, respectively. 
+
+To specify additional backend flags, we recommend editing a :ref:`global backend preferences<config-backend>` file. Most commandline arguments to the backend are also recognised as configuration options. The ``additionalArgs`` field in the controller configuration file can be used for any debug options which are not, and to disable the local or global configuration files.
 
 If you use an external :ref:`authentication<authentication>` system, you may need to translate a unique ID (such as email or username) from the authenticated external user information to an internal system user. You can do this by providing a `user lookup table <_static/config/usertable.txt.stub>`_, which is watched by the controller and reloaded whenever it is updated:
 
@@ -87,3 +91,53 @@ If you use an external :ref:`authentication<authentication>` system, you may nee
    :language: cfg
 
 You can alter the controller's dashboard appearance by adjusting the ``dashboard`` field in the config file. You can change the banner image and background, and add login instructions or institutional notices.
+
+The ``httpOnly`` flag can be used to disable secure signing of authentication tokens. This should only be used during initial deployment and testing, or debugging.
+
+.. _config-backend:
+
+Backend configuration
+---------------------
+
+The global configuration file for the CARTA backend is located at ``/etc/carta/backend.json``. A per-user configuration file can also be placed in each user's local CARTA preferences directory (typically ``.carta`` or ``.carta-beta`` in the user's home directory, depending on how the CARTA backend was installed). On a multi-user system, if users have write access to this location, you may wish to disable the use of per-user configuration files, to prevent users from bypassing the root directory configuration set by the controller. This must be done through the ``additionalArgs`` field in the :ref:`controller configuration<config-controller>`.
+
+The backend configuration file must adhere to the :ref:`CARTA backend configuration schema<schema_backend>`. An `example backend configuration file <_static/config/example_backend.json>`_ is provided:
+
+.. literalinclude:: _static/config/example_backend.json
+   :language: json
+   :name: example_backend
+   
+.. _test-config:
+
+Testing the configuration
+-------------------------
+
+To test the configuration of the controller, you can use the built-in test feature. Run ``carta-controller --verbose --test <username>`` as the ``carta`` user (or whichever user has the :ref:`added sudoers permissions<config-backend-permissions>`). ``<username>`` should be a user in the ``carta-users`` group. The expected output looks like this:
+
+.. code-block::
+
+    Checking config file /etc/carta/config.json
+    Adding additional config file config.d/pam.json
+    No top-level folder was specified. Reverting to default location
+    Testing configuration with user alice
+    Password for user alice: 
+    ✔ Checked PAM connection for user alice
+    ✔ Verified uid (1000) for user alice
+    ✔ Generated access token for user alice
+    ✔ Checked database connection
+    ✔ Checked log writing for user alice
+    ✔ Read frontend index.html from /custom/frontend/path/build
+    [
+    'running sudo --preserve-env=CARTA_AUTH_TOKEN -n -u alice /usr/bin/carta_backend --no_http --debug_no_auth --port 3499 --top_level_folder /usr/share/carta --no_log /usr/share/carta'
+    ]
+    [2021-11-30 12:28:48.207] [info] /usr/bin/carta_backend: Version 3.0.0-beta.1c
+    [2021-11-30 12:28:48.209] [info] Listening on port 3499 with top level folder /usr/share/carta, starting folder /usr/share/carta. The number of OpenMP worker threads will be handled automatically.
+    ✔ Backend process started successfully
+    [2021-11-30 12:28:50.169] [info] Session 1 [127.0.0.1] Connected. Num sessions: 1
+    ✔ Backend process accepted connection
+    [ 'running sudo -u alice ./scripts/carta_kill_script.sh 54275' ]
+    ✔ Backend process killed correctly
+    Controller tests with user alice succeeded
+
+.. note::
+    If you run the controller from a source directory using ``npm``, use ``--`` to ensure that any comandline parameters are passed to the controller and not to ``npm``. For example: ``npm run start -- --verbose --test alice``.

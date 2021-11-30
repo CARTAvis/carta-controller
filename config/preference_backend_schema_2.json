@@ -1,0 +1,97 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Backend preferences",
+    "description": "Schema for CARTA backend preferences (Version 2)",
+    "$id": "carta_backend_preferences_2",
+    "required": [],
+    "properties": {
+        "verbosity": {
+            "type": "integer",
+            "enum": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "default": 4
+        },
+        "no_log": {
+            "type": "boolean",
+            "default": true
+        },
+        "log_performance": {
+            "type": "boolean",
+            "default": false
+        },
+        "log_protocol_messages": {
+            "type": "boolean",
+            "default": false
+        },
+        "no_http": {
+            "type": "boolean",
+            "default": false
+        },
+        "no_browser": {
+            "type": "boolean",
+            "default": false
+        },
+        "browser": {
+            "type": "string",
+            "default": ""
+        },
+        "host": {
+            "type": "string",
+            "minLength": 1,
+            "default": "0.0.0.0"
+        },
+        "port": {
+            "type": ["integer", "array"],
+            "default": 3002
+        },
+        "grpc_port": {
+            "type": "integer",
+            "default": -1
+        },
+        "omp_threads": {
+            "type": "integer",
+            "default": -1
+        },
+        "top_level_folder": {
+            "type": "string",
+            "minLength": 1,
+            "default": "/"
+        },
+        "frontend_folder": {
+            "type": "string",
+            "minLength": 1,
+            "default": ""
+        },
+        "exit_timeout": {
+            "type": "integer",
+            "default": -1
+        },
+        "initial_timeout": {
+            "type": "integer",
+            "default": -1
+        },
+        "idle_timeout": {
+            "type": "integer",
+            "default": -1
+        },
+        "read_only_mode": {
+            "type": "boolean",
+            "default": false
+        },
+        "starting_folder": {
+            "type": "string",
+            "minLength": 1,
+            "default": ""
+        },
+        "event_thread_count": {
+            "type": "integer",
+            "default": -1
+        }
+    }
+}

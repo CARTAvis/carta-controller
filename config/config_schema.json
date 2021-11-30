@@ -405,7 +405,7 @@
             "default": false
         },
         "serverAddress": {
-            "description": "Public-facing server address",
+            "description": "Public-facing server address. If this is specified, all requests will be redirected to this address, otherwise any address used will be preserved",
             "type": "string",
             "format": "uri",
             "pattern": "^https?://"
@@ -474,7 +474,7 @@
             "default": "/usr/local/bin/carta-kill-script"
         },
         "rootFolderTemplate": {
-            "description": "Top-level path of directories accessible to CARTA. The `{username}` placeholder will be replaced with the username",
+            "description": "Top-level path of directories accessible to CARTA. The `{username}` placeholder will be replaced with the username. Defaults to `/usr/share/carta` if it exists, or `/usr/local/share/carta` if it exists. If neither exists and no default is provided, the controller exits with an error",
             "type": "string",
             "examples": [
                 "/home/{username}",
@@ -482,7 +482,7 @@
             ]
         },
         "baseFolderTemplate": {
-            "description": "Starting directory of CARTA. Must be a subfolder of rootFolderTemplate. The `{username}` placeholder will be replaced with the username",
+            "description": "Starting directory of CARTA. Must be a subfolder of rootFolderTemplate. The `{username}` placeholder will be replaced with the username. Defaults to the same value as `rootFolderTemplate`",
             "type": "string",
             "examples": [
                 "/home/{username}/CARTA",
