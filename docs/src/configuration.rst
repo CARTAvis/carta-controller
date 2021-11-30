@@ -140,4 +140,4 @@ To test the configuration of the controller, you can use the built-in test featu
     Controller tests with user alice succeeded
 
 .. note::
-    If you run the controller from a source directory using ``npm``, use ``--`` to ensure that any comandline parameters are passed to the controller and not to ``npm``. For example: ``npm run start -- --verbose --test alice``.
+    If you run the controller from a source directory using ``npm``, use ``--`` to ensure that any commandline parameters are passed to the controller and not to ``npm``. For example: ``npm run start -- --verbose --test alice``.
