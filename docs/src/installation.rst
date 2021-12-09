@@ -8,7 +8,7 @@ Installation
 Installing the backend
 ----------------------
 
-We provide `binary Debian packages <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ of the latest development and release versions of the CARTA backend for Ubuntu 20.04 (Focal Fossa) and Ubuntu 18.04 (Bionic Beaver). You can install the development version with all dependencies by adding our PPA to your system and running ``apt-get install carta-backend-beta``. Please refer to our :ref:`Ubuntu Focal instructions<focal_instructions>` for more details.
+We provide `binary Debian packages <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ of the latest beta and release versions of the CARTA backend for Ubuntu 20.04 (Focal Fossa) and Ubuntu 18.04 (Bionic Beaver). You can install the beta version with all dependencies by adding our PPA to your system and running ``apt-get install carta-backend-beta``. Please refer to our :ref:`Ubuntu Focal instructions<focal_instructions>` for more details.
 
 .. note::
 
@@ -28,7 +28,7 @@ If you install the controller from NPM, the corresponding packaged version of th
 Installing the controller
 -------------------------
 
-You can install the development version of the CARTA controller from NPM by running ``npm install -g carta-controller@dev``, or from GitHub by cloning the `controller repository <https://github.com/CARTAvis/carta-controller/>`_ and running ``npm install``.
+You can install the beta version of the CARTA controller from NPM by running ``npm install -g carta-controller@beta``, or from GitHub by cloning the `controller repository <https://github.com/CARTAvis/carta-controller/>`_ and running ``npm install``.
 
 .. _run_controller:
 

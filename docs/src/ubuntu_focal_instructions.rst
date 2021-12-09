@@ -19,7 +19,7 @@ Install the CARTA backend and other required packages
     sudo add-apt-repository ppa:cartavis-team/carta
     sudo apt-get update
 
-    # Install the development backend package with all dependencies
+    # Install the beta backend package with all dependencies
     sudo apt-get install carta-backend-beta
     
     # Install additional packages
@@ -74,7 +74,7 @@ Install CARTA controller
     sudo apt-get install -y nodejs build-essential
 
     # Install carta-controller (includes frontend config)
-    sudo npm install -g --unsafe-perm carta-controller@dev
+    sudo npm install -g --unsafe-perm carta-controller@beta
     
     # Install PM2 node service
     sudo npm install -g pm2
