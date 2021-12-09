@@ -1,17 +1,17 @@
 .. _almalinux_instructions:
 
-Step-by-step instructions for Almalinux 8.4
+Step-by-step instructions for AlmaLinux 8.4
 ===========================================
 
 .. note::
 
-    These instructions should also work for RHEL8, CentOS8, and Rocky Linux. Some changes may be necessary for RHEL7/CenOS7.
+    These instructions should also work for RHEL8, CentOS8, and Rocky Linux. Some changes may be necessary for RHEL7/CentOS7.
 
 
 1. Install Node.js
 ~~~~~~~~~~~~~~~~~~
 
-carta-controller uses `Node.js <https://nodejs.org/>`_ and supports v12, v14, and v16. Node.js can easily be installed from the AlmaLinux AppStream repository. Here we install v14, as well as the ``npm`` package manager.
+The CARTA controller uses `Node.js <https://nodejs.org/>`_ and supports v12, v14, and v16. Node.js can easily be installed from the AlmaLinux AppStream repository. Here we install v14, as well as the ``npm`` package manager.
 
 .. code-block:: shell
 
@@ -26,7 +26,7 @@ carta-controller uses `Node.js <https://nodejs.org/>`_ and supports v12, v14, an
 2. Install MongoDB
 ~~~~~~~~~~~~~~~~~~
 
-carta-controller uses `MongoDB <https://www.mongodb.com/>`_ to store user preferences etc. MongoDB is not available through the default AlmaLinux repositories, but we can create to custom repository file in order to easily install it.
+The CARTA controller uses `MongoDB <https://www.mongodb.com/>`_ to store user preferences, etc.. MongoDB is not available through the default AlmaLinux repositories, but we can add a custom repository to install it more easily.
 
 .. code-block:: shell
     
@@ -57,63 +57,55 @@ carta-controller uses `MongoDB <https://www.mongodb.com/>`_ to store user prefer
     ``curl -fsSL https://rpm.nodesource.com/setup_14.x | bash - && yum install -y nodejs``
 
 
-3. Install carta-controller
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3. Install the CARTA controller
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The easiest way to install carta-controller is using ``npm``. 
+The easiest way to install the CARTA controller is using ``npm``. 
 
 .. code-block:: shell
 
     sudo dnf install -y python3 make gcc-c++
-    sudo npm install -g --unsafe-perm carta-controller
+    sudo npm install -g --unsafe-perm carta-controller@beta
 
 .. note::
 
-    The carta-controller executable will be installed at ``/usr/local/lib/node_modules/carta-controller``.
-    The carta-frontend will be installed at ``/usr/local/lib/node_modules/carta-controller/node_modules/carta-frontend/build``.
+    The CARTA controller executable will be installed at ``/usr/local/lib/node_modules/carta-controller``.
+    The CARTA frontend will be installed at ``/usr/local/lib/node_modules/carta-controller/node_modules/carta-frontend/build``.
 
 .. note::
     
     Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a local install.
 
 .. note::
-    Beta versions of carta-controller can be installed. For example, ``sudo npm install -g --unsafe-perm carta-controller@beta``. 
-    Available versions can be found `here <https://www.npmjs.com/package/carta-controller>`_.
-
-.. note::
     
-    On RHEL7/CentOS7 the carta-controller package can not run with the default gcc version 4.8.5 (there would be an error due to ``node-linux-pam``). 
+    On RHEL7/CentOS7 the CARTA controller package can not run with the default gcc version 4.8.5 (there would be an error due to ``node-linux-pam``). 
     A work around is to install a newer GCC version from source in order to get a newer ``libstdc++.so.6``, then add the location of the newer 
-    ``libstdc++.so.6`` to the LD_LIBRARY_PATH. After that, carta-controller can run on RHEL7/CentOS7.
+    ``libstdc++.so.6`` to the LD_LIBRARY_PATH. After that, the CARTA controller can run on RHEL7/CentOS7.
 
 
-4. Install the carta-backend component
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The easiest way may be to install the carta-backend is from our cartavis RPM repository.
+4. Install the CARTA backend
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The easiest way may be to install the CARTA backend is from our cartavis RPM repository.
 
 .. code-block:: shell
 
-    # Install carta-backend
+    # Install the CARTA backend
     sudo curl https://packages.cartavis.org/cartavis-el8.repo --output /etc/yum.repos.d/cartavis.repo
     sudo dnf -y install 'dnf-command(config-manager)'
     sudo dnf -y install epel-release
     sudo dnf -y config-manager --set-enabled powertools
-    sudo dnf -y install carta-backend
+    sudo dnf -y install carta-backend-beta
 
     # Check that the backend can run and matches the major version number of the controller
     /usr/bin/carta_backend --version
 
 
-.. note::
-    
-    If you install the beta version of carta-controller, you need to install the beta version of the carta-backend ``sudo dnf -y install carta-backend-beta``.
-
-
 5. Install Nginx
 ~~~~~~~~~~~~~~~~
 
-carta-controller requires a webserver. Here we use `NGINX <https://www.nginx.com/>`_, but Apache should work too.
+The CARTA controller requires a webserver. Here we use `NGINX <https://www.nginx.com/>`_, but Apache should work too.
 
 .. code-block:: shell
 
@@ -137,24 +129,23 @@ carta-controller requires a webserver. Here we use `NGINX <https://www.nginx.com
 A :ref:`sample configuration file<example_nginx>` is provided in the configuration section. This should be adapted to your server configuration.
 
 .. note::
-    If there are problems, you can debug with ``journactl -xe`` and checking log files in ``/var/log/nginx/``.
+    If there are problems, you can debug with ``journactl -xe`` and by checking log files in ``/var/log/nginx/``.
 
 
-6. Create the 'carta' user
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+6. Create the 'carta' user and modify sudoers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For security, we recommend not to run the carta-controller as the root user. Therefore we create a new user called ``carta`` and make part it part of a new group called ``carta-users``. 
-We will allow any user in the ``carta-users`` group to run ``/usr/bin/carta_backend`` and the script to close the carta-backend; ``/usr/local/bin/carta-kill-script`` by adding a custom entry to the ``sudoers`` file.
+For security, we recommend not to run the CARTA controller as the root user. Therefore we create a new user called ``carta``. 
+
+We will assign the group ``carta-users`` to every user account and enable them to run ``/usr/bin/carta_backend`` and the script to close the CARTA backend, ``/usr/local/bin/carta-kill-script``, by adding a custom entry to the ``sudoers`` file.
 
 .. code-block:: shell
     
     # Create the carta user:
     sudo adduser carta
-    sudo groupadd carta-users
-    sudo usermod -a -G carta-users carta
     # Check everything is OK
     id carta
-    # It should show 'uid=1000(carta) gid=1000(carta) groups=1000(carta),1001(carta-users)'
+    # It should show 'uid=1000(carta) gid=1000(carta) groups=1000(carta)'
 
     # So that log files can be written:
     sudo mkdir -p /var/log/carta
@@ -168,24 +159,24 @@ An :ref:`example sudoers configuration<example_sudoers>` is provided in the conf
 .. note::
     The only safe way to modify sudoers is using ``visudo``. Any syntax errors from directly editing sudoers could make your system unusable.
 
+.. note::
+    The ``carta`` user should not be in the ``carta-users`` group. ``carta-users`` should only be assigned to the normal user accounts.
 
 7. Set up the user authentication method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is the most difficult step and depends how you authenticate users at your institute. 
-In this step-by-step guide we use PAM local authentication and a local user, ``bob``, on the server running carta-controller.
-Every user needs to be part of the ``carta-users`` group.
+This is the most difficult step and depends on how you authenticate users at your institute. In this step-by-step guide we use PAM local authentication and a local user, ``bob``, on the server running the CARTA controller. The user ``bob`` needs to be part of the ``carta-users`` group.
 
-With PAM authentication, the ``carta`` user that runs carta-controller requires access to the ``/etc/shadow`` file in order to authenticate other users. We can enable this by creating a new group called ``shadow`` and assigning the ``/etc/shadow`` file to that group.
+With PAM authentication, the ``carta`` user that runs the CARTA controller requires access to the ``/etc/shadow`` file in order to authenticate other users. We can enable this by creating a new group called ``shadow`` and assigning the ``/etc/shadow`` file to that group.
 
 .. note::
-    Only PAM with local authentication requires /etc/shadow access. PAM using LDAP, and Google OAuth, do not require /etc/shadow access. 
+    Only PAM with local authentication requires ``/etc/shadow`` access. PAM using LDAP, and Google OAuth, do not require ``/etc/shadow`` access. 
 
 .. code-block:: shell
 
     # Create the test user 'bob':
     sudo useradd -G carta-users bob
-    sudo passed bob
+    sudo passwd bob
 
     # A new group called 'shadow' needs to be assinged to the /etc/shadow file and user 'carta':
     sudo groupadd shadow
@@ -198,11 +189,11 @@ With PAM authentication, the ``carta`` user that runs carta-controller requires 
     sudo reboot 
 
 
-8. Configure the carta-controller
+8. Configure the CARTA controller
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Create and fill in the ``config.json`` using our sample file :ref:`sample configuration file<example_config>`. 
-Also generate private/public keys as they are used by carta-controller to sign/verify/refresh access tokens.
+Create and fill in the ``config.json`` using our :ref:`sample configuration file<example_config>`. 
+Also generate private/public keys as they are used by the CARTA controller to sign/verify/refresh access tokens.
 
 .. code-block:: shell
 
@@ -221,18 +212,18 @@ Please check the `CARTA Configuration Schema <https://carta-controller.readthedo
 9. Check everything is working
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here we switch to the ``carta`` user and test the carta-controller with our test user ``bob``:
+Here we switch to the ``carta`` user and test the CARTA controller with our test user ``bob``:
 
 .. code-block:: shell
 
     su - carta
     carta-controller -verbose -test bob
 
-If the test is successful, carta-controller should be ready to deploy.
+If the test is successful, the CARTA controller should be ready to deploy.
 
 
-10. Start carta-controller
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+10. Start the CARTA controller
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: shell
 
@@ -242,10 +233,10 @@ If the test is successful, carta-controller should be ready to deploy.
 Now your users should be able to access your server's URL and log into CARTA.
 
 
-Optional: Set up carta-controller to run with pm2
+Optional: Set up the CARTA controller to run with pm2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`pm2 <https://pm2.keymetrics.io/>`_ is a very convenient tool to keep the carta-controller service running in the background, and even start it up automatically after a reboot.
+`pm2 <https://pm2.keymetrics.io/>`_ is a very convenient tool to keep the CARTA controller service running in the background, and even start it up automatically after a reboot.
 
 .. code-block:: shell
 
