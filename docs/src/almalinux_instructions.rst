@@ -77,7 +77,7 @@ The easiest way to install carta-controller is using ``npm``.
     Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a local install.
 
 .. note::
-    Beta versions of carta-controller can be installed. For example, ``sudo npm install -g --unsafe-perm carta-controller-3.0.0-beta.1d``. 
+    Beta versions of carta-controller can be installed. For example, ``sudo npm install -g --unsafe-perm carta-controller@beta``. 
     Available versions can be found `here <https://www.npmjs.com/package/carta-controller>`_.
 
 .. note::
@@ -101,7 +101,7 @@ The easiest way may be to install the carta-backend is from our cartavis RPM rep
     sudo dnf -y config-manager --set-enabled powertools
     sudo dnf -y install carta-backend
 
-    # Check that the backend can run and is version 2.0.0
+    # Check that the backend can run and matches the major version number of the controller
     /usr/bin/carta_backend --version
 
 
@@ -125,12 +125,6 @@ carta-controller requires a webserver. Here we use `NGINX <https://www.nginx.com
     sudo firewall-cmd --permanent --zone=public --add-service=http
     sudo firewall-cmd --permanent --zone=public --add-service=https
     sudo firewall-cmd --reload
-
-    # Generate private/public keys (optional if you do not already have SSL certificates):
-    sudo mkdir /etc/carta
-    cd /etc/carta
-    sudo openssl genrsa -out carta_private.pem 4096
-    sudo openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
 
     # Set up the nginx configuration file using our sample configuration file linked below:
     sudo cd /etc/nginx/conf.d/
@@ -179,9 +173,13 @@ An :ref:`example sudoers configuration<example_sudoers>` is provided in the conf
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This is the most difficult step and depends how you authenticate users at your institute. 
-In this step-by-step guide we use PAM authntication and local user, ``bob``, on the server running carta-controller.
+In this step-by-step guide we use PAM local authentication and a local user, ``bob``, on the server running carta-controller.
 Every user needs to be part of the ``carta-users`` group.
-With PAM authentication, the ``carta`` user that runs carta-controller requires access to the ``/etc/shadow`` file in order to authenticate other users. We can enable this by creating a new group called ``shadow`` and assigning the ``/etc/shadow`` file to that group:
+
+With PAM authentication, the ``carta`` user that runs carta-controller requires access to the ``/etc/shadow`` file in order to authenticate other users. We can enable this by creating a new group called ``shadow`` and assigning the ``/etc/shadow`` file to that group.
+
+.. note::
+    Only PAM with local authentication requires /etc/shadow access. PAM using LDAP, and Google OAuth, do not require /etc/shadow access. 
 
 .. code-block:: shell
 
@@ -200,16 +198,22 @@ With PAM authentication, the ``carta`` user that runs carta-controller requires 
     sudo reboot 
 
 
-8. Configure the carta-controller config.json file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+8. Configure the carta-controller
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Create and fill in the ``config.json`` using our sample file :ref:`sample configuration file<example_config>`. 
+Also generate private/public keys as they are used by carta-controller to sign/verify/refresh access tokens.
 
 .. code-block:: shell
 
     sudo mkdir /etc/carta
     sudo chown -R carta /etc/carta
     vi /etc/carta/config.json
+    
+    # Generate private/public keys:
+    cd /etc/carta
+    sudo openssl genrsa -out carta_private.pem 4096
+    sudo openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
 
 Please check the `CARTA Configuration Schema <https://carta-controller.readthedocs.io/en/latest/schema.html#schema>`_ for all available options.
 
@@ -222,13 +226,24 @@ Here we switch to the ``carta`` user and test the carta-controller with our test
 .. code-block:: shell
 
     su - carta
-    carta-controller -v -t bob
+    carta-controller -verbose -test bob
 
 If the test is successful, carta-controller should be ready to deploy.
 
 
-10. Set up carta-controller to run with pm2
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+10. Start carta-controller
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: shell
+
+    su - carta
+    carta-controller
+
+Now your users should be able to access your server's URL and log into CARTA.
+
+
+Optional: Set up carta-controller to run with pm2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 `pm2 <https://pm2.keymetrics.io/>`_ is a very convenient tool to keep the carta-controller service running in the background, and even start it up automatically after a reboot.
 
@@ -239,6 +254,4 @@ If the test is successful, carta-controller should be ready to deploy.
     pm2 start carta-controller
 
 Please refer to the `pm2 documentation <https://pm2.keymetrics.io/docs/usage/startup/>`_ for detailed instructions.
-
-Now your users should be able to access your server's URL and log into CARTA on AlmaLinux 8.4.
 
