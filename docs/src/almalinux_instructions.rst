@@ -234,7 +234,7 @@ Now your users should be able to access your server's URL and log into CARTA.
 
 
 Optional: Set up the CARTA controller to run with pm2
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 `pm2 <https://pm2.keymetrics.io/>`_ is a very convenient tool to keep the CARTA controller service running in the background, and even start it up automatically after a reboot.
 
