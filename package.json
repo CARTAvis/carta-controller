@@ -23,7 +23,7 @@
         "ajv": "^8.2.0",
         "ajv-formats": "^2.1.0",
         "body-parser": "^1.19.0",
-        "carta-frontend": "^3.0.0-beta.2",
+        "carta-frontend": "^3.0.0-beta.2b",
         "chalk": "^4.1.1",
         "compression": "^1.7.4",
         "cookie-parser": "^1.4.5",
