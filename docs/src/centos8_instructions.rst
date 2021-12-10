@@ -1,17 +1,17 @@
-.. _almalinux_instructions:
+.. _centos8_instructions:
 
-Step-by-step instructions for AlmaLinux 8.4
-===========================================
+Step-by-step instructions for CentOS 8
+======================================
 
 .. note::
 
-    These instructions should also work for RHEL8, CentOS8, and Rocky Linux. Some changes may be necessary for RHEL7/CentOS7.
+    These instructions should also work for RHEL 8, AlmaLinux, and Rocky Linux. Some changes may be necessary for RHEL 7 / CentOS 7.
 
 
 1. Install Node.js
 ~~~~~~~~~~~~~~~~~~
 
-The CARTA controller uses `Node.js <https://nodejs.org/>`_ and supports v12, v14, and v16. Node.js can easily be installed from the AlmaLinux AppStream repository. Here we install v14, as well as the ``npm`` package manager.
+The CARTA controller uses `Node.js <https://nodejs.org/>`_ and supports v12, v14, and v16. Node.js can easily be installed from the CentOS 8 AppStream repository. Here we install v14, as well as the ``npm`` package manager.
 
 .. code-block:: shell
 
@@ -26,7 +26,7 @@ The CARTA controller uses `Node.js <https://nodejs.org/>`_ and supports v12, v14
 2. Install MongoDB
 ~~~~~~~~~~~~~~~~~~
 
-The CARTA controller uses `MongoDB <https://www.mongodb.com/>`_ to store user preferences, etc.. MongoDB is not available through the default AlmaLinux repositories, but we can add a custom repository to install it more easily.
+The CARTA controller uses `MongoDB <https://www.mongodb.com/>`_ to store user preferences, etc.. MongoDB is not available through the default CentOS 8 repositories, but we can add a custom repository to install it more easily.
 
 .. code-block:: shell
     
