@@ -1,0 +1,15 @@
+{
+  "short_name": "CARTA Dashboard",
+  "name": "CARTA Dashboard (Site-deployment)",
+  "icons": [
+    {
+      "src": "carta_icon_128px.png",
+      "type": "image/png",
+      "sizes": "128x128"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

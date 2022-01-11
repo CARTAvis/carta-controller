@@ -10,11 +10,11 @@ import * as fs from "fs";
 import * as path from "path";
 import * as compression from "compression";
 import * as chalk from "chalk";
-import {createUpgradeHandler, serverRouter} from "./serverHandlers";
-import {authRouter} from "./auth";
-import {databaseRouter, initDB} from "./database";
-import {ServerConfig, RuntimeConfig, testUser} from "./config";
-import {runTests} from "./controllerTests";
+import { createUpgradeHandler, serverRouter } from "./serverHandlers";
+import { authRouter } from "./auth";
+import { databaseRouter, initDB } from "./database";
+import { ServerConfig, RuntimeConfig, testUser } from "./config";
+import { runTests } from "./controllerTests";
 import logSymbols = require("log-symbols");
 
 if (testUser) {
@@ -31,7 +31,7 @@ if (testUser) {
     );
 } else {
     let app = express();
-    app.use(bodyParser.urlencoded({extended: true}));
+    app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
     app.use(cookieParser());
     app.use(bearerToken());
@@ -56,12 +56,12 @@ if (testUser) {
 
     if (ServerConfig.frontendPath) {
         console.log(chalk.green.bold(`Serving CARTA frontend from ${ServerConfig.frontendPath}`));
-        app.use("/", express.static(ServerConfig.frontendPath, {setHeaders: staticHeaderHandler}));
+        app.use("/", express.static(ServerConfig.frontendPath, { setHeaders: staticHeaderHandler }));
     } else {
         const frontendPackage = require("../node_modules/carta-frontend/package.json");
         const frontendVersion = frontendPackage?.version;
         console.log(chalk.green.bold(`Serving packaged CARTA frontend (Version ${frontendVersion})`));
-        app.use("/", express.static(path.join(__dirname, "../node_modules/carta-frontend/build"), {setHeaders: staticHeaderHandler}));
+        app.use("/", express.static(path.join(__dirname, "../node_modules/carta-frontend/build"), { setHeaders: staticHeaderHandler }));
     }
 
     let bannerDataUri: string;
@@ -84,7 +84,11 @@ if (testUser) {
         }
     });
 
-    app.get("/dashboard", function (req, res) {
+    app.get("/dashboard/config", (req, res) => {
+
+    });
+
+    app.get("/dashboard", (req, res) => {
         res.render("templated", {
             clientId: ServerConfig.authProviders.google?.clientId,
             hostedDomain: ServerConfig.authProviders.google?.validDomain,
@@ -111,7 +115,7 @@ if (testUser) {
     });
 
     const expressServer = http.createServer(app);
-    const backendProxy = httpProxy.createServer({ws: true});
+    const backendProxy = httpProxy.createServer({ ws: true });
 
     // Handle WS connections
     expressServer.on("upgrade", createUpgradeHandler(backendProxy));
