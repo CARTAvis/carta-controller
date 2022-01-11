@@ -12,6 +12,8 @@
     "scripts": {
         "start": "npx ts-node src/index.ts",
         "test": "npx ts-node src/index.ts --test",
+        "start-dashboard": "cd dashboard && npm start",
+        "build-dashboard": "cd dashboard && npm run build",
         "reformat": "npx prettier --write ./src",
         "checkformat": "npx prettier --check ./src",
         "prepare": "npx tsc"
