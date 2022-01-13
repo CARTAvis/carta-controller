@@ -84,7 +84,18 @@ if (testUser) {
         }
     });
 
-    app.get("/dashboard/config", (req, res) => {});
+    app.get("/dashboard/config", (req, res) => {
+        res.json({
+            clientId: ServerConfig.authProviders.google?.clientId,
+            hostedDomain: ServerConfig.authProviders.google?.validDomain,
+            bannerColor: ServerConfig.dashboard?.bannerColor,
+            backgroundColor: ServerConfig.dashboard?.backgroundColor,
+            bannerImage: bannerDataUri,
+            infoText: ServerConfig.dashboard?.infoText,
+            loginText: ServerConfig.dashboard?.loginText,
+            footerText: ServerConfig.dashboard?.footerText
+        });
+    });
 
     app.get("/dashboard", (req, res) => {
         res.render("templated", {
