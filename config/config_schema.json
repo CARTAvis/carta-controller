@@ -124,6 +124,16 @@
                         "1h",
                         "15m"
                     ]
+                },
+                "scriptingTokenAge": {
+                    "description": "Lifetime of scripting tokens",
+                    "type": "string",
+                    "default": "1w",
+                    "examples": [
+                        "1w",
+                        "5d",
+                        "10h"
+                    ]
                 }
             }
         },
@@ -575,6 +585,12 @@
                     ]
                 }
             }
+        },
+        "scriptingAccess": {
+            "description": "Control scripting access for users.",
+            "type": "string",
+            "enum": ["enabled-all-users", "disabled-all-users", "opt-in"],
+            "default": "disabled-all-users"
         }
     },
     "if": {

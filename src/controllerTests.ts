@@ -11,7 +11,7 @@ import {ChildProcess, spawn, spawnSync} from "child_process";
 import {delay, verboseError, verboseLog} from "./util";
 import {client} from "websocket";
 import {CartaLdapAuthConfig, CartaLocalAuthConfig} from "./types";
-import {generateToken} from "./auth/local";
+import {generateToken, TokenType} from "./auth/local";
 
 const read = require("read");
 
@@ -131,7 +131,7 @@ function testUid(username: string) {
 function testToken(authConf: CartaLocalAuthConfig, username: string) {
     let token;
     try {
-        token = generateToken(authConf, username, false);
+        token = generateToken(authConf, username, TokenType.Access);
     } catch (e) {
         verboseError(e);
         throw new Error(`Cannot generate access token. Please check your config file's ldap auth section!`);

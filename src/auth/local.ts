@@ -1,38 +1,52 @@
-import {CartaLocalAuthConfig, Verifier} from "../types";
+import {AuthenticatedRequest, CartaLocalAuthConfig, ScriptingAccess, Verifier} from "../types";
 import * as fs from "fs";
 import * as jwt from "jsonwebtoken";
 import {VerifyOptions} from "jsonwebtoken";
 import * as express from "express";
 import * as userid from "userid";
 import {verifyToken} from "./index";
-import ms = require("ms");
 import {RuntimeConfig, ServerConfig} from "../config";
+import ms = require("ms");
 
 let privateKey: Buffer;
 
-export function generateToken(authConf: CartaLocalAuthConfig, username: string, refreshToken: boolean) {
+export enum TokenType {
+    Access,
+    Refresh,
+    Scripting
+}
+
+export function generateToken(authConf: CartaLocalAuthConfig, username: string, tokenType: TokenType) {
     if (!privateKey) {
         privateKey = fs.readFileSync(authConf.privateKeyLocation);
     }
     if (!authConf || !privateKey) {
         return null;
     }
-    return jwt.sign(
-        {
-            iss: authConf.issuer,
-            username,
-            refreshToken
-        },
-        privateKey,
-        {
-            algorithm: authConf.keyAlgorithm,
-            expiresIn: refreshToken ? authConf.refreshTokenAge : authConf.accessTokenAge
-        }
-    );
+
+    const payload: any = {
+        iss: authConf.issuer,
+        username
+    };
+
+    const options: jwt.SignOptions = {
+        algorithm: authConf.keyAlgorithm,
+        expiresIn: authConf.accessTokenAge
+    };
+
+    if (tokenType === TokenType.Refresh) {
+        payload.refresh = true;
+        options.expiresIn = authConf.refreshTokenAge;
+    } else if (tokenType === TokenType.Scripting) {
+        payload.scripting = true;
+        options.expiresIn = authConf.scriptingTokenAge;
+    }
+
+    return jwt.sign(payload, privateKey, options);
 }
 
 export function addTokensToResponse(authConf: CartaLocalAuthConfig, username: string, res: express.Response) {
-    const refreshToken = generateToken(authConf, username, true);
+    const refreshToken = generateToken(authConf, username, TokenType.Refresh);
     res.cookie("Refresh-Token", refreshToken, {
         path: RuntimeConfig.authPath,
         maxAge: ms(authConf.refreshTokenAge as string),
@@ -41,7 +55,7 @@ export function addTokensToResponse(authConf: CartaLocalAuthConfig, username: st
         sameSite: "strict"
     });
 
-    const access_token = generateToken(authConf, username, false);
+    const access_token = generateToken(authConf, username, TokenType.Access);
     res.json({
         access_token,
         token_type: "bearer",
@@ -72,7 +86,7 @@ export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
                     next({statusCode: 403, message: "Not authorized"});
                 } else {
                     const uid = userid.uid(refreshToken.username);
-                    const access_token = generateToken(authConf, refreshToken.username, false);
+                    const access_token = generateToken(authConf, refreshToken.username, TokenType.Access);
                     console.log(`Refreshed access token for user ${refreshToken.username} with uid ${uid}`);
                     res.json({
                         access_token,
@@ -87,5 +101,26 @@ export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
         } else {
             next({statusCode: 400, message: "Missing refresh token"});
         }
+    };
+}
+
+export function generateLocalTokenHandler(authConfig: CartaLocalAuthConfig) {
+    return async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+        if (ServerConfig.scriptingAccess === ScriptingAccess.Disabled) {
+            return next({statusCode: 500, message: "Scripting access not enabled for this server"});
+        }
+        if (!req.username) {
+            return next({statusCode: 403, message: "Not authorized"});
+        }
+
+        // TODO: Handle opt-in scripting access
+
+        const token = generateToken(authConfig, req.username, TokenType.Scripting);
+        return res.json({
+            token,
+            token_type: "bearer",
+            username: req.username,
+            expires_in: ms(authConfig.scriptingTokenAge as string) / 1000
+        });
     };
 }

@@ -4,7 +4,7 @@ import {noCache} from "../util";
 import {RequestHandler, AsyncRequestHandler, AuthenticatedRequest, Verifier, UserMap} from "../types";
 import {ServerConfig, RuntimeConfig} from "../config";
 import {generateExternalVerifiers, watchUserTable} from "./external";
-import {generateLocalRefreshHandler, generateLocalVerifier} from "./local";
+import {generateLocalRefreshHandler, generateLocalTokenHandler, generateLocalVerifier} from "./local";
 import {getLdapLoginHandler} from "./ldap";
 import {getPamLoginHandler} from "./pam";
 import {generateGoogleVerifier, validGoogleIssuers} from "./google";
@@ -22,17 +22,23 @@ let refreshHandler: AsyncRequestHandler = (req, res) => {
     throw {statusCode: 501, message: "Token refresh not implemented"};
 };
 
+let apiTokenHandler: AsyncRequestHandler = (_req, _res) => {
+    throw {statusCode: 501, message: "Token refresh not implemented"};
+};
+
 // Local providers
 if (ServerConfig.authProviders.pam) {
     const authConf = ServerConfig.authProviders.pam;
     generateLocalVerifier(tokenVerifiers, authConf);
     loginHandler = getPamLoginHandler(authConf);
     refreshHandler = generateLocalRefreshHandler(authConf);
+    apiTokenHandler = generateLocalTokenHandler(authConf);
 } else if (ServerConfig.authProviders.ldap) {
     const authConf = ServerConfig.authProviders.ldap;
     generateLocalVerifier(tokenVerifiers, authConf);
     loginHandler = getLdapLoginHandler(authConf);
     refreshHandler = generateLocalRefreshHandler(authConf);
+    apiTokenHandler = generateLocalTokenHandler(authConf);
 } else if (ServerConfig.authProviders.google) {
     const authConf = ServerConfig.authProviders.google;
     generateGoogleVerifier(tokenVerifiers, authConf);
@@ -117,3 +123,4 @@ authRouter.post("/login", noCache, loginHandler);
 authRouter.post("/logout", noCache, logoutHandler);
 authRouter.post("/refresh", noCache, refreshHandler);
 authRouter.get("/status", authGuard, noCache, handleCheckAuth);
+authRouter.get("/token", authGuard, noCache, apiTokenHandler);
