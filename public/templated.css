@@ -169,11 +169,11 @@ button {
 }
 
 .button-token {
-	background: #966445;
+	background: #458f96;
 }
 
 .button-token:hover, .button-token:active, .button-token:focus {
-	background: #7d5339;
+	background: #39777d;
 }
 
 .button-logout {
