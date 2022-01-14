@@ -168,6 +168,14 @@ button {
 	cursor: not-allowed;
 }
 
+.button-token {
+	background: #966445;
+}
+
+.button-token:hover, .button-token:active, .button-token:focus {
+	background: #7d5339;
+}
+
 .button-logout {
 	background: #2c649e;
 }

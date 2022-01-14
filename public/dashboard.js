@@ -25,7 +25,7 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
     const options = {
         method: method || "get"
     };
-    if (jsonBody) {
+    if (method !== "get" && jsonBody) {
         options.body = JSON.stringify(jsonBody);
         options.headers = {"Content-Type": "application/json"}
     } else {
@@ -103,7 +103,7 @@ setButtonDisabled = (elementId, disabled) => {
 updateServerStatus = async () => {
     let hasServer = false;
     try {
-        const res = await apiCall("server/status", undefined, "get", true);
+        const res = await apiCall("server/status", {}, "get", true);
         if (res.ok) {
             const body = await res.json();
             if (body.success && body.running) {
@@ -246,6 +246,22 @@ handleLog = async () => {
 handleHideLog = () => {
     document.getElementById("log-modal").style.display = "none"
     document.getElementById("main-div").classList.remove("blurred");
+}
+
+handleToken = async () => {
+    try {
+        const res = await apiCall("auth/token", undefined, "get", true);
+        if (res.ok) {
+            const body = await res.json();
+            if (body.token && typeof body.token === "string") {
+                await navigator.clipboard.writeText(body.token);
+                notyf.success("Token copied to clipboard");
+            }
+        }
+    } catch (err) {
+        notyf.error("Error getting token");
+        console.log(err);
+    }
 }
 
 initGoogleAuth = () => {
@@ -398,6 +414,7 @@ window.onload = async () => {
     document.getElementById("stop").onclick = handleServerStop;
     document.getElementById("open").onclick = handleOpenCarta;
     document.getElementById("show-logs").onclick = handleLog;
+    document.getElementById("copy-token").onclick = handleToken;
     document.getElementById("refresh-logs").onclick = handleLog;
     document.getElementById("hide-logs").onclick = handleHideLog;
     document.getElementById("logout").onclick = handleLogout;
