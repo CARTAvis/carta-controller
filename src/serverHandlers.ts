@@ -369,7 +369,6 @@ export const createScriptingProxyHandler = (server: httpProxy) => async (req: Au
 
     try {
         const remoteAddress = req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
-        console.log(`Scripting proxy request from ${remoteAddress} for authenticated user ${username}`);
         let existingProcess = processMap.get(username);
 
         if (!existingProcess?.process || existingProcess.process.signalCode) {
@@ -384,7 +383,6 @@ export const createScriptingProxyHandler = (server: httpProxy) => async (req: Au
                 // Wait until existing process is ready
                 await delay(ServerConfig.startDelay);
             }
-            console.log(`Redirecting to backend process for ${username} (port ${existingProcess.port})`);
             req.headers["carta-auth-token"] = existingProcess.headerToken;
             return server.web(req, res, {target: {host: "localhost", port: existingProcess.port}});
         } else {
