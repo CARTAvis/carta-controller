@@ -128,7 +128,7 @@ export interface CartaRuntimeConfig {
 
 export type RequestHandler = (req: express.Request, res: express.Response) => void;
 export type AsyncRequestHandler = (req: express.Request, res: express.Response, next: express.NextFunction) => void;
-export type AuthenticatedRequest = express.Request & {username?: string};
+export type AuthenticatedRequest = express.Request & {username?: string; scripting?: boolean};
 
 // Token verifier function
 export type Verifier = (cookieString: string) => any;

@@ -364,7 +364,11 @@ export const createUpgradeHandler = (server: httpProxy) => async (req: IncomingM
 export const createScriptingProxyHandler = (server: httpProxy) => async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
     const username = req?.username;
     if (!username) {
-        return next({statusCode: 403, message: "Not authorized"});
+        return next({statusCode: 401, message: "Not authorized"});
+    }
+
+    if (!req.scripting) {
+        return next({statusCode: 403, message: "API token supplied does not permit scripting"});
     }
 
     try {
