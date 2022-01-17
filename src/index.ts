@@ -101,7 +101,7 @@ if (testUser) {
 
     // Scripting proxy
     const backendProxy = httpProxy.createServer({ws: true});
-    app.get("/api/scripting/*", authGuard, createScriptingProxyHandler(backendProxy));
+    app.post("/api/scripting/*", authGuard, createScriptingProxyHandler(backendProxy));
 
     // Simplified error handling
     app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
