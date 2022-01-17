@@ -10,8 +10,8 @@ import * as fs from "fs";
 import * as path from "path";
 import * as compression from "compression";
 import * as chalk from "chalk";
-import {createUpgradeHandler, serverRouter} from "./serverHandlers";
-import {authRouter} from "./auth";
+import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./serverHandlers";
+import {authGuard, authRouter} from "./auth";
 import {databaseRouter, initDB} from "./database";
 import {ServerConfig, RuntimeConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
@@ -99,6 +99,10 @@ if (testUser) {
 
     app.use("/dashboard", express.static(path.join(__dirname, "../public")));
 
+    // Scripting proxy
+    const backendProxy = httpProxy.createServer({ws: true});
+    app.get("/api/scripting", authGuard, createScriptingProxyHandler(backendProxy));
+
     // Simplified error handling
     app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
         err.statusCode = err.statusCode || 500;
@@ -110,10 +114,8 @@ if (testUser) {
         });
     });
 
-    const expressServer = http.createServer(app);
-    const backendProxy = httpProxy.createServer({ws: true});
-
     // Handle WS connections
+    const expressServer = http.createServer(app);
     expressServer.on("upgrade", createUpgradeHandler(backendProxy));
 
     // Handle WS disconnects

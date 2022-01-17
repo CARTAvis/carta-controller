@@ -361,6 +361,42 @@ export const createUpgradeHandler = (server: httpProxy) => async (req: IncomingM
     }
 };
 
+export const createScriptingProxyHandler = (server: httpProxy) => async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+    const username = req?.username;
+    if (!username) {
+        return next({statusCode: 403, message: "Not authorized"});
+    }
+
+    try {
+        const remoteAddress = req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
+        console.log(`Scripting proxy request from ${remoteAddress} for authenticated user ${username}`);
+        let existingProcess = processMap.get(username);
+
+        if (!existingProcess?.process || existingProcess.process.signalCode) {
+            // Attempt to start new process
+            existingProcess?.process?.removeAllListeners();
+            await startServer(username);
+            existingProcess = processMap.get(username);
+        }
+
+        if (existingProcess && !existingProcess.process.signalCode) {
+            if (!existingProcess.ready) {
+                // Wait until existing process is ready
+                await delay(ServerConfig.startDelay);
+            }
+            console.log(`Redirecting to backend process for ${username} (port ${existingProcess.port})`);
+            req.headers["carta-auth-token"] = existingProcess.headerToken;
+            return server.web(req, res, {target: {host: "localhost", port: existingProcess.port}});
+        } else {
+            return next({statusCode: 500, message: `Backend process could not be started for ${username}`});
+        }
+    } catch (err) {
+        console.log(`Error proxying scripting request for ${req.username}`);
+        console.log(err);
+        return next({statusCode: 500, message: `Error proxying scripting request for ${req.username}`});
+    }
+};
+
 export const serverRouter = express.Router();
 serverRouter.post("/start", authGuard, noCache, handleStartServer);
 serverRouter.post("/stop", authGuard, noCache, handleStopServer);

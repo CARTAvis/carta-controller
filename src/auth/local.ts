@@ -106,14 +106,13 @@ export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
 
 export function generateLocalTokenHandler(authConfig: CartaLocalAuthConfig) {
     return async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
-        if (ServerConfig.scriptingAccess === ScriptingAccess.Disabled) {
+        // TODO: Handle opt-in scripting access
+        if (ServerConfig.scriptingAccess !== ScriptingAccess.Enabled) {
             return next({statusCode: 500, message: "Scripting access not enabled for this server"});
         }
         if (!req.username) {
             return next({statusCode: 403, message: "Not authorized"});
         }
-
-        // TODO: Handle opt-in scripting access
 
         const token = generateToken(authConfig, req.username, TokenType.Scripting);
         return res.json({
