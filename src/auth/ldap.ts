@@ -22,6 +22,7 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
     return (req: express.Request, res: express.Response) => {
         let username = req.body?.username;
         const password = req.body?.password;
+        const embedRefresh: boolean = req.body?.embedRefresh === true;
 
         if (!username || !password) {
             return res.status(400).json({statusCode: 400, message: "Malformed login request"});
@@ -39,7 +40,7 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
             try {
                 const uid = userid.uid(username);
                 console.log(`Authenticated as user ${username} with uid ${uid} using LDAP`);
-                return addTokensToResponse(authConf, username, res);
+                return addTokensToResponse(res, authConf, username, embedRefresh);
             } catch (e) {
                 verboseError(e);
                 return res.status(403).json({statusCode: 403, message: "User does not exist"});
