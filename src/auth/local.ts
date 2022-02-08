@@ -83,11 +83,10 @@ export function generateLocalVerifier(verifierMap: Map<string, Verifier>, authCo
 export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
     return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
         const refreshTokenCookie = req.cookies["Refresh-Token"];
-
         if (refreshTokenCookie) {
             try {
                 const refreshToken = await verifyToken(refreshTokenCookie);
-                if (!refreshToken || !refreshToken.username || !refreshToken.refreshToken) {
+                if (!refreshToken || !refreshToken.username || !refreshToken.refresh) {
                     next({statusCode: 403, message: "Not authorized"});
                 } else {
                     const uid = userid.uid(refreshToken.username);
