@@ -248,22 +248,6 @@ handleHideLog = () => {
     document.getElementById("main-div").classList.remove("blurred");
 }
 
-handleToken = async () => {
-    try {
-        const res = await apiCall("auth/token", undefined, "get", true);
-        if (res.ok) {
-            const body = await res.json();
-            if (body.token && typeof body.token === "string") {
-                await navigator.clipboard.writeText(body.token);
-                notyf.success("Token copied to clipboard");
-            }
-        }
-    } catch (err) {
-        notyf.error("Error getting token");
-        console.log(err);
-    }
-}
-
 initGoogleAuth = () => {
     gapi.load("auth2", function () {
         console.log("Google auth loaded");
@@ -414,7 +398,6 @@ window.onload = async () => {
     document.getElementById("stop").onclick = handleServerStop;
     document.getElementById("open").onclick = handleOpenCarta;
     document.getElementById("show-logs").onclick = handleLog;
-    document.getElementById("copy-token").onclick = handleToken;
     document.getElementById("refresh-logs").onclick = handleLog;
     document.getElementById("hide-logs").onclick = handleHideLog;
     document.getElementById("logout").onclick = handleLogout;

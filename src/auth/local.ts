@@ -83,20 +83,23 @@ export function generateLocalVerifier(verifierMap: Map<string, Verifier>, authCo
 export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
     return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
         const refreshTokenCookie = req.cookies["Refresh-Token"];
+        const scriptingToken = req.body?.scripting === true;
         if (refreshTokenCookie) {
             try {
                 const refreshToken = await verifyToken(refreshTokenCookie);
                 if (!refreshToken || !refreshToken.username || !refreshToken.refresh) {
                     next({statusCode: 403, message: "Not authorized"});
+                } else if (scriptingToken && ServerConfig.scriptingAccess !== ScriptingAccess.Enabled) {
+                    next({statusCode: 500, message: "Scripting access not enabled for this server"});
                 } else {
                     const uid = userid.uid(refreshToken.username);
-                    const access_token = generateToken(authConf, refreshToken.username, TokenType.Access);
-                    console.log(`Refreshed access token for user ${refreshToken.username} with uid ${uid}`);
+                    const access_token = generateToken(authConf, refreshToken.username, scriptingToken ? TokenType.Scripting : TokenType.Access);
+                    console.log(`Refreshed ${scriptingToken ? "scripting" : "access"} token for user ${refreshToken.username} with uid ${uid}`);
                     res.json({
                         access_token,
                         token_type: "bearer",
                         username: refreshToken.username,
-                        expires_in: ms(authConf.accessTokenAge as string) / 1000
+                        expires_in: ms(scriptingToken ? authConf.scriptingTokenAge : (authConf.accessTokenAge as string)) / 1000
                     });
                 }
             } catch (err) {
@@ -105,25 +108,5 @@ export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
         } else {
             next({statusCode: 400, message: "Missing refresh token"});
         }
-    };
-}
-
-export function generateLocalTokenHandler(authConfig: CartaLocalAuthConfig) {
-    return async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
-        // TODO: Handle opt-in scripting access
-        if (ServerConfig.scriptingAccess !== ScriptingAccess.Enabled) {
-            return next({statusCode: 500, message: "Scripting access not enabled for this server"});
-        }
-        if (!req.username) {
-            return next({statusCode: 403, message: "Not authorized"});
-        }
-
-        const token = generateToken(authConfig, req.username, TokenType.Scripting);
-        return res.json({
-            token,
-            token_type: "bearer",
-            username: req.username,
-            expires_in: ms(authConfig.scriptingTokenAge as string) / 1000
-        });
     };
 }
