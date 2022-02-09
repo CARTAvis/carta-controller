@@ -45,7 +45,7 @@ export function generateToken(authConf: CartaLocalAuthConfig, username: string, 
     return jwt.sign(payload, privateKey, options);
 }
 
-export function addTokensToResponse(res: express.Response, authConf: CartaLocalAuthConfig, username: string, addRefreshToBody: boolean = false) {
+export function addTokensToResponse(res: express.Response, authConf: CartaLocalAuthConfig, username: string) {
     const refreshToken = generateToken(authConf, username, TokenType.Refresh);
     res.cookie("Refresh-Token", refreshToken, {
         path: RuntimeConfig.authPath,
@@ -56,16 +56,12 @@ export function addTokensToResponse(res: express.Response, authConf: CartaLocalA
     });
 
     const access_token = generateToken(authConf, username, TokenType.Access);
-    const body: any = {
+
+    res.json({
         access_token,
         token_type: "bearer",
         expires_in: ms(authConf.accessTokenAge as string) / 1000
-    };
-    if (addRefreshToBody) {
-        body.refresh_token = refreshToken;
-    }
-
-    res.json(body);
+    });
 }
 
 export function generateLocalVerifier(verifierMap: Map<string, Verifier>, authConf: CartaLocalAuthConfig) {

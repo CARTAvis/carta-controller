@@ -9,7 +9,6 @@ export function getPamLoginHandler(authConf: CartaLocalAuthConfig) {
     return (req: express.Request, res: express.Response) => {
         let username = req.body?.username;
         const password = req.body?.password;
-        const embedRefresh: boolean = req.body?.embedRefresh === true;
 
         if (!username || !password) {
             return res.status(400).json({statusCode: 400, message: "Malformed login request"});
@@ -22,7 +21,7 @@ export function getPamLoginHandler(authConf: CartaLocalAuthConfig) {
                 try {
                     const uid = userid.uid(username);
                     console.log(`Authenticated as user ${username} with uid ${uid} using PAM`);
-                    return addTokensToResponse(res, authConf, username, embedRefresh);
+                    return addTokensToResponse(res, authConf, username);
                 } catch (e) {
                     return res.status(403).json({statusCode: 403, message: "User does not exist"});
                 }
