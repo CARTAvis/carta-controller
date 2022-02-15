@@ -32,16 +32,15 @@ if (testUser) {
 } else {
     let app = express();
     app.use(bodyParser.urlencoded({extended: true}));
-    app.use(bodyParser.json());
     app.use(cookieParser());
     app.use(bearerToken());
     app.use(cors());
     app.use(compression());
     app.set("view engine", "pug");
     app.set("views", path.join(__dirname, "../views"));
-    app.use("/api/auth", authRouter);
-    app.use("/api/server", serverRouter);
-    app.use("/api/database", databaseRouter);
+    app.use("/api/auth", bodyParser.json(), authRouter);
+    app.use("/api/server", bodyParser.json(), serverRouter);
+    app.use("/api/database", bodyParser.json(), databaseRouter);
 
     app.use("/config", (req: express.Request, res: express.Response) => {
         return res.json(RuntimeConfig);
@@ -84,7 +83,7 @@ if (testUser) {
         }
     });
 
-    app.get("/dashboard", function (req, res) {
+    app.get("/dashboard", (req, res) => {
         res.render("templated", {
             clientId: ServerConfig.authProviders.google?.clientId,
             hostedDomain: ServerConfig.authProviders.google?.validDomain,
