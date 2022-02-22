@@ -9,6 +9,7 @@ export interface CartaLocalAuthConfig {
     issuer: string;
     refreshTokenAge: string;
     accessTokenAge: string;
+    scriptingTokenAge: string;
 }
 
 export interface CartaLdapAuthConfig extends CartaLocalAuthConfig {
@@ -37,6 +38,12 @@ export interface CartaExternalAuthConfig {
     // Routes for refreshing access tokens and logging out
     tokenRefreshAddress: string;
     logoutAddress: string;
+}
+
+export enum ScriptingAccess {
+    Enabled = "enabled-all-users",
+    Disabled = "disabled-all-users",
+    OptIn = "opt-in"
 }
 
 export interface CartaServerConfig {
@@ -99,6 +106,8 @@ export interface CartaServerConfig {
         // Footer text. Plain text or HTML
         footerText?: string;
     };
+    // Allow scripting
+    scriptingAccess?: ScriptingAccess;
 }
 
 export interface CartaCommandLineOptions {
@@ -119,7 +128,7 @@ export interface CartaRuntimeConfig {
 
 export type RequestHandler = (req: express.Request, res: express.Response) => void;
 export type AsyncRequestHandler = (req: express.Request, res: express.Response, next: express.NextFunction) => void;
-export type AuthenticatedRequest = express.Request & {username?: string};
+export type AuthenticatedRequest = express.Request & {username?: string; scripting?: boolean};
 
 // Token verifier function
 export type Verifier = (cookieString: string) => any;

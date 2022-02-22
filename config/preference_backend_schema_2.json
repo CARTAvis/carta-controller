@@ -29,6 +29,14 @@
             "type": "boolean",
             "default": false
         },
+        "no_frontend": {
+            "type": "boolean",
+            "default": false
+        },
+        "no_database": {
+            "type": "boolean",
+            "default": false
+        },
         "no_http": {
             "type": "boolean",
             "default": false
@@ -49,10 +57,6 @@
         "port": {
             "type": ["integer", "array"],
             "default": 3002
-        },
-        "grpc_port": {
-            "type": "integer",
-            "default": -1
         },
         "omp_threads": {
             "type": "integer",
@@ -92,6 +96,10 @@
         "event_thread_count": {
             "type": "integer",
             "default": -1
+        },
+        "enable_scripting": {
+            "type": "boolean",
+            "default": false
         }
     }
 }

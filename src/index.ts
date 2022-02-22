@@ -10,8 +10,8 @@ import * as fs from "fs";
 import * as path from "path";
 import * as compression from "compression";
 import * as chalk from "chalk";
-import {createUpgradeHandler, serverRouter} from "./serverHandlers";
-import {authRouter} from "./auth";
+import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./serverHandlers";
+import {authGuard, authRouter} from "./auth";
 import {databaseRouter, initDB} from "./database";
 import {ServerConfig, RuntimeConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
@@ -32,16 +32,15 @@ if (testUser) {
 } else {
     let app = express();
     app.use(bodyParser.urlencoded({extended: true}));
-    app.use(bodyParser.json());
     app.use(cookieParser());
     app.use(bearerToken());
     app.use(cors());
     app.use(compression());
     app.set("view engine", "pug");
     app.set("views", path.join(__dirname, "../views"));
-    app.use("/api/auth", authRouter);
-    app.use("/api/server", serverRouter);
-    app.use("/api/database", databaseRouter);
+    app.use("/api/auth", bodyParser.json(), authRouter);
+    app.use("/api/server", bodyParser.json(), serverRouter);
+    app.use("/api/database", bodyParser.json(), databaseRouter);
 
     app.use("/config", (req: express.Request, res: express.Response) => {
         return res.json(RuntimeConfig);
@@ -84,7 +83,7 @@ if (testUser) {
         }
     });
 
-    app.get("/dashboard", function (req, res) {
+    app.get("/dashboard", (req, res) => {
         res.render("templated", {
             clientId: ServerConfig.authProviders.google?.clientId,
             hostedDomain: ServerConfig.authProviders.google?.validDomain,
@@ -99,6 +98,10 @@ if (testUser) {
 
     app.use("/dashboard", express.static(path.join(__dirname, "../public")));
 
+    // Scripting proxy
+    const backendProxy = httpProxy.createServer({ws: true});
+    app.post("/api/scripting/*", authGuard, createScriptingProxyHandler(backendProxy));
+
     // Simplified error handling
     app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
         err.statusCode = err.statusCode || 500;
@@ -110,10 +113,8 @@ if (testUser) {
         });
     });
 
-    const expressServer = http.createServer(app);
-    const backendProxy = httpProxy.createServer({ws: true});
-
     // Handle WS connections
+    const expressServer = http.createServer(app);
     expressServer.on("upgrade", createUpgradeHandler(backendProxy));
 
     // Handle WS disconnects

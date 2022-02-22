@@ -25,7 +25,7 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
     const options = {
         method: method || "get"
     };
-    if (jsonBody) {
+    if (method !== "get" && jsonBody) {
         options.body = JSON.stringify(jsonBody);
         options.headers = {"Content-Type": "application/json"}
     } else {
@@ -103,7 +103,7 @@ setButtonDisabled = (elementId, disabled) => {
 updateServerStatus = async () => {
     let hasServer = false;
     try {
-        const res = await apiCall("server/status", undefined, "get", true);
+        const res = await apiCall("server/status", {}, "get", true);
         if (res.ok) {
             const body = await res.json();
             if (body.success && body.running) {
