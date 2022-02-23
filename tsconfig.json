@@ -5,7 +5,8 @@
         "strict": true,
         "outDir": "dist",
         "sourceMap": true,
-        "noImplicitAny": false
+        "noImplicitAny": false,
+        "useUnknownInCatchVariables": false
     },
     "include": [
         "src/**/*.ts"
