@@ -1,11 +1,18 @@
 {
-  "compilerOptions": {
-	"target": "es6",
-	"module": "commonjs",
-	"strict": true,
-	"outDir": "dist",
-	"sourceMap": true
-  },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", ".vscode"]
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "strict": true,
+        "outDir": "dist",
+        "sourceMap": true,
+        "noImplicitAny": false,
+        "useUnknownInCatchVariables": false
+    },
+    "include": [
+        "src/**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        ".vscode"
+    ]
 }
