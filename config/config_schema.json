@@ -194,6 +194,16 @@
                         "15m"
                     ]
                 },
+                "scriptingTokenAge": {
+                    "description": "Lifetime of scripting tokens",
+                    "type": "string",
+                    "default": "1w",
+                    "examples": [
+                        "1w",
+                        "5d",
+                        "10h"
+                    ]
+                },
                 "ldapOptions": {
                     "description": "Options to path through to the LDAP auth instance",
                     "type": "object",
