@@ -1,6 +1,6 @@
 {
     "name": "carta-controller",
-    "version": "3.0.0-beta.2",
+    "version": "3.0.0-dev.3",
     "description": "NodeJS-based controller for CARTA",
     "repository": "https://github.com/CARTAvis/carta-controller",
     "homepage": "https://www.cartavis.org",
@@ -24,7 +24,7 @@
         "ajv-formats": "^2.1.0",
         "body-parser": "^1.19.0",
         "carta-frontend": "^3.0.0-beta.2b",
-        "chalk": "^4.1.1",
+        "chalk": "^4.1.2",
         "compression": "^1.7.4",
         "cookie-parser": "^1.4.5",
         "cors": "^2.8.5",
