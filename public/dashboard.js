@@ -37,7 +37,7 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
     }
 
     const currentTime = Date.now() / 1000;
-    // If refresh token expires in under 10 seconds, attempt to refresh before making the call
+    // If access token expires in under 10 seconds, attempt to refresh before making the call
     if (authRequired && tokenExpiryTime < currentTime + 10) {
         try {
             if (authenticationType === "local") {
