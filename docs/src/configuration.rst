@@ -130,7 +130,7 @@ To test the configuration of the controller, you can use the built-in test featu
     [
     'running sudo --preserve-env=CARTA_AUTH_TOKEN -n -u alice /usr/bin/carta_backend --no_http --debug_no_auth --port 3499 --top_level_folder /usr/share/carta --no_log /usr/share/carta'
     ]
-    [2021-11-30 12:28:48.207] [info] /usr/bin/carta_backend: Version 3.0.0-beta.2
+    [2021-11-30 12:28:48.207] [info] /usr/bin/carta_backend: Version 3.0.0-beta.3
     [2021-11-30 12:28:48.209] [info] Listening on port 3499 with top level folder /usr/share/carta, starting folder /usr/share/carta. The number of OpenMP worker threads will be handled automatically.
     ✔ Backend process started successfully
     [2021-11-30 12:28:50.169] [info] Session 1 [127.0.0.1] Connected. Num sessions: 1
