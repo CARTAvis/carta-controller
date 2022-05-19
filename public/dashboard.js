@@ -44,6 +44,8 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
                 await refreshLocalToken();
             } else if (authenticationType === "google") {
                 await refreshGoogleToken();
+            } else if (authenticationType === "oidc") {
+                await refreshOidcToken();
             }
         } catch (e) {
             console.log(e);
@@ -150,6 +152,89 @@ handleLogin = async () => {
     setButtonDisabled("login", false);
 };
 
+handleOidcLogin = async () => {
+    const usp = new URLSearchParams();
+    usp.set('client_id', document.getElementById("clientId").value);
+    const authEndpoint = document.getElementById("authEndpoint").value;
+    const clientId = document.getElementById("clientId").value;
+
+    // Generate PKCE verifier & challenge
+    const urlSafeChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~";
+    const code_verifier = Array.from({length:64}, (_,i) => urlSafeChars[Math.floor(Math.random() * urlSafeChars.length)]).join("");
+    sessionStorage.setItem("oidc_code_verifier", code_verifier);
+
+    const array = new TextEncoder()
+                    .encode(code_verifier);
+    const buffer = await window.crypto.subtle.digest('SHA-256', array);
+
+    const sha256_array = Array.from(new Uint8Array(buffer));
+    const code_challenge = btoa(String.fromCharCode.apply(null, new Uint8Array(buffer))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+    usp.set('redirect_uri', strippedPath + 'dashboard');
+    usp.set('response_type', 'code');
+    usp.set('scope', document.getElementById("oidcScope") ? document.getElementById("oidcScope").value : "openid");
+    usp.set('code_challenge_method', 'S256');
+    usp.set('code_challenge', code_challenge);
+
+    const oidcLoginUrl = authEndpoint + "?" + usp.toString();
+
+    localStorage.removeItem("oidc_refresh_token");
+
+    window.location.replace(oidcLoginUrl);
+}
+
+handleOidcCallback = async (code) => {
+    const tokenEndpoint = document.getElementById("tokenEndpoint").value;
+
+    const usp = new URLSearchParams();
+
+    usp.set("grant_type", "authorization_code");
+    usp.set("client_id", document.getElementById("clientId").value);
+    usp.set("code", code);
+    usp.set("code_verifier", sessionStorage.getItem("oidc_code_verifier"));
+    usp.set("redirect_uri", strippedPath + 'dashboard');
+    usp.set("scope", document.getElementById("oidcScope") ? document.getElementById("oidcScope").value : "openid");
+
+    const options = {
+        "method": "post",
+        "headers": {
+            "Content-Type": 'application/x-www-form-urlencoded'
+        },
+        "body": usp.toString()
+    };
+
+    try {
+        res = await fetch(tokenEndpoint,options);
+
+        if (res.ok) {
+            const body = await res.json();
+
+            setToken(body.access_token, body.expires_in || Number.MAX_VALUE);
+            localStorage.setItem("oidc_refresh_token", body.refresh_token);
+            localStorage.setItem("oidc_id_token", body.id_token);
+
+            // Note that validation of the token signature and actual account mapping happens serverside
+            b64_url = body.access_token.split('.')[1];
+            b64 = b64_url.replace(/-/g, '+').replace(/_/g, '/');
+            at_json = JSON.parse(atob(b64));
+            sessionStorage.removeItem("oidc_code_verifier");
+            if ('preferred_username' in at_json) {
+                onLoginSucceeded(at_json.preferred_username, "oidc");
+            } else {
+                onLoginSucceeded(at_json.sub, "oidc");
+            }
+        }
+        else {
+            onLoginFailed(res.status);
+
+        }
+    } catch (e) {
+        onLoginFailed(500);
+        console.log(e)
+    }
+
+}
+
 onLoginFailed = (status) => {
     clearToken();
     notyf.error(status === 403 ? "Invalid username/password combination" : "Could not authenticate correctly");
@@ -196,7 +281,7 @@ handleLogout = async () => {
     clearInterval(serverCheckHandle);
     if (authenticationType === "google") {
         await handleGoogleLogout();
-    } else {
+    } else if (authenticationType === "local") {
         await handleLocalLogout();
     }
     if (serverRunning) {
@@ -207,6 +292,12 @@ handleLogout = async () => {
     showLoginForm(true);
     localStorage.removeItem("authenticationType");
     clearToken();
+
+    // OIDC needs to redirect which should happen
+    // after the clearToken + localStorage pruning
+    if (authenticationType === "oidc") {
+        handleOidcLogout();
+    }
 }
 
 handleOpenCarta = () => {
@@ -276,6 +367,20 @@ handleGoogleLogout = async () => {
     }
 }
 
+handleOidcLogout = async () => {
+    // Implementing as per https://openid.net/specs/openid-connect-rpinitiated-1_0.html
+    let rp_logout_redirect = document.getElementById("logoutURL").value;
+
+    let usp = new URLSearchParams();
+    usp.set('id_token_hint', localStorage.getItem("oidc_id_token"))
+    usp.set('post_logout_redirect_uri', redirectUrl)
+
+    localStorage.removeItem("oidc_refresh_token");
+    localStorage.removeItem("oidc_id_token");
+
+    window.location.replace(rp_logout_redirect + "?" + usp.toString())
+}
+
 handleLocalLogout = async () => {
     await apiCall("auth/logout", undefined, "post", false);
 }
@@ -324,6 +429,41 @@ refreshLocalToken = async () => {
     }
 }
 
+refreshOidcToken = async () => {
+    try {
+        const clientId = document.getElementById("clientId").value;
+        const tokenEndpoint = document.getElementById("tokenEndpoint").value;
+
+        const usp = new URLSearchParams();
+        usp.set("grant_type", "refresh_token");
+        usp.set("client_id", clientId);
+        usp.set("refresh_token", localStorage.getItem("oidc_refresh_token"));
+
+        const options = {
+            "method": "post",
+            "headers": {
+                "Content-Type": 'application/x-www-form-urlencoded' 
+            },
+            "body": usp.toString(),
+        };
+
+        res = await fetch(tokenEndpoint,options);
+
+        if (res.ok) {
+            body = JSON.parse(await res.text())
+
+            setToken(body.access_token, body.expires_in || Number.MAX_VALUE);
+            localStorage.setItem("oidc_refresh_token", body.refresh_token);
+            localStorage.setItem("oidc_id_token", body.id_token);
+        } else {
+            notyf.error("Error refreshing authentication");
+        }
+    } catch (err) {
+        notyf.error("Error refreshing authentication");
+        console.log(err);
+    }
+}
+
 showCartaForm = (show) => {
     const cartaForm = document.getElementsByClassName("carta-form")[0];
     if (show) {
@@ -357,6 +497,10 @@ window.onload = async () => {
         }]
     });
 
+    if (sessionStorage.getItem("oidc_code_verifier") !== null && urlParams.has('code')) {
+        handleOidcCallback(urlParams.get('code'));
+    }
+
     // Hide open button if using popup
     if (isPopup) {
         document.getElementById("open").style.display = "none";
@@ -377,6 +521,50 @@ window.onload = async () => {
         } catch (e) {
             console.log(e);
         }
+    } else if (existingLoginType === "oidc"  && !urlParams.has('code')) {
+        try {
+            const clientId = document.getElementById("clientId").value;
+            const tokenEndpoint = document.getElementById("tokenEndpoint").value;
+
+            const usp = new URLSearchParams();
+            usp.set("grant_type", "refresh_token");
+            usp.set("client_id", clientId);
+            usp.set("refresh_token", localStorage.getItem("oidc_refresh_token"));
+
+            const options = {
+                "method": "post",
+                "headers": {
+                    "Content-Type": 'application/x-www-form-urlencoded' 
+                },
+                "body": usp.toString(),
+            };
+
+            res = await fetch(tokenEndpoint,options);
+
+            if (res.ok) {
+                body = JSON.parse(await res.text())
+
+                if (body.access_token) {
+                    setToken(body.access_token, body.expires_in || Number.MAX_VALUE);
+                    localStorage.setItem("oidc_refresh_token", body.refresh_token);
+                    localStorage.setItem("oidc_id_token", body.id_token);
+
+                    b64_url = body.access_token.split('.')[1];
+                    b64 = b64_url.replace(/-/g, '+').replace(/_/g, '/');
+                    at_json = JSON.parse(atob(b64));
+                    if ('preferred_username' in at_json) {
+                        onLoginSucceeded(at_json.preferred_username, "oidc");
+                    } else {
+                        onLoginSucceeded(at_json.sub, "oidc");
+                    }
+                } else {
+                    await handleLogout();
+                }
+            }
+        } catch (err) {
+            notyf.error("Error refreshing authentication");
+            console.log(err);
+        }
     }
 
     // Wire up buttons and inputs
@@ -393,6 +581,11 @@ window.onload = async () => {
     const passwordInput = document.getElementById("password");
     if (passwordInput) {
         passwordInput.onkeyup = handleKeyup;
+    }
+
+    const oidcLoginButton = document.getElementById("oidcLogin");
+    if (oidcLoginButton) {
+        oidcLoginButton.onclick = handleOidcLogin;
     }
 
     document.getElementById("stop").onclick = handleServerStop;

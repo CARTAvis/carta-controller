@@ -8,6 +8,7 @@ import {generateLocalRefreshHandler, generateLocalVerifier} from "./local";
 import {getLdapLoginHandler} from "./ldap";
 import {getPamLoginHandler} from "./pam";
 import {generateGoogleVerifier, validGoogleIssuers} from "./google";
+import {initialiseOidc} from "./oidc";
 
 // maps JWT claim "iss" to a token verifier
 const tokenVerifiers = new Map<string, Verifier>();
@@ -39,6 +40,9 @@ if (ServerConfig.authProviders.pam) {
     if (authConf.userLookupTable) {
         watchUserTable(userMaps, validGoogleIssuers, authConf.userLookupTable);
     }
+} else if (ServerConfig.authProviders.oidc) {
+    const authConf = ServerConfig.authProviders.oidc;
+    initialiseOidc(tokenVerifiers, userMaps, authConf);
 } else if (ServerConfig.authProviders.external) {
     const authConf = ServerConfig.authProviders.external;
     generateExternalVerifiers(tokenVerifiers, authConf);
@@ -48,8 +52,11 @@ if (ServerConfig.authProviders.pam) {
     }
 }
 
-// Check for empty token verifies
-if (!tokenVerifiers.size) {
+// Check for empty token verifiers
+// Note that for OpenID connect the information needed to verify is
+// not yet available due to the need to load metadata so excluding
+// that use case for now
+if (!ServerConfig.authProviders.oidc && !tokenVerifiers.size) {
     console.error("No valid token verifiers specified");
     process.exit(1);
 }

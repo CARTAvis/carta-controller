@@ -85,7 +85,12 @@ if (testUser) {
 
     app.get("/dashboard", (req, res) => {
         res.render("templated", {
-            clientId: ServerConfig.authProviders.google?.clientId,
+            oidcAuthEndpoint: RuntimeConfig.authPath,
+            oidcClientId: ServerConfig.authProviders.oidc?.clientId,
+            oidcTokenEndpoint: RuntimeConfig.tokenRefreshAddress,
+            oidcScope: ServerConfig.authProviders.oidc?.scope,
+            logout: RuntimeConfig.logoutAddress,
+            googleClientId: ServerConfig.authProviders.google?.clientId,
             hostedDomain: ServerConfig.authProviders.google?.validDomain,
             bannerColor: ServerConfig.dashboard?.bannerColor,
             backgroundColor: ServerConfig.dashboard?.backgroundColor,

@@ -40,6 +40,23 @@ export interface CartaExternalAuthConfig {
     logoutAddress: string;
 }
 
+export interface CartaOidcAuthConfig {
+    // URL from which the OpenID Connect endpoint's metadata can be retrieved
+    idpUrl: string;
+    // Unique field to be used as username
+    uniqueField: string;
+    // Client ID as registered with the OpenID connect endpoint.
+    clientId: string;
+    // User lookup table as text file in format <authenticated username> <system user>. If no user lookup is needed, leave this blank
+    scope?: string;
+    // Scopes to request.
+    userLookupTable?: string;
+    // Field containing list of groups/roles possessed by the user
+    groupsField?: string;
+    // Value to be required as one of the listed user groups/roles in groupsField
+    requiredGroup?: string;
+}
+
 export enum ScriptingAccess {
     Enabled = "enabled-all-users",
     Disabled = "disabled-all-users",
@@ -53,6 +70,7 @@ export interface CartaServerConfig {
         ldap?: CartaLdapAuthConfig;
         google?: CartaGoogleAuthConfig;
         external?: CartaExternalAuthConfig;
+        oidc?: CartaOidcAuthConfig;
     };
     database: {
         uri: string;
@@ -124,6 +142,8 @@ export interface CartaRuntimeConfig {
     tokenRefreshAddress?: string;
     logoutAddress?: string;
     authPath?: string;
+
+    oidcClientId?: string;
 }
 
 export type RequestHandler = (req: express.Request, res: express.Response) => void;

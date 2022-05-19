@@ -116,6 +116,8 @@ if (serverConfig.authProviders.google) {
 } else if (serverConfig.authProviders.external) {
     runtimeConfig.tokenRefreshAddress = serverConfig.authProviders.external.tokenRefreshAddress;
     runtimeConfig.logoutAddress = serverConfig.authProviders.external.logoutAddress;
+} else if (serverConfig.authProviders.oidc) {
+    // This is handled during the OIDC initialization phase as this is not known in advance
 } else {
     runtimeConfig.tokenRefreshAddress = runtimeConfig.apiAddress + "/auth/refresh";
     runtimeConfig.logoutAddress = runtimeConfig.apiAddress + "/auth/logout";
