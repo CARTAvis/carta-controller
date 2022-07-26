@@ -432,11 +432,13 @@
         "dashboardAddress": {
             "description": "Optional parameter for explicitly configuring the dashboard address. This can be absolute or relative. This is required if running the controller on a subdirectory",
             "type": "string",
+            "format": "uri-reference",
             "examples": ["https://my-server.com/carta/dashboard", "/carta/dashboard", "/carta-versions/dev/dashboard"]
         },
         "apiAddress": {
             "description": "Optional parameter for explicitly configuring a custom API base address. This can be absolute or relative. This is required if running the controller on a subdirectory",
             "type": "string",
+            "format": "uri-reference",
             "examples": ["https://my-server.com/carta/api", "/carta/api", "/carta-versions/dev/api"]
         },
         "frontendPath": {
