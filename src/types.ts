@@ -50,7 +50,7 @@ export interface CartaOidcAuthConfig {
     // Client secret as registered with the OpenID connect endpoint.
     clientSecret: string;
     // User lookup table as text file in format <authenticated username> <system user>. If no user lookup is needed, leave this blank
-    scope?: string;
+    scope: string;
     // Scopes to request.
     userLookupTable?: string;
     // Field containing list of groups/roles possessed by the user

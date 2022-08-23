@@ -48,15 +48,130 @@ export async function initOidc(authConf: CartaOidcAuthConfig) {
     jwksManager = jose.createRemoteJWKSet(new URL(idpConfig.data['jwks_uri']));
 }
 
+// A helper function as initial call to the IdP token endpoint and renewals are mostly the same
+async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request, res: express.Response, authConf: CartaOidcAuthConfig, scriptingToken: boolean = false, isLogin: boolean = false) {
+    // Fill in the common request elements
+    usp.set("client_id", authConf.clientId);
+    usp.set("client_secret", authConf.clientSecret);
+    usp.set("scope", authConf.scope);
+
+    try {
+        const result = await axios.post(`${oidcTokenEndpoint}`, usp);
+        if (result.status != 200) {
+            console.log(result)
+            console.log("auth error")
+            return res.status(403).json({statusCode: 403, message: "Authentication error"});
+        }
+
+        const { payload, protectedHeader } = await jose.jwtVerify(result.data['id_token'], jwksManager); 
+
+        // Check audience
+        if (payload.aud != authConf.clientId) {
+            console.log(result)
+            console.log(`invalid payload aud: ${payload.aud}`)
+            return res.status(403).json({statusCode: 403, message: "Received an ID token not directed to us"});
+        }
+
+        let username = payload[authConf.uniqueField];
+        if (username === undefined) {
+            return res.status(500).json({statusCode: 500, message: "Unable to determine user ID from upstream token"});
+        }
+
+        // Build a pseudo-refresh token
+        // If there's no actual refresh token then this will only last for as long as the access token does
+        const refreshData = { username };
+        if (result.data['refresh_token'] !== undefined) {
+            refreshData['refresh_token'] = result.data['refresh_token'];
+        }
+        const refreshExpiry = result.data['refresh_expires_in'] !== undefined ? result.data['refresh_expires_in'] : result.data['expires_in'];
+        refreshData['access_token_expiry'] =  floor(new Date().getTime() / 1000) + result.data['expires_in'];
+
+        // Check group membership
+        if (authConf.requiredGroup !== undefined) {
+            if (payload[`${authConf.groupsField}`] === undefined) {
+                console.log(payload[`${authConf.groupsField}`])
+                console.log(result)
+                return res.status(403).json({statusCode: 403, message: "Identity Provider did not supply group membership"})
+            }
+            const idpGroups = payload[`${authConf.groupsField}`];
+            if (Array.isArray(idpGroups)) {
+                const groupList: string[] = idpGroups;
+                if (!groupList.includes(`${authConf.requiredGroup}`)) {
+                    console.log(groupList)
+                    console.log(authConf.groupsField)
+                    console.log(result)
+                    return res.status(403).json({statusCode: 403, message: "Not part of required group"})
+                } else {
+                    console.debug(`Verified membership in ${authConf.requiredGroup}`)
+                }
+            } else {
+                console.log(result)
+                console.log("invalid groups")
+                return res.status(403).json({statusCode: 403, message: "Invalid group membership info received"})
+            }
+        }
+
+        const rt = await new jose.SignJWT(refreshData)
+            .setProtectedHeader({ alg: 'RS256' })
+            .setIssuedAt()
+            .setIssuer(authConf.issuer)
+            .setExpirationTime(`${refreshExpiry}s`)
+            .sign(privateKey);
+
+        res.cookie("Refresh-Token", rt, {
+            path: RuntimeConfig.authPath,
+            maxAge: parseInt(refreshExpiry) * 1000,
+            httpOnly: true,
+            secure: !ServerConfig.httpOnly,
+            sameSite: "strict"
+        });
+
+        if (result.data['id_token'] !== undefined) {
+            res.cookie("Logout-Token", result.data['id_token'], {
+                path: RuntimeConfig.logoutAddress,
+                httpOnly: true,
+                secure: !ServerConfig.httpOnly,
+                sameSite: "strict"
+            });
+        }
+
+        // After login redirect to the dashboard, but otherwise return a bearer token
+        if (isLogin) {
+            return res.redirect(`${new URL(`${RuntimeConfig.dashboardAddress}`, ServerConfig.serverAddress).href}?${new URLSearchParams(`oidcuser=${username}`).toString()}`);
+        }
+        else {
+            let newAccessToken = { username };
+            if (scriptingToken)
+                newAccessToken['scripting'] = true;
+            const newAccessTokenJWT = await new jose.SignJWT(newAccessToken)
+                .setProtectedHeader({ alg: authConf.keyAlgorithm })
+                .setIssuedAt()
+                .setIssuer(authConf.issuer)
+                .setExpirationTime(`${result.data['expires_in']}s`)
+                .sign(privateKey);
+            return res.json({
+                access_token: newAccessTokenJWT,
+                token_type: "bearer",
+                username: payload.username,
+                expires_in: result.data['expires_in']
+            });
+        }
+
+    } catch(err) {
+        console.warn(err);
+        return res.status(500).json({statusCode: 500, message: "Error requesting tokens from identity provider"});
+    }
+}
+
 export function generateLocalOidcRefreshHandler (authConf: CartaOidcAuthConfig) {
-    return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    return async (req: express.Request, res: express.Response) => {
         console.log("Running OIDC refresh handler")
         const refreshTokenCookie = req.cookies["Refresh-Token"];
         const scriptingToken = req.body?.scripting === true;
 
         if (refreshTokenCookie) {
             try {
-                // Verify that the thing is legit
+                // Verify that the token is legit
                 const { payload, protectedHeader } = await jose.jwtVerify(refreshTokenCookie, publicKey); 
 
                 // Check if access token validity is there and at least cacheAccessTokenMinValidity seconds from expiry
@@ -74,118 +189,33 @@ export function generateLocalOidcRefreshHandler (authConf: CartaOidcAuthConfig) 
                         .setIssuedAt()
                         .setIssuer(`${ServerConfig.authProviders.oidc?.issuer}`)
                         .setExpirationTime(`${remainingValidity}s`)
-                        .sign(privateKey)
+                        .sign(privateKey);
         
                     return res.json({
                         access_token: newAccessTokenJWT,
                         token_type: "bearer",
                         username: payload.username,
                         expires_in: remainingValidity
-                    })
+                    });
                 }
 
                 // Need to request a new token from upstream
-                const usp = new URLSearchParams();
-                usp.set("grant_type", "refresh_token");
-                usp.set("refresh_token", `${payload['refresh_token']}`);
-                usp.set("client_id", `${ServerConfig.authProviders.oidc?.clientId}`);
-                usp.set("client_secret", `${ServerConfig.authProviders.oidc?.clientSecret}`);
-                usp.set('redirect_uri', (new URL(RuntimeConfig.apiAddress + '/auth/oidcCallback', ServerConfig.serverAddress)).href);
-                usp.set('scope', `${ServerConfig.authProviders.oidc?.scope}`)
+                if (payload['refresh_token'] !== undefined) {
+                    const usp = new URLSearchParams();
+                    usp.set("grant_type", "refresh_token");
+                    usp.set("refresh_token", `${payload['refresh_token']}`);
 
-                try {
-                    const result = await axios.post(`${oidcTokenEndpoint}`, usp);
-                    if (result.status != 200) {
-                        return res.status(403).json({statusCode: 403, message: "Authentication error"});
-                    }
-                    const { payload, protectedHeader } = await jose.jwtVerify(result.data['access_token'], jwksManager); 
-                    let username = payload[`${ServerConfig.authProviders.oidc?.uniqueField}`];
-                    if (username === undefined) {
-                        return res.status(500).json({statusCode: 500, message: "Unable to determine user ID from upstream token"})
-                    }
-
-                    // If refresh token and/or ID token in the result set cookies appropriately
-                    if (result.data['refresh_token'] !== undefined) {
-                        const refreshData = {
-                            username,
-                            'refresh_token': result.data['refresh_token'],
-                        };
-                        refreshData['access_token_expiry'] =  floor(new Date().getTime() / 1000) + result.data['expires_in']            
-                        if (payload[`${ServerConfig.authProviders.oidc?.groupsField}`] !== undefined) {
-                            refreshData['groups'] = payload[`${ServerConfig.authProviders.oidc?.groupsField}`];
-                        }
-                        const rt = await new jose.SignJWT(refreshData)
-                            .setProtectedHeader({ alg: 'RS256' })
-                            .setIssuedAt()
-                            .setIssuer(`${ServerConfig.authProviders.oidc?.issuer}`)
-                            .setExpirationTime(`${result.data['refresh_expires_in']}s`)
-                            .sign(privateKey)
-                        res.cookie("Refresh-Token", rt, {
-                            path: RuntimeConfig.authPath,
-                            maxAge: parseInt(result.data['refresh_expires_in']) * 1000,
-                            httpOnly: true,
-                            secure: !ServerConfig.httpOnly,
-                            sameSite: "strict"
-                        });
-                    }
-                    if (result.data['id_token'] !== undefined) {
-                        res.cookie("Logout-Token", result.data['id_token'], {
-                            path: RuntimeConfig.logoutAddress,
-                            httpOnly: true,
-                            secure: !ServerConfig.httpOnly,
-                            sameSite: "strict"
-                        });
-                    }
-            
-                    // Recheck group membership
-                    if (`${ServerConfig.authProviders.oidc?.requiredGroup}` !== undefined) {
-                        if (payload[`${ServerConfig.authProviders.oidc?.groupsField}`] === undefined) {
-                            return res.status(403).json({statusCode: 403, message: "Identity Provider did not supply group membership"})
-                        }
-                        const idpGroups = payload[`${ServerConfig.authProviders.oidc?.groupsField}`];
-                        if (Array.isArray(idpGroups)) {
-                            const groupList: string[] = Array.isArray(idpGroups) ? idpGroups : [];
-                            if (!groupList.includes(`${ServerConfig.authProviders.oidc?.requiredGroup}`)) {
-                                return res.status(403).json({statusCode: 403, message: "Not part of required group"})
-                            } else {
-                                console.log(`Verified membership in ${ServerConfig.authProviders.oidc?.requiredGroup}`)
-                            }
-                        } else {
-                            return res.status(403).json({statusCode: 403, message: "Invalid group membership info received"})
-                        }
-                    }
-
-                    // Construct + return new bearer token
-                    let newAccessToken = { username };
-                    if (scriptingToken)
-                        newAccessToken['scripting'] = true;
-                    const newAccessTokenJWT = await new jose.SignJWT(newAccessToken)
-                        .setProtectedHeader({ alg: authConf.keyAlgorithm })
-                        .setIssuedAt()
-                        .setIssuer(`${ServerConfig.authProviders.oidc?.issuer}`)
-                        .setExpirationTime(`${result.data['expires_in']}s`)
-                        .sign(privateKey)
-                    return res.json({
-                        access_token: newAccessTokenJWT,
-                        token_type: "bearer",
-                        username: payload.username,
-                        expires_in: result.data['expires_in']
-                    })
-
-                } catch(err) {
-                        console.warn(err);
-                        return res.status(500).json({statusCode: 500, message: "Error requesting tokens from identity provider"});
+                    return await callIdpTokenEndpoint(usp, req, res, authConf, scriptingToken);
                 }
 
-
+                // No refresh token available so redirect to login
+                return res.redirect((new URL(RuntimeConfig.apiAddress + '/auth/login', ServerConfig.serverAddress)).href);
             } catch (err) {
-                next({statusCode: 400, message: "Invalid refresh token"});
+                return res.status(400).json({statusCode: 400, message: "Invalid refresh token"});
             }
         } else {
-            next({statusCode: 400, message: "Missing refresh token"});
+            return res.status(400).json({statusCode: 400, message: "Missing refresh token"});
         }
-
-        next({statusCode: 500, message: "Error refreshing token"});
     }
 }
 
@@ -200,7 +230,7 @@ export function generateLocalOidcVerifier (verifierMap: Map<string, Verifier>, a
     });
 }
 
-export function oidcLoginStart (req: express.Request, res: express.Response) {
+export function oidcLoginStart (req: express.Request, res: express.Response, authConf: CartaOidcAuthConfig) {
     const usp = new URLSearchParams();
 
     // Generate PKCE verifier & challenge
@@ -220,22 +250,21 @@ export function oidcLoginStart (req: express.Request, res: express.Response) {
     usp.set('code_challenge_method', 'S256');
     usp.set('code_challenge', codeChallenge);
 
- 
-    usp.set('client_id', `${ServerConfig.authProviders.oidc?.clientId}`);
+    usp.set('client_id', authConf.clientId);
     usp.set('redirect_uri', (new URL(RuntimeConfig.apiAddress + '/auth/oidcCallback', ServerConfig.serverAddress)).href);
     usp.set('response_type', 'code');
-    usp.set('scope', `${ServerConfig.authProviders.oidc?.scope}`)
+    usp.set('scope', authConf.scope);
 
     // Return redirect
     return res.redirect(`${oidcAuthEndpoint}?${usp.toString()}`);
 }
 
-export async function oidcCallbackHandler(req: express.Request, res: express.Response) {
+export async function oidcCallbackHandler(req: express.Request, res: express.Response, authConf: CartaOidcAuthConfig) {
     console.log("Running OIDC callback handler");
     const usp = new URLSearchParams();
 
     if (req.cookies['oidcVerifier'] === undefined) {
-        return res.status(400).json({statusCode: 400, message: "Missing OIDC verifier"})
+        return res.status(400).json({statusCode: 400, message: "Missing OIDC verifier"});
     }
 
     const encryptedCodeVerifier = Buffer.from(req.cookies['oidcVerifier'], 'base64url');
@@ -243,78 +272,11 @@ export async function oidcCallbackHandler(req: express.Request, res: express.Res
 
     usp.set('code_verifier', codeVerifier);
     res.clearCookie("oidcVerifier");
-
-    usp.set("grant_type", "authorization_code");
-    usp.set("client_id", `${ServerConfig.authProviders.oidc?.clientId}`);
-    usp.set("client_secret", `${ServerConfig.authProviders.oidc?.clientSecret}`);
     usp.set("code", `${req.query.code}`);
+    usp.set("grant_type", "authorization_code");
     usp.set('redirect_uri', (new URL(RuntimeConfig.apiAddress + '/auth/oidcCallback', ServerConfig.serverAddress)).href);
-    usp.set('scope', `${ServerConfig.authProviders.oidc?.scope}`)
 
-    try {
-        const result = await axios.post(`${oidcTokenEndpoint}`, usp);
-        if (result.status != 200) {
-            return res.status(403).json({statusCode: 403, message: "Authentication error"});
-        }
-        if (result.data['refresh_token'] !== undefined) {
-            const { payload, protectedHeader } = await jose.jwtVerify(result.data['access_token'], jwksManager); 
-
-            let username = payload[`${ServerConfig.authProviders.oidc?.uniqueField}`];
-            if (username === undefined) {
-                return res.status(500).json({statusCode: 500, message: "Unable to determine user ID from upstream token"})
-            }
-            const refreshData = {
-                'username': username,
-                'refresh_token': result.data['refresh_token'],
-            };
-            refreshData['access_token_expiry'] =  floor(new Date().getTime() / 1000) + result.data['expires_in']
-
-            // Check group membership
-            if (`${ServerConfig.authProviders.oidc?.requiredGroup}` !== undefined) {
-                if (payload[`${ServerConfig.authProviders.oidc?.groupsField}`] === undefined) {
-                    return res.status(403).json({statusCode: 403, message: "Identity Provider did not supply group membership"})
-                }
-                const idpGroups = payload[`${ServerConfig.authProviders.oidc?.groupsField}`];
-                if (Array.isArray(idpGroups)) {
-                    const groupList: string[] = Array.isArray(idpGroups) ? idpGroups : [];
-                    if (!groupList.includes(`${ServerConfig.authProviders.oidc?.requiredGroup}`)) {
-                        return res.status(403).json({statusCode: 403, message: "Not part of required group"})
-                    } else {
-                        console.log(`Verified membership in ${ServerConfig.authProviders.oidc?.requiredGroup}`)
-                    }
-                } else {
-                    return res.status(403).json({statusCode: 403, message: "Invalid group membership info received"})
-                }
-            }
-
-            const rt = await new jose.SignJWT(refreshData)
-                .setProtectedHeader({ alg: 'RS256' })
-                .setIssuedAt()
-                .setIssuer(`${ServerConfig.authProviders.oidc?.issuer}`)
-                .setExpirationTime(`${result.data['refresh_expires_in']}s`)
-                .sign(privateKey)
-
-            res.cookie("Refresh-Token", rt, {
-                path: RuntimeConfig.authPath,
-                maxAge: parseInt(result.data['refresh_expires_in']) * 1000,
-                httpOnly: true,
-                secure: !ServerConfig.httpOnly,
-                sameSite: "strict"
-            });
-
-            res.cookie("Logout-Token", result.data['id_token'], {
-                path: RuntimeConfig.logoutAddress,
-                httpOnly: true,
-                secure: !ServerConfig.httpOnly,
-                sameSite: "strict"
-            });
-
-            return res.redirect(`${new URL(`${RuntimeConfig.dashboardAddress}`, ServerConfig.serverAddress).href}?${new URLSearchParams(`oidcuser=${username}`).toString()}`);
-        }   
-    } catch(err) {
-        console.warn(err);
-        return res.status(500).json({statusCode: 500, message: "Error requesting tokens from identity provider"});
-    }
+    return await callIdpTokenEndpoint (usp, req, res, authConf, false, true);
 }
 
 export async function oidcLogoutHandler(req: express.Request, res: express.Response) {
@@ -345,6 +307,6 @@ export async function oidcLogoutHandler(req: express.Request, res: express.Respo
         return res.redirect(`${oidcLogoutEndpoint}?${usp.toString()}`);
 
     } else {
-        return res.json({success: true});
+        return res.redirect(`${ServerConfig.serverAddress}`);
     }
 }

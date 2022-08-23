@@ -23,6 +23,10 @@ let refreshHandler: AsyncRequestHandler = (req, res) => {
     throw {statusCode: 501, message: "Token refresh not implemented"};
 };
 
+let callbackHandler: AsyncRequestHandler = (req, res) => {
+    throw {statusCode: 501, message: "Token refresh not implemented"};
+};
+
 // Local providers
 if (ServerConfig.authProviders.pam) {
     const authConf = ServerConfig.authProviders.pam;
@@ -51,9 +55,11 @@ if (ServerConfig.authProviders.pam) {
     const authConf = ServerConfig.authProviders.oidc;
     generateLocalOidcVerifier(tokenVerifiers, authConf);
     refreshHandler = generateLocalOidcRefreshHandler(authConf);
-    loginHandler = oidcLoginStart;
+    loginHandler = (req, res) => oidcLoginStart(req, res, authConf);
+    callbackHandler = (req, res) => oidcCallbackHandler(req, res, authConf);
     initOidc(authConf);
     if (authConf.userLookupTable) {
+        console.log(`Using ${authConf.userLookupTable} for user mapping`);
         watchUserTable(userMaps, authConf.issuer, authConf.userLookupTable);
     }
 }
@@ -129,7 +135,7 @@ function handleCheckAuth(req: AuthenticatedRequest, res: express.Response) {
 export const authRouter = express.Router();
 if (ServerConfig.authProviders.oidc) {
     authRouter.get("/logout", noCache, oidcLogoutHandler);
-    authRouter.get("/oidcCallback", noCache, oidcCallbackHandler);
+    authRouter.get("/oidcCallback", noCache, callbackHandler);
     authRouter.get("/login", noCache, loginHandler);
 }
 else {
