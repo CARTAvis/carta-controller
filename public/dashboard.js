@@ -40,7 +40,7 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
     // If access token expires in under 10 seconds, attempt to refresh before making the call
     if (authRequired && tokenExpiryTime < currentTime + 10) {
         try {
-            if (authenticationType === "local") {
+            if (authenticationType === "local" || authenticationType === "oidc") {
                 await refreshLocalToken();
             } else if (authenticationType === "google") {
                 await refreshGoogleToken();
@@ -196,6 +196,8 @@ handleLogout = async () => {
     clearInterval(serverCheckHandle);
     if (authenticationType === "google") {
         await handleGoogleLogout();
+    } else if (authenticationType === "oidc") {
+        window.open(`${apiBase}/auth/logout`, "_self");
     } else {
         await handleLocalLogout();
     }
@@ -357,19 +359,27 @@ window.onload = async () => {
         }]
     });
 
+    // Check for completed OIDC login
+    const usp = new URLSearchParams(window.location.search);
+    if (usp.has("oidcuser")) {
+        console.log("Completed OIDC login")
+        await refreshLocalToken();
+        onLoginSucceeded(usp.get("oidcuser"), "oidc")
+    }
+
     // Hide open button if using popup
     if (isPopup) {
         document.getElementById("open").style.display = "none";
     }
     const existingLoginType = localStorage.getItem("authenticationType");
-    if (existingLoginType === "local") {
+    if (existingLoginType === "local" || (existingLoginType === "oidc" && !usp.has("oidcuser"))) {
         try {
             const res = await apiCall("auth/refresh", {}, "post");
             if (res.ok) {
                 const body = await res.json();
                 if (body.access_token) {
                     setToken(body.access_token, body.expires_in || Number.MAX_VALUE);
-                    await onLoginSucceeded(body.username, "local");
+                    await onLoginSucceeded(body.username, existingLoginType);
                 } else {
                     await handleLogout();
                 }
@@ -393,6 +403,11 @@ window.onload = async () => {
     const passwordInput = document.getElementById("password");
     if (passwordInput) {
         passwordInput.onkeyup = handleKeyup;
+    }
+
+    const oidcLoginButton = document.getElementById("oidcLogin");
+    if (oidcLoginButton) {
+        oidcLoginButton.onclick = () => { window.location.href = `${apiBase}/auth/login` };
     }
 
     document.getElementById("stop").onclick = handleServerStop;

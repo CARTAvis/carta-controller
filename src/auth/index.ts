@@ -5,6 +5,7 @@ import {RequestHandler, AsyncRequestHandler, AuthenticatedRequest, Verifier, Use
 import {ServerConfig, RuntimeConfig} from "../config";
 import {generateExternalVerifiers, watchUserTable} from "./external";
 import {generateLocalRefreshHandler, generateLocalVerifier} from "./local";
+import {generateLocalOidcRefreshHandler, generateLocalOidcVerifier, oidcCallbackHandler, oidcLogoutHandler, oidcLoginStart, initOidc} from "./oidc";
 import {getLdapLoginHandler} from "./ldap";
 import {getPamLoginHandler} from "./pam";
 import {generateGoogleVerifier, validGoogleIssuers} from "./google";
@@ -46,6 +47,15 @@ if (ServerConfig.authProviders.pam) {
     if (tablePath) {
         watchUserTable(userMaps, authConf.issuers, tablePath);
     }
+} else if (ServerConfig.authProviders.oidc) {
+    const authConf = ServerConfig.authProviders.oidc;
+    generateLocalOidcVerifier(tokenVerifiers, authConf);
+    refreshHandler = generateLocalOidcRefreshHandler(authConf);
+    loginHandler = oidcLoginStart;
+    initOidc(authConf);
+    if (authConf.userLookupTable) {
+        watchUserTable(userMaps, authConf.issuer, authConf.userLookupTable);
+    }
 }
 
 // Check for empty token verifies
@@ -80,6 +90,7 @@ export async function authGuard(req: AuthenticatedRequest, res: express.Response
     if (tokenString) {
         try {
             const token = await verifyToken(tokenString);
+
             if (!token || !token.username) {
                 next({statusCode: 403, message: "Not authorized"});
             } else {
@@ -116,7 +127,14 @@ function handleCheckAuth(req: AuthenticatedRequest, res: express.Response) {
 }
 
 export const authRouter = express.Router();
-authRouter.post("/login", noCache, loginHandler);
-authRouter.post("/logout", noCache, logoutHandler);
+if (ServerConfig.authProviders.oidc) {
+    authRouter.get("/logout", noCache, oidcLogoutHandler);
+    authRouter.get("/oidcCallback", noCache, oidcCallbackHandler);
+    authRouter.get("/login", noCache, loginHandler);
+}
+else {
+    authRouter.post("/login", noCache, loginHandler);
+    authRouter.post("/logout", noCache, logoutHandler);
+}
 authRouter.post("/refresh", noCache, refreshHandler);
 authRouter.get("/status", authGuard, noCache, handleCheckAuth);
