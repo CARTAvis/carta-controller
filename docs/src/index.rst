@@ -29,7 +29,7 @@ We officially support Ubuntu 18.04 and 20.04, and RHEL 7 and 8 (and their freely
         :alt: View this backend version on GitHub
         :target: https://github.com/CARTAvis/carta-backend/releases/tag/v3.0.0
 
-.. |npm-package| image:: https://img.shields.io/npm/v/carta-controller/rc.svg?style=flat
+.. |npm-package| image:: https://img.shields.io/npm/v/carta-controller?style=flat
         :alt: View this project on npm
         :target: https://npmjs.org/package/carta-controller
 
