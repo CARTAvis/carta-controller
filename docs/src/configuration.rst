@@ -96,13 +96,13 @@ You can alter the controller's dashboard appearance by adjusting the ``dashboard
 
 The ``httpOnly`` flag can be used to disable secure signing of authentication tokens. This should only be used during initial deployment and testing, or debugging.
 
-The controller assumes it is running at the root directory of your subdomain by default. If you would prefer to run on a subdirectory, you will need to specify the ``dashboardAddress`` and ``apiAddress`` values (relative to your subdomain) explicitly. For example, if you are hosting CARTA at ``https://subdomain.domain.com/carta/version/v3-beta/``, you would need to include the following in your config file:
+The controller assumes it is running at the root directory of your subdomain by default. If you would prefer to run on a subdirectory, you will need to specify the ``dashboardAddress`` and ``apiAddress`` values (relative to your subdomain) explicitly. For example, if you are hosting CARTA at ``https://subdomain.domain.com/carta/version/v3/``, you would need to include the following in your config file:
 
 .. code-block:: json
 
     {
-        "apiAddress": "/carta/version/v3-beta/api",
-        "dashboardAddress": "/carta/version/v3-beta/dashboard"
+        "apiAddress": "/carta/version/v3/api",
+        "dashboardAddress": "/carta/version/v3/dashboard"
     }
 
 .. _config-backend:
