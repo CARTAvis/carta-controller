@@ -355,7 +355,8 @@
                 "localPublicKeyLocation",
                 "localPrivateKeyLocation",
                 "keyAlgorithm",
-                "issuer"
+                "issuer",
+                "symmetricKeyLocation"
             ],
             "properties": {
                 "idpUrl": {
@@ -450,6 +451,31 @@
                     "description": "If previously issued an access token from upstream server with at least this many seconds of lifetime remaining, a local token with the previous token's remaining lifetime will be issued instead of performing an upstream query",
                     "type": "integer",
                     "default": 100
+                },
+                "symmetricKeyLocation": {
+                    "description": "Path to symmetric key (base64-encoded) used for refresh tokens. At present this uses the A256GCM algorithm which requires 32 bytes of random data which can be generated using `openssl rand -base64 32`",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/carta_symmetric.pem"
+                    ]
+                },
+                "symmetricKeyType": {
+                    "description": "As per options at https://www.iana.org/assignments/jose/jose.xhtml when using direct use of shared key",
+                    "type": "string",
+                    "default": "A256GCM"
+                },
+                "additionalAuthParams": {
+                    "description": "additional parameters to include in authentication requests to deal with identity providers ",
+                    "type": "array",
+                    "default": [],
+                    "examples": [
+                        [[["access_type", "offline"], ["prompt", "consent"]]]
+                    ],
+                    "items": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2
+                    }
                 }
             }
         }

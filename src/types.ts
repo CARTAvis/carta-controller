@@ -57,16 +57,23 @@ export interface CartaOidcAuthConfig {
     groupsField?: string;
     // Value to be required as one of the listed user groups/roles in groupsField
     requiredGroup?: string;
-    // Public key used for locally-issued tokens 
+    // Public key used for locally-issued tokens
     localPublicKeyLocation: string;
-    // Private key used for locally-issued tokens 
+    // Private key used for locally-issued tokens
     localPrivateKeyLocation: string;
     // Algorithm for locally-issued tokens
     keyAlgorithm: Algorithm;
-    // Issuer tag for locally-issued tokens
+    // Issuer for locally issued tokens
     issuer: string;
+    // Location of base64-encoded symmetric key for refresh tokens
+    symmetricKeyLocation: string;
+    // Type of symmetric key used
+    // See https://www.iana.org/assignments/jose/jose.xhtml#web-signature-encryption-algorithms
+    symmetricKeyType: string;
     // Recycle access tokens from upstream server if they still have sufficient lifetime remaining (seconds)
     cacheAccessTokenMinValidity: number;
+    // A set of additional parameters to include in token requests
+    additionalAuthParams: Map<string, string>;
 }
 
 export enum ScriptingAccess {

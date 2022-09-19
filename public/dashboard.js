@@ -362,9 +362,12 @@ window.onload = async () => {
     // Check for completed OIDC login
     const usp = new URLSearchParams(window.location.search);
     if (usp.has("oidcuser")) {
-        console.log("Completed OIDC login")
+        console.log("Completed OIDC login");
         await refreshLocalToken();
         onLoginSucceeded(usp.get("oidcuser"), "oidc")
+    } else if (usp.has("err")) {
+        console.log(usp.get("err"));
+        notyf.open({type: "error", message: usp.get("err")});
     }
 
     // Hide open button if using popup
