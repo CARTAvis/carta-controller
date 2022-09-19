@@ -252,7 +252,7 @@ export async function oidcLoginStart (req: express.Request, res: express.Respons
         usp.set('scope', authConf.scope);
 
         // Allow arbitrary params to be passed for IdPs like Google that require additional ones
-        for (var item of authConf.additionalAuthParams) {
+        for (const item of authConf.additionalAuthParams) {
             usp.set(item[0],item[1])
         }
 
