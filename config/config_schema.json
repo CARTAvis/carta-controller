@@ -568,20 +568,19 @@
         "serverAddress": {
             "description": "Public-facing server address. If this is specified, all requests will be redirected to this address, otherwise any address used will be preserved",
             "type": "string",
-            "format": "uri",
-            "pattern": "^https?://"
+            "format": "uri"
         },
         "dashboardAddress": {
-            "description": "Optional parameter for explicitly configuring a custom dashboard address",
+            "description": "Optional parameter for explicitly configuring the dashboard address. This can be absolute or relative. This is required if running the controller on a subdirectory",
             "type": "string",
-            "format": "uri",
-            "pattern": "^https?://"
+            "format": "uri-reference",
+            "examples": ["https://my-server.com/carta/dashboard", "/carta/dashboard", "/carta-versions/dev/dashboard"]
         },
         "apiAddress": {
-            "description": "Optional parameter for explicitly configuring a custom API base address",
+            "description": "Optional parameter for explicitly configuring a custom API base address. This can be absolute or relative. This is required if running the controller on a subdirectory",
             "type": "string",
-            "format": "uri",
-            "pattern": "^https?://"
+            "format": "uri-reference",
+            "examples": ["https://my-server.com/carta/api", "/carta/api", "/carta-versions/dev/api"]
         },
         "frontendPath": {
             "description": "Path to the built frontend folder. If no path is provided, the packaged version will be used",

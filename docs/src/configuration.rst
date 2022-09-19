@@ -57,6 +57,8 @@ We strongly suggest serving over HTTPS and redirecting HTTP traffic to HTTPS, es
    :emphasize-lines: 7-15
    :name: example_nginx
 
+Please ensure that you include a trailing ``/`` when hosting the controller on a subdirectory (e.g. ``location /carta/``).
+
 You can also use other HTTP servers, such as Apache. Please ensure that they are set up to forward both standard HTTP requests and WebSocket traffic to the correct port.
 
 .. _config-dirs:
@@ -93,6 +95,15 @@ If you use an external :ref:`authentication<authentication>` system, you may nee
 You can alter the controller's dashboard appearance by adjusting the ``dashboard`` field in the config file. You can change the banner image and background, and add login instructions or institutional notices.
 
 The ``httpOnly`` flag can be used to disable secure signing of authentication tokens. This should only be used during initial deployment and testing, or debugging.
+
+The controller assumes it is running at the root directory of your subdomain by default. If you would prefer to run on a subdirectory, you will need to specify the ``dashboardAddress`` and ``apiAddress`` values (relative to your subdomain) explicitly. For example, if you are hosting CARTA at ``https://subdomain.domain.com/carta/version/v3-beta/``, you would need to include the following in your config file:
+
+.. code-block:: json
+
+    {
+        "apiAddress": "/carta/version/v3-beta/api",
+        "dashboardAddress": "/carta/version/v3-beta/dashboard"
+    }
 
 .. _config-backend:
 
