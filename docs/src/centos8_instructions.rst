@@ -65,7 +65,7 @@ The easiest way to install the CARTA controller is using ``npm``.
 .. code-block:: shell
 
     sudo dnf install -y python3 make gcc-c++
-    sudo npm install -g --unsafe-perm carta-controller
+    sudo npm install -g --unsafe-perm carta-controller@beta
 
 .. note::
 
@@ -95,7 +95,7 @@ The easiest way may be to install the CARTA backend is from our cartavis RPM rep
     sudo dnf -y install 'dnf-command(copr)'
     sudo dnf -y copr enable cartavis/carta
     sudo dnf -y install epel-release
-    sudo dnf -y install carta-backend
+    sudo dnf -y install carta-backend-beta
 
     # Check that the backend can run and matches the major version number of the controller
     /usr/bin/carta_backend --version
