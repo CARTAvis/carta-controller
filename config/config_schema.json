@@ -448,7 +448,7 @@
                     ]
                 },
                 "cacheAccessTokenMinValidity": {
-                    "description": "If previously issued an access token from upstream server with at least this many seconds of lifetime remaining, a local token with the previous token's remaining lifetime will be issued instead of performing an upstream query",
+                    "description": "If an access token was previously issued from the upstream server with at least this many seconds of lifetime remaining, a new upstream query will not be performed and a local token with the previous token's remaining lifetime will be issued instead",
                     "type": "integer",
                     "default": 100
                 },
@@ -460,7 +460,7 @@
                     ]
                 },
                 "symmetricKeyType": {
-                    "description": "As per options at https://www.iana.org/assignments/jose/jose.xhtml when using direct use of shared key",
+                    "description": "Selected from the 'JSON Web Signature and Encryption Algorithms' section of https://www.iana.org/assignments/jose/jose.xhtml",
                     "type": "string",
                     "default": "A256GCM"
                 },
