@@ -1,4 +1,6 @@
 import * as express from "express";
+import {execSync} from "child_process";
+
 import {verboseOutput} from "./config";
 
 // Delay for the specified number of milliseconds
@@ -25,4 +27,18 @@ export function verboseError(...args: any[]) {
     if (verboseOutput) {
         console.error(args);
     }
+}
+
+export function getUserId(username: string) {
+    if (!username) {
+        throw new Error("Missing argument for username");
+    }
+    const result = execSync(`id -i ${username}`)?.toString();
+    if (result) {
+        const uid = Number.parseInt(result);
+        if (isFinite(uid)) {
+            return uid;
+        }
+    }
+    throw new Error(`Can't find uid for username ${username}`);
 }

@@ -3,12 +3,11 @@ import * as fs from "fs";
 import {MongoClient} from "mongodb";
 import * as LdapAuth from "ldapauth-fork";
 import * as logSymbols from "log-symbols";
-import * as userid from "userid";
 import * as chalk from "chalk";
 import * as moment from "moment";
 import {ServerConfig, testUser} from "./config";
 import {ChildProcess, spawn, spawnSync} from "child_process";
-import {delay, verboseError, verboseLog} from "./util";
+import {delay, getUserId, verboseError, verboseLog} from "./util";
 import {client} from "websocket";
 import {CartaLdapAuthConfig, CartaLocalAuthConfig} from "./types";
 import {generateToken, TokenType} from "./auth/local";
@@ -117,7 +116,7 @@ async function testDatabase() {
 function testUid(username: string) {
     let uid: number;
     try {
-        uid = userid.uid(username);
+        uid = getUserId(username);
     } catch (e) {
         verboseError(e);
         throw new Error(`Cannot verify uid of user ${username}`);
