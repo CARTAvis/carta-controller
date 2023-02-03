@@ -33,7 +33,7 @@ export function getUserId(username: string) {
     if (!username) {
         throw new Error("Missing argument for username");
     }
-    const result = execSync(`id -i ${username}`)?.toString();
+    const result = execSync(`id -u ${username}`)?.toString();
     if (result) {
         const uid = Number.parseInt(result);
         if (isFinite(uid)) {
