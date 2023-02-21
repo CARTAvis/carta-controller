@@ -1,5 +1,5 @@
 import * as express from "express";
-import {execSync} from "child_process";
+import {spawnSync} from "child_process";
 
 import {verboseOutput} from "./config";
 
@@ -39,7 +39,7 @@ export function getUserId(username: string) {
         throw new Error("Malformed argument for username");
     }
 
-    const result = execSync(`id -u ${username}`)?.toString();
+    const result = spawnSync("id", ["-u", username])?.stdout;
     if (result) {
         const uid = Number.parseInt(result);
         if (isFinite(uid)) {
