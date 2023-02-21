@@ -33,6 +33,12 @@ export function getUserId(username: string) {
     if (!username) {
         throw new Error("Missing argument for username");
     }
+
+    const usernameRegex = /^[a-z_][a-z0-9_-]*[$]?$/gm;
+    if (!username.match(usernameRegex)) {
+        throw new Error("Malformed argument for username");
+    }
+
     const result = execSync(`id -u ${username}`)?.toString();
     if (result) {
         const uid = Number.parseInt(result);
