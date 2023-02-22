@@ -58,7 +58,7 @@ function testLdap(authConf: CartaLdapAuthConfig, username: string) {
             try {
                 ldap = new LdapAuth(authConf.ldapOptions);
                 setTimeout(() => {
-                    read({prompt: `Password for user ${username}:`, silent: true}, (er: any, password: string) => {
+                    read({prompt: `Password for user ${username}:`, silent: true}).then(password => {
                         ldap.authenticate(username, password, (error, user) => {
                             if (error) {
                                 verboseError(error);
@@ -87,7 +87,7 @@ function testPam(authConf: CartaLocalAuthConfig, username: string) {
 
     return new Promise<void>((resolve, reject) => {
         if (authConf) {
-            read({prompt: `Password for user ${username}:`, silent: true}, (er: any, password: string) => {
+            read({prompt: `Password for user ${username}:`, silent: true}).then(password => {
                 pamAuthenticate({username, password}, (err: Error | string, code: number) => {
                     if (err) {
                         verboseError(err);
@@ -104,7 +104,7 @@ function testPam(authConf: CartaLocalAuthConfig, username: string) {
 
 async function testDatabase() {
     try {
-        const client = await MongoClient.connect(ServerConfig.database.uri, {useUnifiedTopology: true});
+        const client = await MongoClient.connect(ServerConfig.database.uri);
         const db = await client.db(ServerConfig.database.databaseName);
         await db.listCollections({}, {nameOnly: true}).hasNext();
     } catch (e) {

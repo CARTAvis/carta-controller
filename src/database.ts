@@ -27,7 +27,7 @@ let snippetsCollection: Collection;
 async function updateUsernameIndex(collection: Collection, unique: boolean) {
     const hasIndex = await collection.indexExists("username");
     if (!hasIndex) {
-        await collection.createIndex({username: 1}, {name: "username", unique, dropDups: unique});
+        await collection.createIndex({username: 1}, {name: "username", unique});
         console.log(`Created username index for collection ${collection.collectionName}`);
     }
 }
@@ -45,7 +45,7 @@ async function createOrGetCollection(db: Db, collectionName: string) {
 export async function initDB() {
     if (ServerConfig.database?.uri && ServerConfig.database?.databaseName) {
         try {
-            client = await MongoClient.connect(ServerConfig.database.uri, {useUnifiedTopology: true});
+            client = await MongoClient.connect(ServerConfig.database.uri);
             const db = await client.db(ServerConfig.database.databaseName);
             layoutsCollection = await createOrGetCollection(db, "layouts");
             snippetsCollection = await createOrGetCollection(db, "snippets");
@@ -115,7 +115,7 @@ async function handleSetPreferences(req: AuthenticatedRequest, res: express.Resp
 
     try {
         const updateResult = await preferenceCollection.updateOne({username: req.username}, {$set: update}, {upsert: true});
-        if (updateResult.result?.ok) {
+        if (updateResult.acknowledged) {
             res.json({success: true});
         } else {
             return next({statusCode: 500, message: "Problem updating preferences"});
@@ -148,7 +148,7 @@ async function handleClearPreferences(req: AuthenticatedRequest, res: express.Re
 
     try {
         const updateResult = await preferenceCollection.updateOne({username: req.username}, {$unset: update});
-        if (updateResult.result?.ok) {
+        if (updateResult.acknowledged) {
             res.json({success: true});
         } else {
             return next({statusCode: 500, message: "Problem clearing preferences"});
@@ -207,7 +207,7 @@ async function handleSetLayout(req: AuthenticatedRequest, res: express.Response,
 
     try {
         const updateResult = await layoutsCollection.updateOne({username: req.username, name: layoutName, layout}, {$set: {layout}}, {upsert: true});
-        if (updateResult.result?.ok) {
+        if (updateResult.acknowledged) {
             res.json({success: true});
         } else {
             return next({statusCode: 500, message: "Problem updating layout"});
@@ -230,7 +230,7 @@ async function handleClearLayout(req: AuthenticatedRequest, res: express.Respons
     const layoutName = req.body?.layoutName;
     try {
         const deleteResult = await layoutsCollection.deleteOne({username: req.username, name: layoutName});
-        if (deleteResult.result?.ok) {
+        if (deleteResult.acknowledged) {
             res.json({success: true});
         } else {
             return next({statusCode: 500, message: "Problem clearing layout"});
@@ -289,7 +289,7 @@ async function handleSetSnippet(req: AuthenticatedRequest, res: express.Response
 
     try {
         const updateResult = await snippetsCollection.updateOne({username: req.username, name: snippetName, snippet}, {$set: {snippet}}, {upsert: true});
-        if (updateResult.result?.ok) {
+        if (updateResult.acknowledged) {
             res.json({success: true});
         } else {
             return next({statusCode: 500, message: "Problem updating snippet"});
@@ -312,7 +312,7 @@ async function handleClearSnippet(req: AuthenticatedRequest, res: express.Respon
     const snippetName = req.body?.snippetName;
     try {
         const deleteResult = await snippetsCollection.deleteOne({username: req.username, name: snippetName});
-        if (deleteResult.result?.ok) {
+        if (deleteResult.acknowledged) {
             res.json({success: true});
         } else {
             return next({statusCode: 500, message: "Problem clearing snippet"});
