@@ -13,9 +13,9 @@ import * as chalk from "chalk";
 import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./serverHandlers";
 import {authGuard, authRouter} from "./auth";
 import {databaseRouter, initDB} from "./database";
-import {ServerConfig, RuntimeConfig, testUser} from "./config";
+import {RuntimeConfig, ServerConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
-import logSymbols = require("log-symbols");
+import * as logSymbols from "log-symbols";
 
 if (testUser) {
     runTests(testUser).then(
