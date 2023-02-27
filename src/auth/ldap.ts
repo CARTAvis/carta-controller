@@ -1,9 +1,8 @@
 import * as express from "express";
-import * as userid from "userid";
 import * as LdapAuth from "ldapauth-fork";
 import {CartaLdapAuthConfig} from "../types";
 import {addTokensToResponse} from "./local";
-import {verboseError, verboseLog} from "../util";
+import {getUserId, verboseError, verboseLog} from "../util";
 
 let ldap: LdapAuth;
 
@@ -37,7 +36,7 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
                 verboseLog(user);
             }
             try {
-                const uid = userid.uid(username);
+                const uid = getUserId(username);
                 console.log(`Authenticated as user ${username} with uid ${uid} using LDAP`);
                 return addTokensToResponse(res, authConf, username);
             } catch (e) {

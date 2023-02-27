@@ -1,7 +1,7 @@
 import * as express from "express";
-import * as userid from "userid";
 import {CartaLocalAuthConfig} from "../types";
 import {addTokensToResponse} from "./local";
+import {getUserId} from "../util";
 
 export function getPamLoginHandler(authConf: CartaLocalAuthConfig) {
     const {pamAuthenticate} = require("node-linux-pam");
@@ -19,7 +19,7 @@ export function getPamLoginHandler(authConf: CartaLocalAuthConfig) {
                 return res.status(403).json({statusCode: 403, message: "Invalid username/password combo"});
             } else {
                 try {
-                    const uid = userid.uid(username);
+                    const uid = getUserId(username);
                     console.log(`Authenticated as user ${username} with uid ${uid} using PAM`);
                     return addTokensToResponse(res, authConf, username);
                 } catch (e) {

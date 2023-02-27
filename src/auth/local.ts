@@ -3,10 +3,10 @@ import * as fs from "fs";
 import * as jwt from "jsonwebtoken";
 import {VerifyOptions} from "jsonwebtoken";
 import * as express from "express";
-import * as userid from "userid";
 import {verifyToken} from "./index";
 import {RuntimeConfig, ServerConfig} from "../config";
 import ms = require("ms");
+import {getUserId} from "../util";
 
 let privateKey: Buffer;
 
@@ -88,7 +88,7 @@ export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
                 } else if (scriptingToken && ServerConfig.scriptingAccess !== ScriptingAccess.Enabled) {
                     next({statusCode: 500, message: "Scripting access not enabled for this server"});
                 } else {
-                    const uid = userid.uid(refreshToken.username);
+                    const uid = getUserId(refreshToken.username);
                     const access_token = generateToken(authConf, refreshToken.username, scriptingToken ? TokenType.Scripting : TokenType.Access);
                     console.log(`Refreshed ${scriptingToken ? "scripting" : "access"} token for user ${refreshToken.username} with uid ${uid}`);
                     res.json({
