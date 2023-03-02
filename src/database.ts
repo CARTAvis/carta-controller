@@ -19,7 +19,7 @@ const validatePreferences = ajv.compile(preferenceSchema);
 const validateLayout = ajv.compile(layoutSchema);
 const validateSnippet = ajv.compile(snippetSchema);
 
-export let client: MongoClient;
+let client: MongoClient;
 let preferenceCollection: Collection;
 let layoutsCollection: Collection;
 let snippetsCollection: Collection;

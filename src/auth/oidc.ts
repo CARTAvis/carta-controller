@@ -7,8 +7,9 @@ import type { GetKeyFunction } from "jose/dist/types/types"
 import {CartaOidcAuthConfig} from "../types";
 import {RuntimeConfig, ServerConfig} from "../config";
 import {Verifier} from "../types";
-import { createHash, createPrivateKey, createPublicKey, createSecretKey, KeyObject } from "crypto";
+import { createHash, createPrivateKey, createPublicKey, createSecretKey, KeyObject, randomBytes } from "crypto";
 import { ceil, floor } from "lodash";
+import {initRefreshManager, acquireRefreshLock, releaseRefreshLock, getAccessTokenExpiry, clearTokens, setAccessTokenExpiry, setRefreshToken, getRefreshToken} from "./oidcRefreshManager";
 
 let privateKey: KeyObject;
 let publicKey: KeyObject;
@@ -36,6 +37,9 @@ export async function initOidc(authConf: CartaOidcAuthConfig) {
     // Init JWKS key management
     console.log(`Setting up JWKS management for ${idpConfig.data['jwks_uri']}`);
     jwksManager = jose.createRemoteJWKSet(new URL(idpConfig.data['jwks_uri']));
+
+    // Init refresh token management
+    await initRefreshManager();
 }
 
 function returnErrorMsg (req: express.Request, res: express.Response, statusCode: number, msg: string) {
@@ -67,7 +71,9 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
 
         const { payload, protectedHeader } = await jose.jwtVerify(result.data['id_token'], jwksManager, {
             issuer: oidcIssuer,
-        }); 
+        });
+
+        console.log(`jti: ${payload.jti}`);
 
         // Check audience
         if (payload.aud != authConf.clientId) {
