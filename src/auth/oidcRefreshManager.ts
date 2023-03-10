@@ -9,7 +9,7 @@ let lockCollection: Collection;
 let refreshTokenCollection: Collection;
 let accessTokenLifeTimesCollection: Collection;
 
-export async function initRefreshManager() {    
+export async function initRefreshManager() {
     try {
         // A weird error occurs when a second DB object is created using same client
         // so recreating the client here as well
@@ -20,30 +20,29 @@ export async function initRefreshManager() {
         if (! await db.listCollections({name: "tokenLock"}, {nameOnly: true}).hasNext()) {
           console.log("Creating token lock collection")
           lockCollection = await db.createCollection("tokenLock");
-          //lockCollection.createIndex({ "expireAt": 1 }, { expireAfterSeconds: 0 })
-          //lockCollection.createIndex({ "username": 1, "sessionid": 1 }, { unique: true })
         } else {
           lockCollection = await db.collection("tokenLock");
         }
         if (! await db.listCollections({name: "refreshTokens"}, {nameOnly: true}).hasNext()) {
           console.log("Creating refresh tokens collection")
           refreshTokenCollection = await db.createCollection("refreshTokens");
-          //refreshTokenCollection.createIndex({ "expireAt": 1 }, { expireAfterSeconds: 0 })
-          //refreshTokenCollection.createIndex({ "username": 1, "sessionid": 1 }, { unique: true })
         } else {
           refreshTokenCollection = await db.collection("refreshTokens")
         }
         if (! await db.listCollections({name: "accessTokenLifetimes"}, {nameOnly: true}).hasNext()) {
           console.log("Creating access token's lifetimes collection")
           accessTokenLifeTimesCollection = await db.createCollection("accessTokenLifetimes");
-          //accessTokenLifeTimesCollection.createIndex({ "expireAt": 1 }, { expireAfterSeconds: 0 })
-          //accessTokenLifeTimesCollection.createIndex({ "username": 1, "sessionid": 1 }, { unique: true })
         } else {
           accessTokenLifeTimesCollection = await db.collection("accessTokenLifetimes");
         }
 
-        // Create indices ... same ones for each collection
-        for (let coll of [lockCollection, refreshTokenCollection, accessTokenLifeTimesCollection]) {
+        // Create indices
+        const hasLockSessionIndex = await lockCollection.indexExists("lockSession");
+        if (!hasLockSessionIndex) {
+          await lockCollection.createIndex({sessionid: 1}, {name: "lockSession", unique: true});
+          console.log("Created session index for lockSession collection");
+        }
+        for (let coll of [refreshTokenCollection, accessTokenLifeTimesCollection]) {
           const hasUserSessionIndex = await coll.indexExists("userSession");
           if (!hasUserSessionIndex) {
             await coll.createIndex({username: 1, sessionid: 1 }, {name: "userSession", unique: true});
@@ -74,7 +73,7 @@ It should be noted that as per the MongoDB documentation on expiry, this
 is run as a background task only once every 60 seconds and may take some
 additional time to finish removing the entry if the server is busy.
 */
-export async function acquireRefreshLock(username, sessionid, expiresIn,
+export async function acquireRefreshLock(sessionid, expiresIn,
   numRetries=40, msBetweenRetries=500) {
 
     const expireAt = new Date(Date.now() + expiresIn*1000);
@@ -82,7 +81,6 @@ export async function acquireRefreshLock(username, sessionid, expiresIn,
     for (let i = 0; i < numRetries; i++) {
       try {
         await lockCollection.insertOne({
-          username,
           sessionid,
           expireAt
         });
@@ -105,10 +103,10 @@ export async function acquireRefreshLock(username, sessionid, expiresIn,
     return false;
 }
 
-export async function releaseRefreshLock(username, sessionid) {
+export async function releaseRefreshLock(sessionid) {
   // Delete lock record from DB
   try {
-    const deleteResult = await lockCollection.deleteOne({username, sessionid});
+    const deleteResult = await lockCollection.deleteOne({sessionid});
     return deleteResult.acknowledged;
   } catch (e) {
     console.log(e);

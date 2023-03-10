@@ -57,7 +57,7 @@ function returnErrorMsg (req: express.Request, res: express.Response, statusCode
 // A helper function as initial call to the IdP token endpoint and renewals are mostly the same
 async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request, res: express.Response,
                                      authConf: CartaOidcAuthConfig, scriptingToken: boolean = false,
-                                     isLogin: boolean = false) {
+                                     isLogin: boolean = false, sessionId: string) {
     // Fill in the common request elements
     usp.set("client_id", authConf.clientId);
     usp.set("client_secret", authConf.clientSecret);
@@ -73,11 +73,23 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
             issuer: oidcIssuer,
         });
 
-        console.log(`jti: ${payload.jti}`);
-
         // Check audience
         if (payload.aud != authConf.clientId) {
             return returnErrorMsg(req, res, 500, "Service received an ID token directed to a different service");
+        }
+
+        // Create / retrieve session encryption key
+        let sessionEncKey;
+        if (usp.get('grant_type') === "authorization_code") {
+            console.log("Doing initial login")
+            sessionEncKey = randomBytes(16);
+        } else {
+            if (payload['key'] === undefined) {
+                return returnErrorMsg(req, res, 400, "Service received an ID token directed to a different service");
+            } else {
+                console.log("Received key")
+                sessionEncKey = Buffer.from(`${payload['sessionEncKey']}`, 'hex');
+            }
         }
 
         let username = payload[authConf.uniqueField];
@@ -85,14 +97,18 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
             return returnErrorMsg(req, res, 500, "Unable to match to a local user");
         }
 
-        // Build a pseudo-refresh token
-        // If there's no actual refresh token then this will only last for as long as the access token does
-        const refreshData = { username };
+        // Update DB to reflect new token + associated access token expiry
         if (result.data['refresh_token'] !== undefined) {
-            refreshData['refresh_token'] = result.data['refresh_token'];
+            //refreshData['refresh_token'] = result.data['refresh_token'];
+            setRefreshToken(username, sessionId, result.data['refresh_token'],
+                            sessionEncKey, parseInt(result.data['refresh_expires_in']));
         }
+
         const refreshExpiry = result.data['refresh_expires_in'] !== undefined ? result.data['refresh_expires_in'] : result.data['expires_in'];
-        refreshData['access_token_expiry'] =  floor(new Date().getTime() / 1000) + result.data['expires_in'];
+        //refreshData['access_token_expiry'] =  floor(new Date().getTime() / 1000) + result.data['expires_in'];
+        if (result.data['expires_in'] !== undefined) {
+            setAccessTokenExpiry(username, sessionId, parseInt(result.data['expires_in']));
+        }
 
         // Check group membership
         if (authConf.requiredGroup !== undefined) {
@@ -110,6 +126,9 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
             }
         }
 
+        // Build refresh token
+        // If there's no actual refresh token then this will only last for as long as the access token does
+        const refreshData = { username, sessionId, sessionEncKey };
         const rt = await new jose.EncryptJWT(refreshData)
             .setProtectedHeader({ alg: 'dir', enc: authConf.symmetricKeyType })
             .setIssuedAt()
@@ -175,7 +194,8 @@ export function generateLocalOidcRefreshHandler (authConf: CartaOidcAuthConfig) 
                 }); 
 
                 // Check if access token validity is there and at least cacheAccessTokenMinValidity seconds from expiry
-                const remainingValidity = parseInt(`${payload['access_token_expiry']}`) - ceil(new Date().getTime() / 1000);
+                //const remainingValidity = parseInt(`${payload['access_token_expiry']}`) - ceil(new Date().getTime() / 1000);
+                const remainingValidity = await getAccessTokenExpiry(payload.username, payload.sessionId);
 
                 if (remainingValidity > authConf.cacheAccessTokenMinValidity) {
                     let newAccessToken = {
@@ -203,9 +223,10 @@ export function generateLocalOidcRefreshHandler (authConf: CartaOidcAuthConfig) 
                 if (payload['refresh_token'] !== undefined) {
                     const usp = new URLSearchParams();
                     usp.set("grant_type", "refresh_token");
-                    usp.set("refresh_token", `${payload['refresh_token']}`);
+                    //usp.set("refresh_token", `${payload['refresh_token']}`);
+                    usp.set("refresh_token", `${await getRefreshToken(payload.username, payload.sessionId, payload.sessionEncKey)}`);
 
-                    return await callIdpTokenEndpoint(usp, req, res, authConf, scriptingToken);
+                    return await callIdpTokenEndpoint(usp, req, res, authConf, scriptingToken, false, `${payload['sessionId']}`);
                 }
 
                 // No refresh token available so redirect to login
@@ -252,6 +273,17 @@ export async function oidcLoginStart (req: express.Request, res: express.Respons
         usp.set('code_challenge_method', 'S256');
         usp.set('code_challenge', codeChallenge);
 
+        // Create session key
+        const sessionId = Array.from({length:32}, (_,i) => urlSafeChars[Math.floor(Math.random() * urlSafeChars.length)]).join("");
+        console.log(`DEBUG: session ID:\t${sessionId}`)
+        res.cookie('sessionId', sessionId, {
+            path: (new URL(RuntimeConfig.apiAddress + '/auth/oidcCallback', ServerConfig.serverAddress)).href,
+            maxAge: 600000,
+            httpOnly: true,
+            secure: !ServerConfig.httpOnly,
+        });
+        usp.set('state', sessionId);
+
         usp.set('client_id', authConf.clientId);
         usp.set('redirect_uri', (new URL(RuntimeConfig.apiAddress + '/auth/oidcCallback', ServerConfig.serverAddress)).href);
         usp.set('response_type', 'code');
@@ -278,6 +310,13 @@ export async function oidcCallbackHandler(req: express.Request, res: express.Res
         if (req.cookies['oidcVerifier'] === undefined) {
             return returnErrorMsg(req, res, 400, "Missing OIDC verifier");
         }
+        if (req.cookies['sessionId'] === undefined) {
+            return returnErrorMsg(req, res, 400, "Missing session ID");
+        } else if (req.cookies['sessionId'] != `${req.query.state}`) {
+            return returnErrorMsg(req, res, 400, "Invalid session ID");
+        } else {
+            res.clearCookie('sessionId');
+        }
 
         const decryptedCodeVerifier = await jose.compactDecrypt(req.cookies['oidcVerifier'], privateKey);
         const codeVerifier = new TextDecoder().decode(decryptedCodeVerifier.plaintext);
@@ -288,7 +327,7 @@ export async function oidcCallbackHandler(req: express.Request, res: express.Res
         usp.set("grant_type", "authorization_code");
         usp.set('redirect_uri', (new URL(RuntimeConfig.apiAddress + '/auth/oidcCallback', ServerConfig.serverAddress)).href);
 
-        return await callIdpTokenEndpoint (usp, req, res, authConf, false, true);
+        return await callIdpTokenEndpoint (usp, req, res, authConf, false, true, `${req.query.state}`);
     } catch (err) {
         console.log(err);
         return returnErrorMsg(req, res, 500, err);
