@@ -82,7 +82,7 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
         let sessionEncKey;
         if (usp.get('grant_type') === "authorization_code") {
             console.log("Doing initial login")
-            sessionEncKey = randomBytes(16);
+            sessionEncKey = randomBytes(32);
         } else {
             if (payload['key'] === undefined) {
                 return returnErrorMsg(req, res, 400, "Service received an ID token directed to a different service");
