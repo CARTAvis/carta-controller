@@ -165,7 +165,7 @@ export async function setRefreshToken(username, sessionid, refreshToken, symmKey
 export async function getAccessTokenExpiry(username, sessionid) {
   try {
     // Lookup record in MongoDB using key
-    let record = await refreshTokenCollection.findOne({username, sessionid});
+    let record = await accessTokenLifeTimesCollection.findOne({username, sessionid});
     // Calculate expiry by subtracting the current time from stored key's expiry time
     const remaining = floor((record?.expireAt.getTime() - Date.now()) / 1000);
     if (remaining > 0) {
