@@ -57,7 +57,8 @@ function returnErrorMsg (req: express.Request, res: express.Response, statusCode
 // A helper function as initial call to the IdP token endpoint and renewals are mostly the same
 async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request, res: express.Response,
                                      authConf: CartaOidcAuthConfig, scriptingToken: boolean = false,
-                                     isLogin: boolean = false, sessionId: string) {
+                                     isLogin: boolean = false, sessionId: string, sessionEncKey: Buffer | undefined) {
+
     // Fill in the common request elements
     usp.set("client_id", authConf.clientId);
     usp.set("client_secret", authConf.clientSecret);
@@ -79,17 +80,9 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
         }
 
         // Create / retrieve session encryption key
-        let sessionEncKey;
-        if (usp.get('grant_type') === "authorization_code") {
-            console.log("Doing initial login")
+        if (sessionEncKey === undefined) {
+            //console.log("No session key received. Assuming initial login")
             sessionEncKey = randomBytes(32);
-        } else {
-            if (payload['key'] === undefined) {
-                return returnErrorMsg(req, res, 400, "Service received an ID token directed to a different service");
-            } else {
-                console.log("Received key")
-                sessionEncKey = Buffer.from(`${payload['sessionEncKey']}`, 'hex');
-            }
         }
 
         let username = payload[authConf.uniqueField];
@@ -99,7 +92,6 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
 
         // Update DB to reflect new token + associated access token expiry
         if (result.data['refresh_token'] !== undefined) {
-            //refreshData['refresh_token'] = result.data['refresh_token'];
             setRefreshToken(username, sessionId, result.data['refresh_token'],
                             sessionEncKey, parseInt(result.data['refresh_expires_in']));
         }
@@ -108,6 +100,7 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
         //refreshData['access_token_expiry'] =  floor(new Date().getTime() / 1000) + result.data['expires_in'];
         if (result.data['expires_in'] !== undefined) {
             setAccessTokenExpiry(username, sessionId, parseInt(result.data['expires_in']));
+            //console.log(`Access token expires in:\t${result.data['expires_in']}`)
         }
 
         // Check group membership
@@ -128,7 +121,12 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
 
         // Build refresh token
         // If there's no actual refresh token then this will only last for as long as the access token does
-        const refreshData = { username, sessionId, sessionEncKey };
+        const refreshData = {
+            username,
+            sessionId,
+            sessionEncKey: sessionEncKey.toString('hex')
+        };
+        //console.log(`Session key in refresh token:\t${refreshData['sessionEncKey']}`)
         const rt = await new jose.EncryptJWT(refreshData)
             .setProtectedHeader({ alg: 'dir', enc: authConf.symmetricKeyType })
             .setIssuedAt()
@@ -182,7 +180,7 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
 
 export function generateLocalOidcRefreshHandler (authConf: CartaOidcAuthConfig) {
     return async (req: express.Request, res: express.Response) => {
-        console.log("Running OIDC refresh handler")
+        //console.log("Running OIDC refresh handler")
         const refreshTokenCookie = req.cookies["Refresh-Token"];
         const scriptingToken = req.body?.scripting === true;
 
@@ -192,45 +190,47 @@ export function generateLocalOidcRefreshHandler (authConf: CartaOidcAuthConfig) 
                 const { payload, protectedHeader } = await jose.jwtDecrypt(refreshTokenCookie, symmetricKey, {
                     issuer: authConf.issuer
                 }); 
-
-                // Check if access token validity is there and at least cacheAccessTokenMinValidity seconds from expiry
-                //const remainingValidity = parseInt(`${payload['access_token_expiry']}`) - ceil(new Date().getTime() / 1000);
-                const remainingValidity = await getAccessTokenExpiry(payload.username, payload.sessionId);
-
-                if (remainingValidity > authConf.cacheAccessTokenMinValidity) {
-                    let newAccessToken = {
-                        username: payload.username,
-                        expires_in: remainingValidity
-                    };
-                    if (scriptingToken)
-                        newAccessToken['scripting'] = true;
-                    const newAccessTokenJWT = await new jose.SignJWT(newAccessToken)
-                        .setProtectedHeader({ alg: authConf.keyAlgorithm })
-                        .setIssuedAt()
-                        .setIssuer(`${ServerConfig.authProviders.oidc?.issuer}`)
-                        .setExpirationTime(`${remainingValidity}s`)
-                        .sign(privateKey);
         
-                    return res.json({
-                        access_token: newAccessTokenJWT,
-                        token_type: "bearer",
-                        username: payload.username,
-                        expires_in: remainingValidity
-                    });
+                try {
+                    console.log("About to acquire lock")
+                    await acquireRefreshLock(payload?.sessionId,10);
+                    console.log("Acquired lock")
+
+                    // Check if access token validity is there and at least cacheAccessTokenMinValidity seconds from expiry
+                    const remainingValidity = await getAccessTokenExpiry(payload.username, payload.sessionId);
+
+                    if (remainingValidity > authConf.cacheAccessTokenMinValidity) {
+                        let newAccessToken = {
+                            username: payload.username,
+                            expires_in: remainingValidity
+                        };
+                        if (scriptingToken)
+                            newAccessToken['scripting'] = true;
+                        const newAccessTokenJWT = await new jose.SignJWT(newAccessToken)
+                            .setProtectedHeader({ alg: authConf.keyAlgorithm })
+                            .setIssuedAt()
+                            .setIssuer(`${ServerConfig.authProviders.oidc?.issuer}`)
+                            .setExpirationTime(`${remainingValidity}s`)
+                            .sign(privateKey);
+            
+                        return res.json({
+                            access_token: newAccessTokenJWT,
+                            token_type: "bearer",
+                            username: payload.username,
+                            expires_in: remainingValidity
+                        });
+                    } else {
+                        // Need to request a new token from upstream
+                        const usp = new URLSearchParams();
+                        const sessionEncKey = Buffer.from(`${payload?.sessionEncKey}`, 'hex');
+                        usp.set("grant_type", "refresh_token");
+                        usp.set("refresh_token", `${await getRefreshToken(payload.username, payload.sessionId, sessionEncKey)}`);
+                        return await callIdpTokenEndpoint(usp, req, res, authConf, scriptingToken, false, `${payload['sessionId']}`, sessionEncKey);
+                    }
+                } finally {
+                    console.log("Releasing lock");
+                    await releaseRefreshLock(payload?.sessionId);
                 }
-
-                // Need to request a new token from upstream
-                if (payload['refresh_token'] !== undefined) {
-                    const usp = new URLSearchParams();
-                    usp.set("grant_type", "refresh_token");
-                    //usp.set("refresh_token", `${payload['refresh_token']}`);
-                    usp.set("refresh_token", `${await getRefreshToken(payload.username, payload.sessionId, payload.sessionEncKey)}`);
-
-                    return await callIdpTokenEndpoint(usp, req, res, authConf, scriptingToken, false, `${payload['sessionId']}`);
-                }
-
-                // No refresh token available so redirect to login
-                return res.redirect((new URL(RuntimeConfig.apiAddress + '/auth/login', ServerConfig.serverAddress)).href);
             } catch (err) {
                 return returnErrorMsg(req, res, 400, "Invalid refresh token");
             }
@@ -275,7 +275,6 @@ export async function oidcLoginStart (req: express.Request, res: express.Respons
 
         // Create session key
         const sessionId = Array.from({length:32}, (_,i) => urlSafeChars[Math.floor(Math.random() * urlSafeChars.length)]).join("");
-        console.log(`DEBUG: session ID:\t${sessionId}`)
         res.cookie('sessionId', sessionId, {
             path: (new URL(RuntimeConfig.apiAddress + '/auth/oidcCallback', ServerConfig.serverAddress)).href,
             maxAge: 600000,
@@ -304,7 +303,7 @@ export async function oidcLoginStart (req: express.Request, res: express.Respons
 
 export async function oidcCallbackHandler(req: express.Request, res: express.Response, authConf: CartaOidcAuthConfig) {
     try {
-        console.log("Running OIDC callback handler");
+        //console.log("Running OIDC callback handler");
         const usp = new URLSearchParams();
 
         if (req.cookies['oidcVerifier'] === undefined) {
@@ -327,7 +326,7 @@ export async function oidcCallbackHandler(req: express.Request, res: express.Res
         usp.set("grant_type", "authorization_code");
         usp.set('redirect_uri', (new URL(RuntimeConfig.apiAddress + '/auth/oidcCallback', ServerConfig.serverAddress)).href);
 
-        return await callIdpTokenEndpoint (usp, req, res, authConf, false, true, `${req.query.state}`);
+        return await callIdpTokenEndpoint (usp, req, res, authConf, false, true, `${req.query.state}`, undefined);
     } catch (err) {
         console.log(err);
         return returnErrorMsg(req, res, 500, err);

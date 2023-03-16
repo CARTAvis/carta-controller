@@ -42,10 +42,15 @@ export async function initRefreshManager() {
           await lockCollection.createIndex({sessionid: 1}, {name: "lockSession", unique: true});
           console.log("Created session index for lockSession collection");
         }
+        const hasLockExpiryIndex = await lockCollection.indexExists("lockExpiry");
+        if (!hasLockExpiryIndex) {
+          await lockCollection.createIndex({ "expireAt": 1 }, {name: "lockExpiry", expireAfterSeconds: 0});
+          console.log("Created expiry index for lockSession collection");
+        }        
         for (let coll of [refreshTokenCollection, accessTokenLifeTimesCollection]) {
           const hasUserSessionIndex = await coll.indexExists("userSession");
           if (!hasUserSessionIndex) {
-            await coll.createIndex({username: 1, sessionid: 1 }, {name: "userSession", unique: true});
+            await coll.createIndex({username: 1, sessionid: 1 }, { name: "userSession", unique: true });
             console.log(`Created username/session index for collection ${coll.collectionName}`);
           }
 
@@ -68,10 +73,6 @@ export async function initRefreshManager() {
 This function (and the corresponding releaseRefreshLock) provide basic
 distributed locking capabilities using the expiry TTLs in mongodb, which
 will hopefully be adequate for the purposes in use for here.
-
-It should be noted that as per the MongoDB documentation on expiry, this
-is run as a background task only once every 60 seconds and may take some
-additional time to finish removing the entry if the server is busy.
 */
 export async function acquireRefreshLock(sessionid, expiresIn,
   numRetries=40, msBetweenRetries=500) {
@@ -80,12 +81,16 @@ export async function acquireRefreshLock(sessionid, expiresIn,
 
     for (let i = 0; i < numRetries; i++) {
       try {
+        // TTLs indexes are only garbage-collected every minute or so, so manually
+        // purge any that have expired
+        await lockCollection.deleteMany({ expireAt: { $lt: new Date() } })
+
         await lockCollection.insertOne({
           sessionid,
           expireAt
         });
 
-        // No duplicate key error so got lock
+        // No duplicate key error throw by above insert so got lock
         return true;
       } catch (e) {
         if (e.code !== 11000) {
