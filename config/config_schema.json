@@ -465,7 +465,7 @@
                     "default": "A256GCM"
                 },
                 "additionalAuthParams": {
-                    "description": "additional parameters to include in authentication requests to deal with identity providers ",
+                    "description": "Additional parameters to include in authentication requests to deal with identity providers. The example contains the additional arguments required to ensure that Google provide a refresh token when using it with OIDC.",
                     "type": "array",
                     "default": [],
                     "examples": [
