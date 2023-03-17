@@ -180,7 +180,7 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
 
 export function generateLocalOidcRefreshHandler (authConf: CartaOidcAuthConfig) {
     return async (req: express.Request, res: express.Response) => {
-        console.debug("Running OIDC refresh handler")
+        //console.debug("Running OIDC refresh handler")
         const refreshTokenCookie = req.cookies["Refresh-Token"];
         const scriptingToken = req.body?.scripting === true;
 
@@ -192,8 +192,14 @@ export function generateLocalOidcRefreshHandler (authConf: CartaOidcAuthConfig) 
                 }); 
         
                 try {
-                    await acquireRefreshLock(payload?.sessionId,10);
+                    if (! await acquireRefreshLock(payload?.sessionId,10)) {
+                        return returnErrorMsg(req, res, 500, "Timed out waiting to acquire lock");
+                    }
+                } catch (err) {
+                    return returnErrorMsg(req, res, 500, "Locking error");
+                }
 
+                try {
                     // Check if access token validity is there and at least cacheAccessTokenMinValidity seconds from expiry
                     const remainingValidity = await getAccessTokenExpiry(payload.username, payload.sessionId);
                     if (remainingValidity > authConf.cacheAccessTokenMinValidity) {
@@ -299,7 +305,7 @@ export async function oidcLoginStart (req: express.Request, res: express.Respons
 
 export async function oidcCallbackHandler(req: express.Request, res: express.Response, authConf: CartaOidcAuthConfig) {
     try {
-        console.debug("Running OIDC callback handler");
+        //console.debug("Running OIDC callback handler");
         const usp = new URLSearchParams();
 
         if (req.cookies['oidcVerifier'] === undefined) {
