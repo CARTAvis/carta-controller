@@ -43,12 +43,11 @@ The controller signs and validates tokens with SSL keys. You can generate a priv
     openssl genrsa -out carta_private.pem 4096
     openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
 
-The access tokens use a public/private keypair whether using LDAP, PAM, or OIDC authentication.  However, when using OIDC authentication an additional symmetric encryption key is required for the refresh tokens. (When using LDAP or PAM authentication the same public/private keypair as used with the access tokens is also used for the refresh tokens).  If using the default encryption algorithm, you can again use ``openssl`` to generate the needed key:
+A public/private keypair is used to authenticate access tokens. OIDC authentication requires an additional symmetric encryption key for refresh tokens. LDAP or PAM authentication uses the same public/private keypair both for access tokens and for refresh tokens. If you use the default encryption algorithm, you can again use `openssl` to generate the needed key:
 
 .. code-block:: shell
 
     openssl rand -base64 32 > /etc/carta/symm.key
-
 
 PAM may be configured to use the host's local UNIX user authentication, or to communicate with a local or remote LDAP server. If the UNIX module is used for authentication, the ``carta`` user must be given read-only access to ``/etc/shadow``.  This is not required if you use PAM's LDAP module or the direct LDAP authentication method.
 
