@@ -341,6 +341,143 @@
                     ]
                 }
             }
+        },
+        "oidcAuthProvider": {
+            "title": "OpenID Connect AuthProvider",
+            "description": "OpenID Connect authentication configuration",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "idpUrl",
+                "uniqueField",
+                "clientId",
+                "scope",
+                "localPublicKeyLocation",
+                "localPrivateKeyLocation",
+                "keyAlgorithm",
+                "issuer",
+                "symmetricKeyLocation"
+            ],
+            "properties": {
+                "idpUrl": {
+                    "description": "Base URL for identity provider endpoint",
+                    "type": "string",
+                    "format": "uri",
+                    "pattern": "^https?://",
+                    "examples": [
+                        "https://domain.xyz/auth/realms/example"
+                    ]
+                },
+                "uniqueField": {
+                    "description": "Name of unique field to use as user ID.  Note that as per the OpenID Connect specification only sub/issuer combination is guaranteed to be stable and unique for an arbitrary issuer, though other values such as preferred_username may be usable when the team running the CARTA installation and the issuer are the same.",
+                    "type": "string",
+                    "examples": [
+                        "sub",
+                        "preferred_username"
+                    ],
+                    "default": "sub"
+                },
+                "clientId": {
+                    "description": "Client ID as registered with identity provider",
+                    "type": "string",
+                    "minLength": 1,
+                    "examples": [
+                        "carta"
+                    ]
+                },
+                "clientSecret": {
+                    "description": "Client secret as registered with identity provider",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "scope": {
+                    "description": "Scopes to request from the OpenID Connect server",
+                    "type": "string",
+                    "default": "openid",
+                    "examples": [
+                        "openid",
+                        "openid groups"
+                    ]
+                },
+                "userLookupTable": {
+                    "description": "Path of user lookup table as text file in format <unique user ID> <system user>. If no user lookup is needed, this should be omitted. Example table given in `usertable.txt.stub`",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/userlookup.txt"
+                    ]
+                },
+                "groupsField": {
+                    "description": "Name of field containing list of user roles/groups",
+                    "type": "string",
+                    "examples": [
+                        "groups",
+                        "roles"
+                    ]
+                },
+                "requiredGroup": {
+                    "description": "Role to ensure is included among the values in groupsField",
+                    "type": "string",
+                    "examples": [
+                        "carta-users",
+                        "carta-testers"
+                    ]
+                },
+                "localPublicKeyLocation": {
+                    "description": "Path to public key (in PEM format) used for verifying JWTs",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/carta_public.pem"
+                    ]
+                },
+                "localPrivateKeyLocation": {
+                    "description": "Path to private key (in PEM format) used for signing JWTs",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/carta_private.pem"
+                    ]
+                },
+                "keyAlgorithm": {
+                    "$ref": "#/definitions/keyAlgorithm",
+                    "default": "RS256"
+                },
+                "issuer": {
+                    "description": "Issuer field for JWT",
+                    "type": "string",
+                    "examples": [
+                        "my-carta-server"
+                    ]
+                },
+                "cacheAccessTokenMinValidity": {
+                    "description": "If an access token was previously issued from the upstream server with at least this many seconds of lifetime remaining, a new upstream query will not be performed and a local token with the previous token's remaining lifetime will be issued instead",
+                    "type": "integer",
+                    "default": 100
+                },
+                "symmetricKeyLocation": {
+                    "description": "Path to symmetric key (base64-encoded) used for refresh tokens. At present this uses the A256GCM algorithm which requires 32 bytes of random data which can be generated using `openssl rand -base64 32`",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/carta_symmetric.pem"
+                    ]
+                },
+                "symmetricKeyType": {
+                    "description": "Selected from the 'JSON Web Signature and Encryption Algorithms' section of https://www.iana.org/assignments/jose/jose.xhtml",
+                    "type": "string",
+                    "default": "A256GCM"
+                },
+                "additionalAuthParams": {
+                    "description": "Additional parameters to include in authentication requests to deal with identity providers. The example contains the additional arguments required to ensure that Google provide a refresh token when using it with OIDC.",
+                    "type": "array",
+                    "default": [],
+                    "examples": [
+                        [[["access_type", "offline"], ["prompt", "consent"]]]
+                    ],
+                    "items": {
+                        "type": "array",
+                        "minItems": 2,
+                        "maxItems": 2
+                    }
+                }
+            }
         }
     },
     "additionalProperties": false,
@@ -369,6 +506,10 @@
                 "external": {
                     "description": "External AuthProvider",
                     "$ref": "#/definitions/externalAuthProvider"
+                },
+                "oidc": {
+                    "description": "OpenID Connect AuthProvider",
+                    "$ref": "#/definitions/oidcAuthProvider"
                 }
             },
             "default": {

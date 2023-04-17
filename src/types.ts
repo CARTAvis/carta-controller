@@ -40,6 +40,42 @@ export interface CartaExternalAuthConfig {
     logoutAddress: string;
 }
 
+export interface CartaOidcAuthConfig {
+    // URL from which the OpenID Connect endpoint's metadata can be retrieved
+    idpUrl: string;
+    // Unique field to be used as username
+    uniqueField: string;
+    // Client ID as registered with the OpenID connect endpoint.
+    clientId: string;
+    // Client secret as registered with the OpenID connect endpoint.
+    clientSecret: string;
+    // User lookup table as text file in format <authenticated username> <system user>. If no user lookup is needed, leave this blank
+    scope: string;
+    // Scopes to request.
+    userLookupTable?: string;
+    // Field containing list of groups/roles possessed by the user
+    groupsField?: string;
+    // Value to be required as one of the listed user groups/roles in groupsField
+    requiredGroup?: string;
+    // Public key used for locally-issued tokens
+    localPublicKeyLocation: string;
+    // Private key used for locally-issued tokens
+    localPrivateKeyLocation: string;
+    // Algorithm for locally-issued tokens
+    keyAlgorithm: Algorithm;
+    // Issuer for locally issued tokens
+    issuer: string;
+    // Location of base64-encoded symmetric key for refresh tokens
+    symmetricKeyLocation: string;
+    // Type of symmetric key used
+    // See https://www.iana.org/assignments/jose/jose.xhtml#web-signature-encryption-algorithms
+    symmetricKeyType: string;
+    // Recycle access tokens from upstream server if they still have sufficient lifetime remaining (seconds)
+    cacheAccessTokenMinValidity: number;
+    // A set of additional parameters to include in token requests
+    additionalAuthParams: Map<string, string>;
+}
+
 export enum ScriptingAccess {
     Enabled = "enabled-all-users",
     Disabled = "disabled-all-users",
@@ -53,6 +89,7 @@ export interface CartaServerConfig {
         ldap?: CartaLdapAuthConfig;
         google?: CartaGoogleAuthConfig;
         external?: CartaExternalAuthConfig;
+        oidc?: CartaOidcAuthConfig;
     };
     database: {
         uri: string;
