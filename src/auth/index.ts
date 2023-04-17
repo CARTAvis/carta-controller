@@ -5,6 +5,7 @@ import {RequestHandler, AsyncRequestHandler, AuthenticatedRequest, Verifier, Use
 import {ServerConfig, RuntimeConfig} from "../config";
 import {generateExternalVerifiers, watchUserTable} from "./external";
 import {generateLocalRefreshHandler, generateLocalVerifier} from "./local";
+import {generateLocalOidcRefreshHandler, generateLocalOidcVerifier, oidcCallbackHandler, oidcLogoutHandler, oidcLoginStart, initOidc} from "./oidc";
 import {getLdapLoginHandler} from "./ldap";
 import {getPamLoginHandler} from "./pam";
 import {generateGoogleVerifier, validGoogleIssuers} from "./google";
@@ -19,6 +20,10 @@ let loginHandler: RequestHandler = (req, res) => {
 };
 
 let refreshHandler: AsyncRequestHandler = (req, res) => {
+    throw {statusCode: 501, message: "Token refresh not implemented"};
+};
+
+let callbackHandler: AsyncRequestHandler = (req, res) => {
     throw {statusCode: 501, message: "Token refresh not implemented"};
 };
 
@@ -45,6 +50,17 @@ if (ServerConfig.authProviders.pam) {
     const tablePath = authConf.userLookupTable;
     if (tablePath) {
         watchUserTable(userMaps, authConf.issuers, tablePath);
+    }
+} else if (ServerConfig.authProviders.oidc) {
+    const authConf = ServerConfig.authProviders.oidc;
+    generateLocalOidcVerifier(tokenVerifiers, authConf);
+    refreshHandler = generateLocalOidcRefreshHandler(authConf);
+    loginHandler = (req, res) => oidcLoginStart(req, res, authConf);
+    callbackHandler = (req, res) => oidcCallbackHandler(req, res, authConf);
+    initOidc(authConf);
+    if (authConf.userLookupTable) {
+        console.log(`Using ${authConf.userLookupTable} for user mapping`);
+        watchUserTable(userMaps, authConf.issuer, authConf.userLookupTable);
     }
 }
 
@@ -80,6 +96,7 @@ export async function authGuard(req: AuthenticatedRequest, res: express.Response
     if (tokenString) {
         try {
             const token = await verifyToken(tokenString);
+
             if (!token || !token.username) {
                 next({statusCode: 403, message: "Not authorized"});
             } else {
@@ -116,7 +133,14 @@ function handleCheckAuth(req: AuthenticatedRequest, res: express.Response) {
 }
 
 export const authRouter = express.Router();
-authRouter.post("/login", noCache, loginHandler);
-authRouter.post("/logout", noCache, logoutHandler);
+if (ServerConfig.authProviders.oidc) {
+    authRouter.get("/logout", noCache, oidcLogoutHandler);
+    authRouter.get("/oidcCallback", noCache, callbackHandler);
+    authRouter.get("/login", noCache, loginHandler);
+}
+else {
+    authRouter.post("/login", noCache, loginHandler);
+    authRouter.post("/logout", noCache, logoutHandler);
+}
 authRouter.post("/refresh", noCache, refreshHandler);
 authRouter.get("/status", authGuard, noCache, handleCheckAuth);
