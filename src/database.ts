@@ -1,7 +1,7 @@
 import * as express from "express";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {Collection, Db, MongoClient} from "mongodb";
+import {Collection, Db, MongoClient, ObjectId} from "mongodb";
 import {authGuard} from "./auth";
 import {noCache, verboseError} from "./util";
 import {AuthenticatedRequest} from "./types";
@@ -433,6 +433,33 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
 }
 
 
+async function handleShareWorkspace(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    const id = req.params.id as string;
+    if (!id) {
+        return next({statusCode: 403, message: "Invalid workspace id"});
+    }
+
+    if (!workspacesCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    try {
+        const updateResult = await workspacesCollection.findOneAndUpdate({_id: new ObjectId(id)}, {$set: {shared: true}});
+        if (updateResult.ok) {
+            res.json({success: true, id});
+        } else {
+            return next({statusCode: 500, message: "Problem sharing workspace"});
+        }
+    } catch (err) {
+        verboseError(err);
+        return next({statusCode: 500, message: err.errmsg});
+    }
+}
+
 export const databaseRouter = express.Router();
 
 databaseRouter.get("/preferences", authGuard, noCache, handleGetPreferences);
@@ -447,10 +474,7 @@ databaseRouter.get("/snippets", authGuard, noCache, handleGetSnippets);
 databaseRouter.put("/snippet", authGuard, noCache, handleSetSnippet);
 databaseRouter.delete("/snippet", authGuard, noCache, handleClearSnippet);
 
-// TODO
-//databaseRouter.get("/workspaces", authGuard, noCache, ()=>{});
-//databaseRouter.get("/workspace/:name/generate-link", authGuard, noCache, handleShareWorkspace);
-// databaseRouter.get("/workspaceId/:id", authGuard, noCache, ()=>{});
+databaseRouter.post("/share/workspace/:id", authGuard, noCache, handleShareWorkspace);
 
 databaseRouter.get("/list/workspaces", authGuard, noCache, handleGetWorkspaceList);
 databaseRouter.get("/workspace/:name", authGuard, noCache, handleGetWorkspace);
