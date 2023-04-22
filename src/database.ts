@@ -340,10 +340,11 @@ async function handleClearWorkspace(req: AuthenticatedRequest, res: express.Resp
     }
 
     const workspaceName = req.body?.workspaceName;
+    // TODO: handle CRUD with workspace ID instead of name
     const workspaceId = req.body?.id;
 
     try {
-        const deleteResult = await snippetsCollection.deleteOne({_id: workspaceId, username: req.username, name: workspaceName});
+        const deleteResult = await workspacesCollection.deleteOne({username: req.username, name: workspaceName});
         if (deleteResult.acknowledged) {
             res.json({success: true});
         } else {
@@ -479,4 +480,4 @@ databaseRouter.post("/share/workspace/:id", authGuard, noCache, handleShareWorks
 databaseRouter.get("/list/workspaces", authGuard, noCache, handleGetWorkspaceList);
 databaseRouter.get("/workspace/:name", authGuard, noCache, handleGetWorkspace);
 databaseRouter.put("/workspace", authGuard, noCache, handleSetWorkspace);
-databaseRouter.delete("/workspace/:name", authGuard, noCache, handleClearWorkspace);
+databaseRouter.delete("/workspace", authGuard, noCache, handleClearWorkspace);
