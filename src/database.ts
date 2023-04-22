@@ -1,7 +1,7 @@
 import * as express from "express";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {Collection, Db, MongoClient, ObjectId} from "mongodb";
+import {Collection, Db, MongoClient, ObjectId, UpdateResult} from "mongodb";
 import {authGuard} from "./auth";
 import {noCache, verboseError} from "./util";
 import {AuthenticatedRequest} from "./types";
@@ -421,7 +421,13 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
     }
 
     try {
-        const updateResult = await workspacesCollection.updateOne({username: req.username, name: workspaceName, workspace}, {$set: {workspace}}, {upsert: true});
+        let updateResult: UpdateResult;
+        const existingWorkspace = await workspacesCollection.findOne({username: req.username, name: workspaceName});
+        if (existingWorkspace) {
+            updateResult = await workspacesCollection.updateOne({_id: existingWorkspace._id}, {$set: {workspace}}, {upsert: false});
+        } else {
+            updateResult = await workspacesCollection.updateOne({username: req.username, name: workspaceName, workspace}, {$set: {workspace}}, {upsert: true});
+        }
         if (updateResult.acknowledged) {
             res.json({success: true});
         } else {
