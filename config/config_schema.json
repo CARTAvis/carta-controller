@@ -476,6 +476,12 @@
                         "minItems": 2,
                         "maxItems": 2
                     }
+                },
+                "postLogoutRedirect": {
+                    "description": "Optional parameter for specifying an alternate address to redirect to after logout",
+                    "type": "string",
+                    "format": "uri-reference",
+                    "examples": ["https://my-organisation.com/"]
                 }
             }
         }
