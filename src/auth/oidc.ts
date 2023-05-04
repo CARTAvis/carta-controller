@@ -45,7 +45,7 @@ export async function initOidc(authConf: CartaOidcAuthConfig) {
         postLogoutRedirect = authConf.postLogoutRedirect;
     }
     else {
-        postLogoutRedirect = `${ServerConfig.serverAddress}`;
+        postLogoutRedirect = ServerConfig.serverAddress ?? '';
     }
 
     // Init refresh token management
