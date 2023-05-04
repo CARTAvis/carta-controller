@@ -83,6 +83,7 @@ if (testUser) {
         }
     });
 
+    const packageJson = require(path.join(__dirname, "../package.json"));
     app.get("/dashboard", (req, res) => {
         res.render("templated", {
             googleClientId: ServerConfig.authProviders.google?.clientId,
@@ -93,7 +94,8 @@ if (testUser) {
             bannerImage: bannerDataUri,
             infoText: ServerConfig.dashboard?.infoText,
             loginText: ServerConfig.dashboard?.loginText,
-            footerText: ServerConfig.dashboard?.footerText
+            footerText: ServerConfig.dashboard?.footerText,
+            controllerVersion: packageJson.version
         });
     });
 
