@@ -21,6 +21,8 @@ let oidcIssuer: string;
 let oidcLogoutEndpoint: string;
 let oidcTokenEndpoint: string;
 
+let postLogoutRedirect: string;
+
 export async function initOidc(authConf: CartaOidcAuthConfig) {
     // Load public & private keys
     publicKey = createPublicKey(fs.readFileSync(authConf.localPublicKeyLocation));
@@ -37,6 +39,14 @@ export async function initOidc(authConf: CartaOidcAuthConfig) {
     // Init JWKS key management
     console.log(`Setting up JWKS management for ${idpConfig.data['jwks_uri']}`);
     jwksManager = jose.createRemoteJWKSet(new URL(idpConfig.data['jwks_uri']));
+
+    // Set logout redirect URL
+    if (authConf.postLogoutRedirect !== undefined) {
+        postLogoutRedirect = authConf.postLogoutRedirect;
+    }
+    else {
+        postLogoutRedirect = ServerConfig.serverAddress ?? '';
+    }
 
     // Init refresh token management
     await initRefreshManager();
@@ -351,8 +361,9 @@ export async function oidcLogoutHandler(req: express.Request, res: express.Respo
             if (req.cookies['Logout-Token'] !== undefined) {
                 usp.set('id_token_hint', req.cookies['Logout-Token'])
             }
-            usp.set('post_logout_redirect_uri', `${ServerConfig.serverAddress}`);
-            
+
+            usp.set('post_logout_redirect_uri', postLogoutRedirect);
+
             res.cookie("Logout-Token", "", {
                 path: RuntimeConfig.logoutAddress,
                 maxAge: 0,
