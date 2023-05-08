@@ -74,6 +74,8 @@ export interface CartaOidcAuthConfig {
     cacheAccessTokenMinValidity: number;
     // A set of additional parameters to include in token requests
     additionalAuthParams: Map<string, string>;
+    // Location to redirect to after logout
+    postLogoutRedirect: string;
 }
 
 export enum ScriptingAccess {
