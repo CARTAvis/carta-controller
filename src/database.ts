@@ -1,7 +1,7 @@
 import * as express from "express";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {Collection, Db, MongoClient} from "mongodb";
+import {Collection, Db, MongoClient, ObjectId, UpdateResult} from "mongodb";
 import {authGuard} from "./auth";
 import {noCache, verboseError} from "./util";
 import {AuthenticatedRequest} from "./types";
@@ -10,19 +10,23 @@ import {ServerConfig} from "./config";
 const PREFERENCE_SCHEMA_VERSION = 2;
 const LAYOUT_SCHEMA_VERSION = 2;
 const SNIPPET_SCHEMA_VERSION = 1;
+const WORKSPACE_SCHEMA_VERSION = 0;
 const preferenceSchema = require("../config/preference_schema_2.json");
 const layoutSchema = require("../config/layout_schema_2.json");
 const snippetSchema = require("../config/snippet_schema.json");
+const workspaceSchema = require("../config/workspace_schema_1.json");
 const ajv = new Ajv({useDefaults: true, strictTypes: false});
 addFormats(ajv);
 const validatePreferences = ajv.compile(preferenceSchema);
 const validateLayout = ajv.compile(layoutSchema);
 const validateSnippet = ajv.compile(snippetSchema);
+const validateWorkspace = ajv.compile(workspaceSchema);
 
 let client: MongoClient;
 let preferenceCollection: Collection;
 let layoutsCollection: Collection;
 let snippetsCollection: Collection;
+let workspacesCollection: Collection;
 
 async function updateUsernameIndex(collection: Collection, unique: boolean) {
     const hasIndex = await collection.indexExists("username");
@@ -50,11 +54,13 @@ export async function initDB() {
             layoutsCollection = await createOrGetCollection(db, "layouts");
             snippetsCollection = await createOrGetCollection(db, "snippets");
             preferenceCollection = await createOrGetCollection(db, "preferences");
+            workspacesCollection = await createOrGetCollection(db, "workspaces");
             // Remove any existing validation in preferences collection
             await db.command({collMod: "preferences", validator: {}, validationLevel: "off"});
             // Update collection indices if necessary
             await updateUsernameIndex(layoutsCollection, false);
             await updateUsernameIndex(snippetsCollection, false);
+            await updateUsernameIndex(workspacesCollection, false);
             await updateUsernameIndex(preferenceCollection, true);
             console.log(`Connected to server ${ServerConfig.database.uri} and database ${ServerConfig.database.databaseName}`);
         } catch (err) {
@@ -323,6 +329,144 @@ async function handleClearSnippet(req: AuthenticatedRequest, res: express.Respon
     }
 }
 
+
+async function handleClearWorkspace(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    if (!workspacesCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    const workspaceName = req.body?.workspaceName;
+    // TODO: handle CRUD with workspace ID instead of name
+    const workspaceId = req.body?.id;
+
+    try {
+        const deleteResult = await workspacesCollection.deleteOne({username: req.username, name: workspaceName});
+        if (deleteResult.acknowledged) {
+            res.json({success: true});
+        } else {
+            return next({statusCode: 500, message: "Problem clearing workspace"});
+        }
+    } catch (err) {
+        console.log(err);
+        return next({statusCode: 500, message: "Problem clearing workspace"});
+    }
+}
+
+async function handleGetWorkspaceList(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    if (!workspacesCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    try {
+        const workspaceList = await workspacesCollection.find({username: req.username}, {projection: {_id: 1, name: 1, "workspace.date": 1}}).toArray();
+        const workspaces = workspaceList?.map(w => ({...w, id: w._id, date: w.workspace?.date})) ?? [];
+        res.json({success: true, workspaces});
+    } catch (err) {
+        verboseError(err);
+        return next({statusCode: 500, message: "Problem retrieving workspaces"});
+    }
+}
+
+async function handleGetWorkspace(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    if (!req.params?.name) {
+        return next({statusCode: 403, message: "Invalid workspace name"});
+    }
+
+    if (!workspacesCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    try {
+        const queryResult = await workspacesCollection.findOne({username: req.username, name: req.params.name}, {projection: {username: 0}});
+        res.json({success: !!queryResult?.workspace, workspace: queryResult?.workspace});
+    } catch (err) {
+        verboseError(err);
+        return next({statusCode: 500, message: "Problem retrieving workspace"});
+    }
+}
+
+
+async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    if (!workspacesCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    const workspaceName = req.body?.workspaceName;
+    const workspace = req.body?.workspace;
+    // Check for malformed update
+    if (!workspaceName || !workspace || workspace.workspaceVersion !== WORKSPACE_SCHEMA_VERSION) {
+        return next({statusCode: 400, message: "Malformed workspace update"});
+    }
+
+    const validUpdate = validateWorkspace(workspace);
+    if (!validUpdate) {
+        console.log(validateWorkspace.errors);
+        return next({statusCode: 400, message: "Malformed workspace update"});
+    }
+
+    try {
+        let updateResult: UpdateResult;
+        const existingWorkspace = await workspacesCollection.findOne({username: req.username, name: workspaceName});
+        if (existingWorkspace) {
+            updateResult = await workspacesCollection.updateOne({_id: existingWorkspace._id}, {$set: {workspace}}, {upsert: false});
+        } else {
+            updateResult = await workspacesCollection.updateOne({username: req.username, name: workspaceName, workspace}, {$set: {workspace}}, {upsert: true});
+        }
+        if (updateResult.acknowledged) {
+            res.json({success: true});
+        } else {
+            return next({statusCode: 500, message: "Problem updating workspace"});
+        }
+    } catch (err) {
+        verboseError(err);
+        return next({statusCode: 500, message: err.errmsg});
+    }
+}
+
+
+async function handleShareWorkspace(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    const id = req.params.id as string;
+    if (!id) {
+        return next({statusCode: 403, message: "Invalid workspace id"});
+    }
+
+    if (!workspacesCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    try {
+        const updateResult = await workspacesCollection.findOneAndUpdate({_id: new ObjectId(id)}, {$set: {shared: true}});
+        if (updateResult.ok) {
+            res.json({success: true, id});
+        } else {
+            return next({statusCode: 500, message: "Problem sharing workspace"});
+        }
+    } catch (err) {
+        verboseError(err);
+        return next({statusCode: 500, message: err.errmsg});
+    }
+}
+
 export const databaseRouter = express.Router();
 
 databaseRouter.get("/preferences", authGuard, noCache, handleGetPreferences);
@@ -336,3 +480,10 @@ databaseRouter.delete("/layout", authGuard, noCache, handleClearLayout);
 databaseRouter.get("/snippets", authGuard, noCache, handleGetSnippets);
 databaseRouter.put("/snippet", authGuard, noCache, handleSetSnippet);
 databaseRouter.delete("/snippet", authGuard, noCache, handleClearSnippet);
+
+databaseRouter.post("/share/workspace/:id", authGuard, noCache, handleShareWorkspace);
+
+databaseRouter.get("/list/workspaces", authGuard, noCache, handleGetWorkspaceList);
+databaseRouter.get("/workspace/:name", authGuard, noCache, handleGetWorkspace);
+databaseRouter.put("/workspace", authGuard, noCache, handleSetWorkspace);
+databaseRouter.delete("/workspace", authGuard, noCache, handleClearWorkspace);
