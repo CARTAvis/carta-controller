@@ -366,8 +366,8 @@ async function handleGetWorkspaceList(req: AuthenticatedRequest, res: express.Re
     }
 
     try {
-        const workspaceList = await workspacesCollection.find({username: req.username}, {projection: {_id: 1, name: 1}}).toArray();
-        const workspaces = workspaceList?.map(w => ({...w, id: w._id})) ?? [];
+        const workspaceList = await workspacesCollection.find({username: req.username}, {projection: {_id: 1, name: 1, "workspace.date": 1}}).toArray();
+        const workspaces = workspaceList?.map(w => ({...w, id: w._id, date: w.workspace?.date})) ?? [];
         res.json({success: true, workspaces});
     } catch (err) {
         verboseError(err);
