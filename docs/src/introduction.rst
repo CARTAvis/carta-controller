@@ -10,7 +10,7 @@ The CARTA controller provides a simple dashboard which authenticates users and a
 Dependencies
 ------------
 
-To allow the controller to serve CARTA sessions, you must give it access to an executable CARTA backend, which can be either a compiled executable or a container. If you want to use a non-standard version of the CARTA frontend, you must also build it, and adjust the controller configuration to point to it. You should use the ``v3.0.0-beta.3`` tag of `the CARTA backend <https://github.com/CARTAvis/carta-backend>`_.
+To allow the controller to serve CARTA sessions, you must give it access to an executable CARTA backend, which can be either a compiled executable or a container. If you want to use a non-standard version of the CARTA frontend, you must also build it, and adjust the controller configuration to point to it. You should use the ``v4.0.0-beta.1`` tag of `the CARTA backend <https://github.com/CARTAvis/carta-backend>`_.
 
 By default, the controller runs on port 8000. It should be run behind a proxy, so that it can be accessed via HTTP and HTTPS. 
 

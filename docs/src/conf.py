@@ -22,7 +22,7 @@ copyright = '2021, Angus Comrie, Adrianna Pińska and Robert Simmonds'
 author = 'Angus Comrie, Adrianna Pińska and Robert Simmonds'
 
 # The full version, including alpha/beta/rc tags
-release = '3.0.0-beta.3'
+release = '4.0.0-beta.1'
 
 
 # -- General configuration ---------------------------------------------------
