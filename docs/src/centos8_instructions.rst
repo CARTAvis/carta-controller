@@ -87,15 +87,14 @@ The easiest way to install the CARTA controller is using ``npm``.
 4. Install the CARTA backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The easiest way may be to install the CARTA backend is from our cartavis RPM repository.
+The easiest way is to install the CARTA backend from our `cartavis/carta Copr <https://copr.fedorainfracloud.org/coprs/cartavis/carta/>`_ repository.
 
 .. code-block:: shell
 
     # Install the CARTA backend
-    sudo curl https://packages.cartavis.org/cartavis-el8.repo --output /etc/yum.repos.d/cartavis.repo
-    sudo dnf -y install 'dnf-command(config-manager)'
+    sudo dnf -y install 'dnf-command(copr)'
+    sudo dnf -y copr enable cartavis/carta
     sudo dnf -y install epel-release
-    sudo dnf -y config-manager --set-enabled powertools
     sudo dnf -y install carta-backend
 
     # Check that the backend can run and matches the major version number of the controller
