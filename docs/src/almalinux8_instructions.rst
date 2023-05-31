@@ -1,17 +1,17 @@
-.. _centos8_instructions:
+.. _almalinux8_instructions:
 
-Step-by-step instructions for CentOS 8
-======================================
+Step-by-step instructions for AlmaLinux 8
+=========================================
 
 .. note::
 
-    These instructions should also work for RHEL 8, AlmaLinux, and Rocky Linux. Some changes may be necessary for RHEL 7 / CentOS 7.
+    These instructions should also work for RHEL 8 and Rocky Linux 8. Some changes may be necessary for RHEL 7 / CentOS 7.
 
 
 1. Install Node.js
 ~~~~~~~~~~~~~~~~~~
 
-The CARTA controller uses `Node.js <https://nodejs.org/>`_ and supports v12, v14, and v16. Node.js can easily be installed from the CentOS 8 AppStream repository. Here we install v14, as well as the ``npm`` package manager.
+The CARTA controller uses `Node.js <https://nodejs.org/>`_ and supports v12, v14, and v16. Node.js can easily be installed from the AlmaLinux 8 AppStream repository. Here we install v14, as well as the ``npm`` package manager.
 
 .. code-block:: shell
 
@@ -26,7 +26,7 @@ The CARTA controller uses `Node.js <https://nodejs.org/>`_ and supports v12, v14
 2. Install MongoDB
 ~~~~~~~~~~~~~~~~~~
 
-The CARTA controller uses `MongoDB <https://www.mongodb.com/>`_ to store user preferences, etc.. MongoDB is not available through the default CentOS 8 repositories, but we can add a custom repository to install it more easily.
+The CARTA controller uses `MongoDB <https://www.mongodb.com/>`_ to store user preferences, etc.. MongoDB is not available through the default AlmaLinux 8 repositories, but we can add a custom repository to install it more easily.
 
 .. code-block:: shell
     
@@ -87,7 +87,7 @@ The easiest way to install the CARTA controller is using ``npm``.
 4. Install the CARTA backend
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The easiest way may be to install the CARTA backend is from our cartavis RPM repository.
+The easiest way is to install the CARTA backend is from our `cartavis/carta Copr <https://copr.fedorainfracloud.org/coprs/cartavis/carta/>`_ repository.
 
 .. code-block:: shell
 
@@ -97,8 +97,9 @@ The easiest way may be to install the CARTA backend is from our cartavis RPM rep
     sudo dnf -y install epel-release
     sudo dnf -y install carta-backend-beta
 
-    # Check that the backend can run and matches the major version number of the controller
-    /usr/bin/carta_backend --version
+    # Check that the backend can run and matches the major version number of the controller.
+    # Please note, we currently install the beta version of carta_backend in a non-standard location.
+    /opt/carta-beta/bin/carta_backend --version
 
 
 5. Install Nginx
@@ -160,6 +161,13 @@ An :ref:`example sudoers configuration<example_sudoers>` is provided in the conf
 
 .. note::
     The ``carta`` user should not be in the ``carta-users`` group. ``carta-users`` should only be assigned to the normal user accounts.
+
+.. note::
+    As we install the beta version of the carta_backend in a non-standard location, please remember to change the path to the carta_backend executable in the custom sudoers file:
+
+   .. code-block:: bash
+
+      carta ALL=(%carta-users) NOPASSWD:SETENV: /opt/carta-beta/bin/carta_backend
 
 7. Set up the user authentication method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
