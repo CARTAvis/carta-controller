@@ -412,7 +412,8 @@ async function handleGetWorkspaceById(req: AuthenticatedRequest, res: express.Re
     }
 
     try {
-        const queryResult = await workspacesCollection.findOne({_id: new ObjectId(req.params.id)}, {projection: {username: 0}});
+        const objectId = Buffer.from(req.params.id, "hex").toString("base64");
+        const queryResult = await workspacesCollection.findOne({_id: new ObjectId(objectId)}, {projection: {username: 0}});
         if (!queryResult?.workspace) {
             return next({statusCode: 404, message: "Workspace not found"});
         } else if (queryResult.username !== req.username && queryResult.shared) {
@@ -486,7 +487,8 @@ async function handleShareWorkspace(req: AuthenticatedRequest, res: express.Resp
     try {
         const updateResult = await workspacesCollection.findOneAndUpdate({_id: new ObjectId(id)}, {$set: {shared: true}});
         if (updateResult.ok) {
-            res.json({success: true, id});
+            const shareKey = Buffer.from(id, "hex").toString("base64");
+            res.json({success: true, id, shareKey});
         } else {
             return next({statusCode: 500, message: "Problem sharing workspace"});
         }
