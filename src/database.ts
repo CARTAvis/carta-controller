@@ -375,7 +375,7 @@ async function handleGetWorkspaceList(req: AuthenticatedRequest, res: express.Re
     }
 }
 
-async function handleGetWorkspace(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+async function handleGetWorkspaceByName(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
     if (!req.username) {
         return next({statusCode: 403, message: "Invalid username"});
     }
@@ -391,6 +391,35 @@ async function handleGetWorkspace(req: AuthenticatedRequest, res: express.Respon
     try {
         const queryResult = await workspacesCollection.findOne({username: req.username, name: req.params.name}, {projection: {username: 0}});
         res.json({success: !!queryResult?.workspace, workspace: queryResult?.workspace});
+    } catch (err) {
+        verboseError(err);
+        return next({statusCode: 500, message: "Problem retrieving workspace"});
+    }
+}
+
+
+async function handleGetWorkspaceById(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    if (!req.params?.id) {
+        return next({statusCode: 403, message: "Invalid workspace id"});
+    }
+
+    if (!workspacesCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    try {
+        const queryResult = await workspacesCollection.findOne({_id: new ObjectId(req.params.id)}, {projection: {username: 0}});
+        if (!queryResult?.workspace) {
+            return next({statusCode: 404, message: "Workspace not found"});
+        } else if (queryResult.username !== req.username && queryResult.shared) {
+            return next({statusCode: 403, message: "Workspace not accessible"});
+        } else {
+            res.json({success: true, workspace: queryResult.workspace});
+        }
     } catch (err) {
         verboseError(err);
         return next({statusCode: 500, message: "Problem retrieving workspace"});
@@ -484,6 +513,7 @@ databaseRouter.delete("/snippet", authGuard, noCache, handleClearSnippet);
 databaseRouter.post("/share/workspace/:id", authGuard, noCache, handleShareWorkspace);
 
 databaseRouter.get("/list/workspaces", authGuard, noCache, handleGetWorkspaceList);
-databaseRouter.get("/workspace/:name", authGuard, noCache, handleGetWorkspace);
+databaseRouter.get("/workspace/id/:id", authGuard, noCache, handleGetWorkspaceById);
+databaseRouter.get("/workspace/:name", authGuard, noCache, handleGetWorkspaceByName);
 databaseRouter.put("/workspace", authGuard, noCache, handleSetWorkspace);
 databaseRouter.delete("/workspace", authGuard, noCache, handleClearWorkspace);
