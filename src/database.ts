@@ -390,7 +390,11 @@ async function handleGetWorkspaceByName(req: AuthenticatedRequest, res: express.
 
     try {
         const queryResult = await workspacesCollection.findOne({username: req.username, name: req.params.name}, {projection: {username: 0}});
-        res.json({success: !!queryResult?.workspace, workspace: queryResult?.workspace});
+        if (!queryResult?.workspace) {
+            return next({statusCode: 404, message: "Workspace not found"});
+        } else {
+            res.json({success: true, workspace: {id: queryResult._id, ...queryResult.workspace}});
+        }
     } catch (err) {
         verboseError(err);
         return next({statusCode: 500, message: "Problem retrieving workspace"});
@@ -419,7 +423,7 @@ async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: express.R
         } else if (queryResult.username !== req.username && !queryResult.shared) {
             return next({statusCode: 403, message: "Workspace not accessible"});
         } else {
-            res.json({success: true, workspace: queryResult.workspace});
+            res.json({success: true, workspace: {id: queryResult._id, ...queryResult.workspace}});
         }
     } catch (err) {
         verboseError(err);
@@ -438,7 +442,7 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
     }
 
     const workspaceName = req.body?.workspaceName;
-    const workspace = req.body?.workspace;
+    const workspace = req.body?.workspace as any;
     // Check for malformed update
     if (!workspaceName || !workspace || workspace.workspaceVersion !== WORKSPACE_SCHEMA_VERSION) {
         return next({statusCode: 400, message: "Malformed workspace update"});
@@ -457,9 +461,11 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
             updateResult = await workspacesCollection.updateOne({_id: existingWorkspace._id}, {$set: {workspace}}, {upsert: false});
         } else {
             updateResult = await workspacesCollection.updateOne({username: req.username, name: workspaceName, workspace}, {$set: {workspace}}, {upsert: true});
+            // @ts-ignore
+            workspace.id = updateResult.upsertedId.toString();
         }
         if (updateResult.acknowledged) {
-            res.json({success: true});
+            res.json({success: true, workspace});
         } else {
             return next({statusCode: 500, message: "Problem updating workspace"});
         }
