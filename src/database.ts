@@ -442,7 +442,7 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
     }
 
     const workspaceName = req.body?.workspaceName;
-    const workspace = req.body?.workspace as any;
+    const workspace = req.body?.workspace;
     // Check for malformed update
     if (!workspaceName || !workspace || workspace.workspaceVersion !== WORKSPACE_SCHEMA_VERSION) {
         return next({statusCode: 400, message: "Malformed workspace update"});
@@ -456,16 +456,17 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
 
     try {
         let updateResult: UpdateResult;
+        let outputWorkspace = {...(workspace as any), id: ""};
         const existingWorkspace = await workspacesCollection.findOne({username: req.username, name: workspaceName});
         if (existingWorkspace) {
             updateResult = await workspacesCollection.updateOne({_id: existingWorkspace._id}, {$set: {workspace}}, {upsert: false});
+            outputWorkspace.id = existingWorkspace._id;
         } else {
             updateResult = await workspacesCollection.updateOne({username: req.username, name: workspaceName, workspace}, {$set: {workspace}}, {upsert: true});
-            // @ts-ignore
-            workspace.id = updateResult.upsertedId.toString();
+            outputWorkspace.id = updateResult.upsertedId.toString();
         }
         if (updateResult.acknowledged) {
-            res.json({success: true, workspace});
+            res.json({success: true, workspace: outputWorkspace});
         } else {
             return next({statusCode: 500, message: "Problem updating workspace"});
         }
