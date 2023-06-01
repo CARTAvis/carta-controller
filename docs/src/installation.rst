@@ -8,7 +8,7 @@ Installation
 Installing the backend
 ----------------------
 
-We provide `binary Debian packages <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ of the latest beta and release versions of the CARTA backend for Ubuntu 20.04 (Focal Fossa) and Ubuntu 18.04 (Bionic Beaver). You can install the beta version with all dependencies by adding our PPA to your system and running ``apt-get install carta-backend-beta``. Please refer to our :ref:`Ubuntu Focal instructions<focal_instructions>` for more details.
+We provide `binary Debian packages <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ of the latest beta and release versions of the CARTA backend for Ubuntu 22.04.2 (Jammy Jellyfish), Ubuntu 20.04 (Focal Fossa) and Ubuntu 18.04 (Bionic Beaver; up to 3.0 release only). You can install the release version with all dependencies by adding our PPA to your system and running ``apt-get install carta-backend``. Please refer to our :ref:`Ubuntu Focal instructions<focal_instructions>` for more details.
 
 .. note::
 
