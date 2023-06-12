@@ -393,7 +393,7 @@ async function handleGetWorkspaceByName(req: AuthenticatedRequest, res: express.
         if (!queryResult?.workspace) {
             return next({statusCode: 404, message: "Workspace not found"});
         } else {
-            res.json({success: true, workspace: {id: queryResult._id, ...queryResult.workspace}});
+            res.json({success: true, workspace: {id: queryResult._id, name: queryResult.name, editable: true, ...queryResult.workspace}});
         }
     } catch (err) {
         verboseError(err);
@@ -423,7 +423,7 @@ async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: express.R
         } else if (queryResult.username !== req.username && !queryResult.shared) {
             return next({statusCode: 403, message: "Workspace not accessible"});
         } else {
-            res.json({success: true, workspace: {id: queryResult._id, ...queryResult.workspace}});
+            res.json({success: true, workspace: {id: queryResult._id, name: queryResult.name, editable: queryResult.username === req.username, ...queryResult.workspace}});
         }
     } catch (err) {
         verboseError(err);
@@ -456,7 +456,7 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
 
     try {
         let updateResult: UpdateResult;
-        let outputWorkspace = {...(workspace as any), id: ""};
+        let outputWorkspace = {...(workspace as any), id: "", editable: true,  name: workspaceName};
         const existingWorkspace = await workspacesCollection.findOne({username: req.username, name: workspaceName});
         if (existingWorkspace) {
             updateResult = await workspacesCollection.updateOne({_id: existingWorkspace._id}, {$set: {workspace}}, {upsert: false});
