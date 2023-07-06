@@ -288,7 +288,6 @@ export async function oidcLoginStart (req: express.Request, res: express.Respons
         // Create session key
         const sessionId = Array.from({length:32}, (_,i) => urlSafeChars[Math.floor(Math.random() * urlSafeChars.length)]).join("");
         res.cookie('sessionId', sessionId, {
-            path: (new URL(RuntimeConfig.apiAddress + '/auth/oidcCallback', ServerConfig.serverAddress)).href,
             maxAge: 600000,
             httpOnly: true,
             secure: !ServerConfig.httpOnly,
