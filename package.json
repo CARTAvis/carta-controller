@@ -14,8 +14,7 @@
         "test": "npx ts-node src/index.ts --test",
         "reformat": "npx prettier --write ./src",
         "checkformat": "npx prettier --check ./src",
-        "prepare": "npx tsc",
-        "prepack": "npm install"
+        "prepare": "npm install && npx tsc"
     },
     "author": "",
     "license": "ISC",
