@@ -10,7 +10,7 @@ CARTA Controller
 
 CARTA is the Cube Analysis and Rendering Tool for Astronomy. This document describes the installation and configuration process for the controller component.
 
-Detailed step-by-step instructions are provided for :ref:`Ubuntu 20.04 (Focal Fossa)<focal_instructions>` and :ref:`CentOS 8<centos8_instructions>`. 
+Detailed step-by-step instructions are provided for :ref:`Ubuntu 20.04 (Focal Fossa)<focal_instructions>` and :ref:`AlmaLinux 8<almalinux8_instructions>`. 
 We officially support Ubuntu 18.04 and 20.04, and RHEL 7 and 8 (and their freely distributed binary-compatible alternatives, such as CentOS or AlmaLinux), with all available standard updates applied.
 
 .. toctree::
@@ -21,7 +21,7 @@ We officially support Ubuntu 18.04 and 20.04, and RHEL 7 and 8 (and their freely
    installation
    configuration
    ubuntu_focal_instructions
-   centos8_instructions   
+   almalinux8_instructions   
    schema
    schema_backend
 
