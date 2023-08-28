@@ -193,7 +193,7 @@ async function startServer(username: string) {
             `${port}`,
             "--top_level_folder",
             ServerConfig.rootFolderTemplate.replace("{username}", username),
-            "--controller_build"
+            "--controller_deployment"
         ]);
 
         if (ServerConfig.logFileTemplate) {
