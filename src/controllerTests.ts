@@ -179,7 +179,8 @@ async function testBackendStartup(username: string) {
         "--port",
         `${port}`,
         "--top_level_folder",
-        ServerConfig.rootFolderTemplate.replace("{username}", username)
+        ServerConfig.rootFolderTemplate.replace("{username}", username),
+        "--controller_build"
     ]);
 
     if (ServerConfig.logFileTemplate) {
