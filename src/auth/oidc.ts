@@ -162,7 +162,17 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
 
         // After login redirect to the dashboard, but otherwise return a bearer token
         if (isLogin) {
-            return res.redirect(`${new URL(`${RuntimeConfig.dashboardAddress}`, ServerConfig.serverAddress).href}?${new URLSearchParams(`oidcuser=${username}`).toString()}`);
+            const loginUsp = new URLSearchParams();
+            loginUsp.set('oidcuser',`${username}`);
+            if (req.cookies['redirectParams']) {
+                loginUsp.set('redirectParams', req.cookies['redirectParams']);
+                res.cookie('redirectParams', '', {
+                    maxAge: 600000,
+                    httpOnly: true,
+                    secure: !ServerConfig.httpOnly,
+                });
+            }
+            return res.redirect(`${new URL(`${RuntimeConfig.dashboardAddress}`, ServerConfig.serverAddress).href}?${loginUsp.toString()}`);
         }
         else {
             let newAccessToken = { username };
@@ -302,6 +312,15 @@ export async function oidcLoginStart (req: express.Request, res: express.Respons
         // Allow arbitrary params to be passed for IdPs like Google that require additional ones
         for (const item of authConf.additionalAuthParams) {
             usp.set(item[0],item[1])
+        }
+
+        // Store redirectParams to redirect post-login
+        if ('redirectParams' in req.query) {
+            res.cookie('redirectParams', req.query['redirectParams'], {
+                maxAge: 600000,
+                httpOnly: true,
+                secure: !ServerConfig.httpOnly,
+            });
         }
 
         // Return redirect
