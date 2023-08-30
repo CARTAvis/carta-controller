@@ -410,7 +410,7 @@ window.onload = async () => {
 
     const oidcLoginButton = document.getElementById("oidcLogin");
     if (oidcLoginButton) {
-        oidcLoginButton.onclick = () => { window.location.href = `${apiBase}/auth/login` };
+        oidcLoginButton.onclick = () => { window.location.href = `${apiBase}/auth/login${window.location.search}` };
     }
 
     document.getElementById("stop").onclick = handleServerStop;
