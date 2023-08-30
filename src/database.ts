@@ -1,7 +1,7 @@
 import * as express from "express";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {Collection, Db, MongoClient, ObjectId, UpdateResult} from "mongodb";
+import {Collection, Db, MongoClient, ObjectId} from "mongodb";
 import {authGuard} from "./auth";
 import {noCache, verboseError} from "./util";
 import {AuthenticatedRequest} from "./types";
@@ -455,18 +455,17 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
     }
 
     try {
-        let updateResult: UpdateResult;
-        let outputWorkspace = {...(workspace as any), id: "", editable: true,  name: workspaceName};
-        const existingWorkspace = await workspacesCollection.findOne({username: req.username, name: workspaceName});
-        if (existingWorkspace) {
-            updateResult = await workspacesCollection.updateOne({_id: existingWorkspace._id}, {$set: {workspace}}, {upsert: false});
-            outputWorkspace.id = existingWorkspace._id;
-        } else {
-            updateResult = await workspacesCollection.updateOne({username: req.username, name: workspaceName, workspace}, {$set: {workspace}}, {upsert: true});
-            outputWorkspace.id = updateResult.upsertedId.toString();
-        }
-        if (updateResult.acknowledged) {
-            res.json({success: true, workspace: outputWorkspace});
+        const updateResult = await workspacesCollection.findOneAndUpdate({username: req.username, name: workspaceName}, {$set: {workspace}}, {upsert: true, returnDocument: "after"});
+        if (updateResult.ok && updateResult.value) {
+            res.json({
+                success: true,
+                workspace: {
+                    ...(workspace as any),
+                    id: updateResult.value._id.toString(),
+                    editable: true,
+                    name: workspaceName
+                }});
+            return;
         } else {
             return next({statusCode: 500, message: "Problem updating workspace"});
         }
