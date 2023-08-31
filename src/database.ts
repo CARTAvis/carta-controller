@@ -1,7 +1,7 @@
 import * as express from "express";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {Collection, Db, MongoClient, ObjectId, UpdateResult} from "mongodb";
+import {Collection, Db, MongoClient, ObjectId} from "mongodb";
 import {authGuard} from "./auth";
 import {noCache, verboseError} from "./util";
 import {AuthenticatedRequest} from "./types";
@@ -375,7 +375,7 @@ async function handleGetWorkspaceList(req: AuthenticatedRequest, res: express.Re
     }
 }
 
-async function handleGetWorkspace(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+async function handleGetWorkspaceByName(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
     if (!req.username) {
         return next({statusCode: 403, message: "Invalid username"});
     }
@@ -390,7 +390,41 @@ async function handleGetWorkspace(req: AuthenticatedRequest, res: express.Respon
 
     try {
         const queryResult = await workspacesCollection.findOne({username: req.username, name: req.params.name}, {projection: {username: 0}});
-        res.json({success: !!queryResult?.workspace, workspace: queryResult?.workspace});
+        if (!queryResult?.workspace) {
+            return next({statusCode: 404, message: "Workspace not found"});
+        } else {
+            res.json({success: true, workspace: {id: queryResult._id, name: queryResult.name, editable: true, ...queryResult.workspace}});
+        }
+    } catch (err) {
+        verboseError(err);
+        return next({statusCode: 500, message: "Problem retrieving workspace"});
+    }
+}
+
+
+async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+    if (!req.username) {
+        return next({statusCode: 403, message: "Invalid username"});
+    }
+
+    if (!req.params?.key) {
+        return next({statusCode: 403, message: "Invalid workspace id"});
+    }
+
+    if (!workspacesCollection) {
+        return next({statusCode: 501, message: "Database not configured"});
+    }
+
+    try {
+        const objectId = Buffer.from(req.params.key, "base64url").toString("hex");
+        const queryResult = await workspacesCollection.findOne({_id: new ObjectId(objectId)});
+        if (!queryResult?.workspace) {
+            return next({statusCode: 404, message: "Workspace not found"});
+        } else if (queryResult.username !== req.username && !queryResult.shared) {
+            return next({statusCode: 403, message: "Workspace not accessible"});
+        } else {
+            res.json({success: true, workspace: {id: queryResult._id, name: queryResult.name, editable: queryResult.username === req.username, ...queryResult.workspace}});
+        }
     } catch (err) {
         verboseError(err);
         return next({statusCode: 500, message: "Problem retrieving workspace"});
@@ -421,15 +455,17 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
     }
 
     try {
-        let updateResult: UpdateResult;
-        const existingWorkspace = await workspacesCollection.findOne({username: req.username, name: workspaceName});
-        if (existingWorkspace) {
-            updateResult = await workspacesCollection.updateOne({_id: existingWorkspace._id}, {$set: {workspace}}, {upsert: false});
-        } else {
-            updateResult = await workspacesCollection.updateOne({username: req.username, name: workspaceName, workspace}, {$set: {workspace}}, {upsert: true});
-        }
-        if (updateResult.acknowledged) {
-            res.json({success: true});
+        const updateResult = await workspacesCollection.findOneAndUpdate({username: req.username, name: workspaceName}, {$set: {workspace}}, {upsert: true, returnDocument: "after"});
+        if (updateResult.ok && updateResult.value) {
+            res.json({
+                success: true,
+                workspace: {
+                    ...(workspace as any),
+                    id: updateResult.value._id.toString(),
+                    editable: true,
+                    name: workspaceName
+                }});
+            return;
         } else {
             return next({statusCode: 500, message: "Problem updating workspace"});
         }
@@ -457,7 +493,8 @@ async function handleShareWorkspace(req: AuthenticatedRequest, res: express.Resp
     try {
         const updateResult = await workspacesCollection.findOneAndUpdate({_id: new ObjectId(id)}, {$set: {shared: true}});
         if (updateResult.ok) {
-            res.json({success: true, id});
+            const shareKey = Buffer.from(id, "hex").toString("base64url");
+            res.json({success: true, id, shareKey});
         } else {
             return next({statusCode: 500, message: "Problem sharing workspace"});
         }
@@ -484,6 +521,7 @@ databaseRouter.delete("/snippet", authGuard, noCache, handleClearSnippet);
 databaseRouter.post("/share/workspace/:id", authGuard, noCache, handleShareWorkspace);
 
 databaseRouter.get("/list/workspaces", authGuard, noCache, handleGetWorkspaceList);
-databaseRouter.get("/workspace/:name", authGuard, noCache, handleGetWorkspace);
+databaseRouter.get("/workspace/key/:key", authGuard, noCache, handleGetWorkspaceByKey);
+databaseRouter.get("/workspace/:name", authGuard, noCache, handleGetWorkspaceByName);
 databaseRouter.put("/workspace", authGuard, noCache, handleSetWorkspace);
 databaseRouter.delete("/workspace", authGuard, noCache, handleClearWorkspace);
