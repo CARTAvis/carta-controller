@@ -65,7 +65,7 @@ The easiest way to install the CARTA controller is using ``npm``.
 .. code-block:: shell
 
     sudo dnf install -y python3 make gcc-c++
-    sudo npm install -g --unsafe-perm carta-controller@beta
+    sudo npm install -g --unsafe-perm carta-controller
 
 .. note::
 
@@ -95,11 +95,11 @@ The easiest way is to install the CARTA backend is from our `cartavis/carta Copr
     sudo dnf -y install 'dnf-command(copr)'
     sudo dnf -y copr enable cartavis/carta
     sudo dnf -y install epel-release
-    sudo dnf -y install carta-backend-beta
+    sudo dnf -y install carta-backend
 
     # Check that the backend can run and matches the major version number of the controller.
-    # Please note, we currently install the beta version of carta_backend in a non-standard location.
-    /opt/carta-beta/bin/carta_backend --version
+    # Please note, we currently install the version of carta_backend in a non-standard location.
+    /opt/carta/bin/carta_backend --version
 
 
 5. Install Nginx
@@ -163,11 +163,11 @@ An :ref:`example sudoers configuration<example_sudoers>` is provided in the conf
     The ``carta`` user should not be in the ``carta-users`` group. ``carta-users`` should only be assigned to the normal user accounts.
 
 .. note::
-    As we install the beta version of the carta_backend in a non-standard location, please remember to change the path to the carta_backend executable in the custom sudoers file:
+    As we install the version of the carta_backend in a non-standard location, please remember to change the path to the carta_backend executable in the custom sudoers file:
 
    .. code-block:: bash
 
-      carta ALL=(%carta-users) NOPASSWD:SETENV: /opt/carta-beta/bin/carta_backend
+      carta ALL=(%carta-users) NOPASSWD:SETENV: /opt/carta/bin/carta_backend
 
 7. Set up the user authentication method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
