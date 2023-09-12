@@ -34,26 +34,9 @@ export function getUserId(username: string) {
         throw new Error("Missing argument for username");
     }
 
-    let usernameRegex: RegExp | undefined = undefined;
-    if (process.env.NAME_REGEX) {
-        try {
-            usernameRegex = new RegExp(process.env.NAME_REGEX);
-        } catch (err) {
-            console.warn(err);
-        }
-    }
-
-    if (!usernameRegex) {
-        // As specified in useradd manpage
-        usernameRegex = /^[a-z_][a-z0-9_-]*[$]?$/gm;
-    }
-    if (!username.match(usernameRegex)) {
-        throw new Error("Malformed argument for username");
-    }
-
-    const result = spawnSync("id", ["-u", username])?.stdout;
-    if (result) {
-        const uid = Number.parseInt(result);
+    const result = spawnSync("id", ["-u", username]);
+    if (!result.status && result?.stdout) {
+        const uid = Number.parseInt(result.stdout);
         if (isFinite(uid)) {
             return uid;
         }
