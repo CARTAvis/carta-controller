@@ -32,6 +32,7 @@
         "crypto": "^1.0.1",
         "express": "^4.17.1",
         "express-bearer-token": "^2.4.0",
+        "express-ws": "^5.0.2",
         "google-auth-library": "^8.7.0",
         "hjson": "^3.2.2",
         "http-proxy": "^1.18.1",
@@ -51,13 +52,17 @@
         "tcp-port-used": "^1.0.2",
         "uuid": "^9.0.0",
         "websocket": "^1.0.34",
-        "yargs": "^17.0.1"
+        "y-mongodb": "^0.1.11",
+        "y-websocket": "^1.5.0",
+        "yargs": "^17.0.1",
+        "yjs": "^13.6.8"
     },
     "devDependencies": {
         "@types/compression": "^1.7.0",
         "@types/cookie-parser": "^1.4.2",
         "@types/cors": "^2.8.10",
         "@types/express": "^4.17.11",
+        "@types/express-ws": "^3.0.2",
         "@types/http-proxy": "^1.17.5",
         "@types/jsonwebtoken": "^9.0.1",
         "@types/lodash": "^4.14.168",

@@ -14,6 +14,8 @@ import {delay, noCache, verboseError} from "./util";
 import {authGuard, getUser, verifyToken} from "./auth";
 import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
+import {setupWSConnection} from "../node_modules/y-websocket/bin/utils.js";
+import * as ws from "ws";
 
 type ProcessInfo = {
     process: ChildProcess;
@@ -220,12 +222,12 @@ async function startServer(username: string) {
                 logStream = fs.createWriteStream(logLocation, {flags: "a"});
                 child.stdout.pipe(logStream);
                 child.stderr.pipe(logStream);
-                child.stdout.on("data", function (data) {
+                child.stdout.on("data", function(data) {
                     const line = data.toString() as string;
                     appendLog(username, line);
                 });
 
-                child.stderr.on("data", function (data) {
+                child.stderr.on("data", function(data) {
                     const line = data.toString() as string;
                     appendLog(username, line);
                 });
@@ -235,13 +237,13 @@ async function startServer(username: string) {
             }
         } else {
             logLocation = "stdout";
-            child.stdout.on("data", function (data) {
+            child.stdout.on("data", function(data) {
                 const line = data.toString() as string;
                 appendLog(username, line);
                 console.log(line);
             });
 
-            child.stderr.on("data", function (data) {
+            child.stderr.on("data", function(data) {
                 const line = data.toString() as string;
                 appendLog(username, line);
                 console.log(line);
@@ -399,6 +401,28 @@ export const createScriptingProxyHandler = (server: httpProxy) => async (req: Au
         return next({statusCode: 500, message: `Error proxying scripting request for ${req.username}`});
     }
 };
+
+export async function yjsUpgradeHandler(ws: ws.WebSocket, req: express.Request) {
+    if (!req.params.docName || !req.query?.token) {
+        ws.close();
+        return;
+    }
+
+    const tokenString = req.query?.token as string;
+    if (!tokenString || Array.isArray(tokenString)) {
+        console.log(`Incoming Websocket upgrade request is missing an authentication token`);
+        return ws.close();
+    }
+
+    const token = await verifyToken(tokenString);
+    if (!token || !token.username) {
+        console.log(`Incoming Websocket upgrade request has an invalid token`);
+        return ws.close();
+    }
+
+    console.log(`Starting collaborative session for doc ${req.params.docName} as user ${token.username}`);
+    return setupWSConnection(ws, req, {docName: req.params.docName});
+}
 
 export const serverRouter = express.Router();
 serverRouter.post("/start", authGuard, noCache, handleStartServer);

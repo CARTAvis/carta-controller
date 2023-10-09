@@ -10,12 +10,20 @@ import * as fs from "fs";
 import * as path from "path";
 import * as compression from "compression";
 import * as chalk from "chalk";
-import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./serverHandlers";
+import {createScriptingProxyHandler, createUpgradeHandler, serverRouter, yjsUpgradeHandler} from "./serverHandlers";
 import {authGuard, authRouter} from "./auth";
 import {databaseRouter, initDB} from "./database";
 import {RuntimeConfig, ServerConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
 import * as logSymbols from "log-symbols";
+import * as expressWs from "express-ws";
+
+import * as Y from "yjs";
+import {MongodbPersistence} from "y-mongodb";
+import {setPersistence} from "../node_modules/y-websocket/bin/utils.js";
+
+
+
 
 if (testUser) {
     runTests(testUser).then(
@@ -30,7 +38,7 @@ if (testUser) {
         }
     );
 } else {
-    let app = express();
+    const app = express();
     app.use(bodyParser.urlencoded({extended: true}));
     app.use(cookieParser());
     app.use(bearerToken());
@@ -131,17 +139,60 @@ if (testUser) {
         }
     });
 
+    // Separate server for Yjs websocket connections
+    // Doc name is passed as part of the URL and auth token in the query string
+    // e.g. ws://localhost:1235/api/collaboration/d5d8968a-c88c-468a-89bf-e48640be9dfa?token=1234567890
+    const yjsApp = expressWs(express()).app;
+    yjsApp.ws("/api/collaboration/:docName", yjsUpgradeHandler);
+    const collection = 'yjs-transactions';
+    const ldb = new MongodbPersistence(ServerConfig.database.uri+`/${ServerConfig.database.databaseName}`, collection);
+
+    setPersistence({
+        bindState: async (docName, ydoc) => {
+            // Here you listen to granular document updates and store them in the database
+            // You don't have to do this, but it ensures that you don't lose content when the server crashes
+            // See https://github.com/yjs/yjs#Document-Updates for documentation on how to encode
+            // document updates
+
+            const persistedYdoc = await ldb.getYDoc(docName);
+            const newUpdates = Y.encodeStateAsUpdate(ydoc);
+            ldb.storeUpdate(docName, newUpdates)
+            Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(persistedYdoc));
+            ydoc.on('update', async update => {
+                ldb.storeUpdate(docName, update);
+            })
+        },
+        writeState: async (docName, ydoc) => {
+            // This is called when all connections to the document are closed.
+            // In the future, this method might also be called in intervals or after a certain number of updates.
+            return new Promise<void>(resolve => {
+                // When the returned Promise resolves, the document will be destroyed.
+                // So make sure that the document really has been written to the database.
+                resolve();
+            })
+        }
+    })
+
+
     async function init() {
         await initDB();
+        const yjsPort = +ServerConfig.serverPort + 1;
+
         const onListenStart = () => {
             console.log(`Started listening for login requests on port ${ServerConfig.serverPort}`);
         };
 
-        // NodeJS Server constructor supports either a port (and optional interface) OR a path
+        const onYjsListenStart = () => {
+            console.log(`Started listening for Yjs collaboration connections on port ${yjsPort}`);
+        };
+
+        // Node.js Server constructor supports either a port (and optional interface) OR a path
         if (ServerConfig.serverInterface && typeof ServerConfig.serverPort === "number") {
             expressServer.listen(ServerConfig.serverPort, ServerConfig.serverInterface, onListenStart);
+            yjsApp.listen(+yjsPort, ServerConfig.serverInterface, onYjsListenStart);
         } else {
             expressServer.listen(ServerConfig.serverPort, onListenStart);
+            yjsApp.listen(+yjsPort, onYjsListenStart);
         }
     }
 
