@@ -193,6 +193,10 @@
                     "description": "HDU to load. If none is specified, the first image HDU will be used",
                     "type": "string"
                 },
+                "replicatedId": {
+                    "description": "UUID representing the file in this workspace",
+                    "type": "string"
+                },
                 "renderConfig": {
                     "$ref": "#/definitions/render-config"
                 },

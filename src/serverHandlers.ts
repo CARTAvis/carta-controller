@@ -16,6 +16,7 @@ import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
 import {setupWSConnection} from "../node_modules/y-websocket/bin/utils.js";
 import * as ws from "ws";
+import {canLoadWorkspace} from "./database";
 
 type ProcessInfo = {
     process: ChildProcess;
@@ -417,6 +418,11 @@ export async function yjsUpgradeHandler(ws: ws.WebSocket, req: express.Request) 
     const token = await verifyToken(tokenString);
     if (!token || !token.username) {
         console.log(`Incoming Websocket upgrade request has an invalid token`);
+        return ws.close();
+    }
+
+    if (!await canLoadWorkspace(token.username, req.params.docName)) {
+        console.log(`User ${token.username} is not authorized to load workspace ${req.params.docName} or it does not exist`);
         return ws.close();
     }
 

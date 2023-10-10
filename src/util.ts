@@ -2,12 +2,20 @@ import * as express from "express";
 import {spawnSync} from "child_process";
 
 import {verboseOutput} from "./config";
+import {ObjectId} from "mongodb";
 
 // Delay for the specified number of milliseconds
 export async function delay(delay: number) {
     return new Promise<void>(resolve => {
         setTimeout(() => resolve(), delay);
     });
+}
+
+export function toObjectId(key: string) {
+    if (key?.length === 24) {
+        return new ObjectId(key);
+    }
+    else return new ObjectId(Buffer.from(key, "base64url").toString("hex"));
 }
 
 export function noCache(req: express.Request, res: express.Response, next: express.NextFunction) {

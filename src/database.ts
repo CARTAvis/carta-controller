@@ -3,9 +3,14 @@ import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import {Collection, Db, MongoClient, ObjectId} from "mongodb";
 import {authGuard} from "./auth";
-import {noCache, verboseError} from "./util";
+import {noCache, toObjectId, verboseError} from "./util";
 import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
+import {MongodbPersistence} from "y-mongodb";
+import * as Y from "yjs";
+import {setPersistence} from "../node_modules/y-websocket/bin/utils.js";
+import {WorkspaceFile} from "./models/WorkspaceFile";
+
 
 const PREFERENCE_SCHEMA_VERSION = 2;
 const LAYOUT_SCHEMA_VERSION = 2;
@@ -27,12 +32,14 @@ let preferenceCollection: Collection;
 let layoutsCollection: Collection;
 let snippetsCollection: Collection;
 let workspacesCollection: Collection;
+let workspaceTransactionsCollection: Collection;
+let workspacePersistence: MongodbPersistence;
 
-async function updateUsernameIndex(collection: Collection, unique: boolean) {
-    const hasIndex = await collection.indexExists("username");
+async function updateIndex(collection: Collection, indexName: string, unique: boolean) {
+    const hasIndex = await collection.indexExists(indexName);
     if (!hasIndex) {
-        await collection.createIndex({username: 1}, {name: "username", unique});
-        console.log(`Created username index for collection ${collection.collectionName}`);
+        await collection.createIndex({[indexName]: 1}, {name: indexName, unique});
+        console.log(`Created ${indexName} index for collection ${collection.collectionName}`);
     }
 }
 
@@ -46,22 +53,77 @@ async function createOrGetCollection(db: Db, collectionName: string) {
     }
 }
 
+export async function initYjsPersistence() {
+    const collection = "workspace-transactions";
+    workspacePersistence = new MongodbPersistence(ServerConfig.database.uri + `/${ServerConfig.database.databaseName}`, collection);
+
+    setPersistence({
+        bindState: async (docName, ydoc) => {
+            // Here you listen to granular document updates and store them in the database
+            // You don't have to do this, but it ensures that you don't lose content when the server crashes
+            // See https://github.com/yjs/yjs#Document-Updates for documentation on how to encode
+            // document updates
+
+            const doc = await workspacePersistence.getYDoc(docName);
+            const newUpdates = Y.encodeStateAsUpdate(ydoc);
+            workspacePersistence.storeUpdate(docName, newUpdates);
+            Y.applyUpdate(ydoc, Y.encodeStateAsUpdate(doc));
+            ydoc.on("update", async update => {
+                workspacePersistence.storeUpdate(docName, update);
+                const doc = await workspacePersistence.getYDoc(docName);
+                console.log(doc.toJSON());
+            });
+        },
+        writeState: async (docName, ydoc) => {
+            // This is called when all connections to the document are closed.
+            // In the future, this method might also be called in intervals or after a certain number of updates.
+            return new Promise<void>(resolve => {
+                // When the returned Promise resolves, the document will be destroyed.
+                // So make sure that the document really has been written to the database.
+                resolve();
+            });
+        }
+    });
+}
+
+export async function initWorkspace(docName: string, files: WorkspaceFile[]) {
+    const workspaceDoc = await workspacePersistence.getYDoc(docName);
+    const fileMap = workspaceDoc.getMap("files");
+    let orderIndex = 0;
+    for (const file of files) {
+        const {id, directory, filename, hdu, replicatedId} = file;
+        if (file.replicatedId) {
+            const {replicatedId, ...fileWithoutId} = file;
+            fileMap.set(file.replicatedId, {id, directory, filename, hdu, orderIndex});
+            orderIndex++;
+        }
+    }
+
+    return workspaceDoc;
+}
+
 export async function initDB() {
     if (ServerConfig.database?.uri && ServerConfig.database?.databaseName) {
         try {
             client = await MongoClient.connect(ServerConfig.database.uri);
-            const db = await client.db(ServerConfig.database.databaseName);
+            const db = client.db(ServerConfig.database.databaseName);
             layoutsCollection = await createOrGetCollection(db, "layouts");
             snippetsCollection = await createOrGetCollection(db, "snippets");
             preferenceCollection = await createOrGetCollection(db, "preferences");
             workspacesCollection = await createOrGetCollection(db, "workspaces");
+            workspaceTransactionsCollection = await createOrGetCollection(db, "workspace-transactions");
+
             // Remove any existing validation in preferences collection
             await db.command({collMod: "preferences", validator: {}, validationLevel: "off"});
             // Update collection indices if necessary
-            await updateUsernameIndex(layoutsCollection, false);
-            await updateUsernameIndex(snippetsCollection, false);
-            await updateUsernameIndex(workspacesCollection, false);
-            await updateUsernameIndex(preferenceCollection, true);
+            await updateIndex(layoutsCollection, "username", false);
+            await updateIndex(snippetsCollection, "username", false);
+            await updateIndex(workspacesCollection, "username", false);
+            await updateIndex(preferenceCollection, "username", true);
+            // Yjs init
+            await initYjsPersistence();
+            await updateIndex(workspaceTransactionsCollection, "docName", false);
+
             console.log(`Connected to server ${ServerConfig.database.uri} and database ${ServerConfig.database.databaseName}`);
         } catch (err) {
             verboseError(err);
@@ -344,6 +406,16 @@ async function handleClearWorkspace(req: AuthenticatedRequest, res: express.Resp
     const workspaceId = req.body?.id;
 
     try {
+        const workspaceDocQuery = await workspacesCollection.findOne({username: req.username, name: workspaceName});
+        if (!workspaceDocQuery?.workspace) {
+            return next({statusCode: 404, message: "Workspace not found"});
+        }
+
+        // Delete transactions for this workspace
+        const workspaceId = workspaceDocQuery._id;
+        const workspaceKey = Buffer.from(workspaceId.toHexString(), "hex").toString("base64url");
+        await workspaceTransactionsCollection.deleteMany({docName: workspaceKey});
+
         const deleteResult = await workspacesCollection.deleteOne({username: req.username, name: workspaceName});
         if (deleteResult.acknowledged) {
             res.json({success: true});
@@ -416,8 +488,8 @@ async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: express.R
     }
 
     try {
-        const objectId = Buffer.from(req.params.key, "base64url").toString("hex");
-        const queryResult = await workspacesCollection.findOne({_id: new ObjectId(objectId)});
+        const objectId = toObjectId(req.params.key);
+        const queryResult = await workspacesCollection.findOne({_id: objectId});
         if (!queryResult?.workspace) {
             return next({statusCode: 404, message: "Workspace not found"});
         } else if (queryResult.username !== req.username && !queryResult.shared) {
@@ -428,6 +500,24 @@ async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: express.R
     } catch (err) {
         verboseError(err);
         return next({statusCode: 500, message: "Problem retrieving workspace"});
+    }
+}
+
+export async function canLoadWorkspace(username: string, key: string) {
+    if (!workspacesCollection) {
+        return false;
+    }
+
+    try {
+        const objectId = toObjectId(key);
+        const workspaceDocQuery = await workspacesCollection.findOne({_id: objectId});
+        if (!workspaceDocQuery?.workspace) {
+            return false;
+        }
+        return workspaceDocQuery.username === username || !!workspaceDocQuery.shared;
+    } catch (err) {
+        verboseError(err);
+        return false;
     }
 }
 
@@ -455,8 +545,17 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
     }
 
     try {
-        const updateResult = await workspacesCollection.findOneAndUpdate({username: req.username, name: workspaceName}, {$set: {workspace}}, {upsert: true, returnDocument: "after"});
+        const updateResult = await workspacesCollection.findOneAndUpdate({username: req.username, name: workspaceName}, {$set: {workspace}}, {
+            upsert: true,
+            returnDocument: "after"
+        });
         if (updateResult.ok && updateResult.value) {
+
+            // Create YJS document for workspace
+            const workspaceId = updateResult.value._id.toString();
+            const key = Buffer.from(workspaceId, "hex").toString("base64url");
+            //const doc = initWorkspace(key, (workspace as any).files);
+
             res.json({
                 success: true,
                 workspace: {
@@ -464,7 +563,8 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: express.Respon
                     id: updateResult.value._id.toString(),
                     editable: true,
                     name: workspaceName
-                }});
+                }
+            });
             return;
         } else {
             return next({statusCode: 500, message: "Problem updating workspace"});
