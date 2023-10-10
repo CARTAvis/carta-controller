@@ -405,23 +405,27 @@ export const createScriptingProxyHandler = (server: httpProxy) => async (req: Au
 
 export async function yjsUpgradeHandler(ws: ws.WebSocket, req: express.Request) {
     if (!req.params.docName || !req.query?.token) {
+        await delay(500);
         ws.close();
         return;
     }
 
     const tokenString = req.query?.token as string;
     if (!tokenString || Array.isArray(tokenString)) {
+        await delay(500);
         console.log(`Incoming Websocket upgrade request is missing an authentication token`);
         return ws.close();
     }
 
     const token = await verifyToken(tokenString);
     if (!token || !token.username) {
+        await delay(500);
         console.log(`Incoming Websocket upgrade request has an invalid token`);
         return ws.close();
     }
 
     if (!await canLoadWorkspace(token.username, req.params.docName)) {
+        await delay(500);
         console.log(`User ${token.username} is not authorized to load workspace ${req.params.docName} or it does not exist`);
         return ws.close();
     }

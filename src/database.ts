@@ -86,52 +86,36 @@ export async function initYjsPersistence() {
     });
 }
 
-export async function initWorkspace(docName: string, files: WorkspaceFile[]) {
-    const workspaceDoc = await workspacePersistence.getYDoc(docName);
-    const fileMap = workspaceDoc.getMap("files");
-    let orderIndex = 0;
-    for (const file of files) {
-        const {id, directory, filename, hdu, replicatedId} = file;
-        if (file.replicatedId) {
-            const {replicatedId, ...fileWithoutId} = file;
-            fileMap.set(file.replicatedId, {id, directory, filename, hdu, orderIndex});
-            orderIndex++;
-        }
+export async function initDB() {
+    if (!(ServerConfig.database?.uri && ServerConfig.database?.databaseName)) {
+        console.error("Database configuration not found");
+        return process.exit(1);
     }
 
-    return workspaceDoc;
-}
+    try {
+        client = await MongoClient.connect(ServerConfig.database.uri);
+        const db = client.db(ServerConfig.database.databaseName);
+        layoutsCollection = await createOrGetCollection(db, "layouts");
+        snippetsCollection = await createOrGetCollection(db, "snippets");
+        preferenceCollection = await createOrGetCollection(db, "preferences");
+        workspacesCollection = await createOrGetCollection(db, "workspaces");
+        workspaceTransactionsCollection = await createOrGetCollection(db, "workspace-transactions");
 
-export async function initDB() {
-    if (ServerConfig.database?.uri && ServerConfig.database?.databaseName) {
-        try {
-            client = await MongoClient.connect(ServerConfig.database.uri);
-            const db = client.db(ServerConfig.database.databaseName);
-            layoutsCollection = await createOrGetCollection(db, "layouts");
-            snippetsCollection = await createOrGetCollection(db, "snippets");
-            preferenceCollection = await createOrGetCollection(db, "preferences");
-            workspacesCollection = await createOrGetCollection(db, "workspaces");
-            workspaceTransactionsCollection = await createOrGetCollection(db, "workspace-transactions");
+        // Remove any existing validation in preferences collection
+        await db.command({collMod: "preferences", validator: {}, validationLevel: "off"});
+        // Update collection indices if necessary
+        await updateIndex(layoutsCollection, "username", false);
+        await updateIndex(snippetsCollection, "username", false);
+        await updateIndex(workspacesCollection, "username", false);
+        await updateIndex(preferenceCollection, "username", true);
+        // Yjs init
+        await initYjsPersistence();
+        await updateIndex(workspaceTransactionsCollection, "docName", false);
 
-            // Remove any existing validation in preferences collection
-            await db.command({collMod: "preferences", validator: {}, validationLevel: "off"});
-            // Update collection indices if necessary
-            await updateIndex(layoutsCollection, "username", false);
-            await updateIndex(snippetsCollection, "username", false);
-            await updateIndex(workspacesCollection, "username", false);
-            await updateIndex(preferenceCollection, "username", true);
-            // Yjs init
-            await initYjsPersistence();
-            await updateIndex(workspaceTransactionsCollection, "docName", false);
-
-            console.log(`Connected to server ${ServerConfig.database.uri} and database ${ServerConfig.database.databaseName}`);
-        } catch (err) {
-            verboseError(err);
-            console.error("Error connecting to database");
-            process.exit(1);
-        }
-    } else {
-        console.error("Database configuration not found");
+        console.log(`Connected to server ${ServerConfig.database.uri} and database ${ServerConfig.database.databaseName}`);
+    } catch (err) {
+        verboseError(err);
+        console.error("Error connecting to database");
         process.exit(1);
     }
 }
@@ -412,9 +396,9 @@ async function handleClearWorkspace(req: AuthenticatedRequest, res: express.Resp
         }
 
         // Delete transactions for this workspace
-        const workspaceId = workspaceDocQuery._id;
-        const workspaceKey = Buffer.from(workspaceId.toHexString(), "hex").toString("base64url");
-        await workspaceTransactionsCollection.deleteMany({docName: workspaceKey});
+        const workspaceId = workspaceDocQuery._id.toString();
+        const transactionDeleteResult = await workspaceTransactionsCollection.deleteMany({docName: workspaceId});
+        console.log(`Deleted ${transactionDeleteResult.deletedCount} transactions for workspace ${workspaceId}`);
 
         const deleteResult = await workspacesCollection.deleteOne({username: req.username, name: workspaceName});
         if (deleteResult.acknowledged) {
