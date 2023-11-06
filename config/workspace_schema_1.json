@@ -172,7 +172,6 @@
             "type": "object",
             "required": [
                 "id",
-                "directory",
                 "filename"
             ],
             "properties": {

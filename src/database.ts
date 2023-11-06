@@ -9,7 +9,6 @@ import {ServerConfig} from "./config";
 import {MongodbPersistence} from "y-mongodb";
 import * as Y from "yjs";
 import {setPersistence} from "../node_modules/y-websocket/bin/utils.js";
-import {WorkspaceFile} from "./models/WorkspaceFile";
 
 
 const PREFERENCE_SCHEMA_VERSION = 2;
