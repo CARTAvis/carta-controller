@@ -11,8 +11,8 @@ function populateUserMap(userMaps: Map<string, UserMap>, issuer: string | string
         for (let line of lines) {
             line = line.trim();
 
-            // Skip comments
-            if (line.startsWith("#")) {
+            // Skip comments and empty lines
+            if (line.startsWith("#") || !/\S/.test(line)) {
                 continue;
             }
 
