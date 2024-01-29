@@ -10,7 +10,7 @@ This section provides a general overview. For a more detailed installation guide
 Installing the backend
 ----------------------
 
-We provide `binary Ubuntu packages <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ of the latest beta and stable releases of the CARTA backend. You can install the latest stable version with all dependencies by adding our PPA to your system and running ``apt-get install carta-backend``.
+We provide binary `Ubuntu packages <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ and `RPM packages<https://copr.fedorainfracloud.org/coprs/cartavis/carta>`_ of the latest beta and stable releases of the CARTA backend. You can install the latest stable version with all dependencies on Ubuntu by adding our PPA to your system and running ``apt-get install carta-backend``.
 
 .. note::
 
@@ -18,7 +18,7 @@ We provide `binary Ubuntu packages <https://launchpad.net/~cartavis-team/+archiv
 
 .. note::
 
-    The ``casacore-data`` package is recommended by the backend package, but installing it is optional. The packages in our PPA should be compatible both with the ``casacore-data`` package in the core Ubuntu repositories and with the package provided by the `Kern PPAs <https://launchpad.net/~kernsuite>`_. You may also wish to manage the required data files without using a package.
+    The ``casacore-data`` package is recommended by the Ubuntu backend package, but installing it is optional. The packages in our PPA should be compatible both with the ``casacore-data`` package in the core Ubuntu repositories and with the package provided by the `Kern PPAs <https://launchpad.net/~kernsuite>`_. You may also wish to manage the required data files without using a package.
 
 To install the backend on a different host system, or to install a custom version, you can build it from source from the `backend repository <https://github.com/CARTAvis/carta-backend/>`_ on GitHub.
 
