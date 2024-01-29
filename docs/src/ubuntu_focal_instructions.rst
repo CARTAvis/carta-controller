@@ -25,6 +25,17 @@ Install the CARTA backend and other required packages
     # Install additional packages
     sudo apt-get install nginx g++ mongodb make curl
 
+.. note::
+    The ``carta-backend`` package is updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please install the ``carta-backend-beta`` package instead:
+    
+    .. code-block:: shell
+    
+        sudo apt-get install install carta-backend-beta
+    
+    These packages cannot be installed simultaneously, as they use the same install locations. If you install one, you will automatically be prompted to uninstall the other.
+    
+    Make sure that you install the matching controller version (using the ``beta`` tag).
+
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -86,6 +97,14 @@ Install CARTA controller
     cd /etc/carta
     openssl genrsa -out carta_private.pem 4096
     openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
+    
+.. note::
+
+    If you would like to install the latest **beta** release of CARTA, please install the ``beta`` tag of the controller instead:
+    
+    .. code-block:: shell
+    
+        sudo npm install -g --unsafe-perm carta-controller@beta
     
 Configure controller
 ~~~~~~~~~~~~~~~~~~~~

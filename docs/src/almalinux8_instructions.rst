@@ -54,7 +54,10 @@ The CARTA controller uses `MongoDB <https://www.mongodb.com/>`_ to store user pr
 .. note::
 
     On RHEL7/CentOS7, MongoDB v14 can be installed as follows:
-    ``curl -fsSL https://rpm.nodesource.com/setup_14.x | bash - && yum install -y nodejs``
+    
+    .. code-block:: shell
+    
+        curl -fsSL https://rpm.nodesource.com/setup_14.x | bash - && yum install -y nodejs
 
 
 3. Install the CARTA controller
@@ -66,6 +69,15 @@ The easiest way to install the CARTA controller is using ``npm``.
 
     sudo dnf install -y python3 make gcc-c++
     sudo npm install -g --unsafe-perm carta-controller
+    
+    
+.. note::
+
+    If you would like to install the latest **beta** release of CARTA, please install the ``beta`` tag of the controller instead:
+    
+    .. code-block:: shell
+    
+        sudo npm install -g --unsafe-perm carta-controller@beta
 
 .. note::
 
@@ -98,8 +110,22 @@ The easiest way is to install the CARTA backend is from our `cartavis/carta Copr
     sudo dnf -y install carta-backend
 
     # Check that the backend can run and matches the major version number of the controller.
-    # Please note, we currently install the version of carta_backend in a non-standard location.
-    /opt/carta/bin/carta_backend --version
+    /usr/bin/carta_backend --version
+
+.. note::
+    The ``carta-backend`` package is updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please install ``carta-backend-beta`` instead:
+    
+    .. code-block:: shell
+    
+        sudo dnf -y install carta-backend-beta
+    
+    Make sure that you install the matching controller version (using the ``beta`` tag).
+
+    We currently install the beta version of ``carta_backend`` in a non-standard location:
+    
+    .. code-block:: shell
+    
+        /opt/carta/bin/carta_backend --version
 
 
 5. Install Nginx
@@ -163,11 +189,11 @@ An :ref:`example sudoers configuration<example_sudoers>` is provided in the conf
     The ``carta`` user should not be in the ``carta-users`` group. ``carta-users`` should only be assigned to the normal user accounts.
 
 .. note::
-    As we install the version of the carta_backend in a non-standard location, please remember to change the path to the carta_backend executable in the custom sudoers file:
-
-   .. code-block:: bash
-
-      carta ALL=(%carta-users) NOPASSWD:SETENV: /opt/carta/bin/carta_backend
+    If you have installed the **beta** version of CARTA, please remember to change the path to the ``carta_backend`` executable in the sudoers file:
+    
+    .. code-block:: bash
+    
+        carta ALL=(%carta-users) NOPASSWD:SETENV: /opt/carta-beta/bin/carta_backend
 
 7. Set up the user authentication method
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
