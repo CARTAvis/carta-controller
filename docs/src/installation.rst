@@ -10,7 +10,7 @@ This section provides a general overview. For a more detailed installation guide
 Installing the backend
 ----------------------
 
-We provide binary `Ubuntu packages <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ and `RPM packages<https://copr.fedorainfracloud.org/coprs/cartavis/carta>`_ of the latest beta and stable releases of the CARTA backend. You can install the latest stable version with all dependencies on Ubuntu by adding our PPA to your system and running ``apt-get install carta-backend``.
+We provide binary `Ubuntu packages <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ and `RPM packages <https://copr.fedorainfracloud.org/coprs/cartavis/carta>`_ of the latest beta and stable releases of the CARTA backend. You can install the latest stable version with all dependencies on Ubuntu by adding our PPA to your system and running ``apt-get install carta-backend``.
 
 .. note::
 
