@@ -125,7 +125,7 @@ The easiest way is to install the CARTA backend is from our `cartavis/carta Copr
     
     .. code-block:: shell
     
-        /opt/carta/bin/carta_backend --version
+        /opt/carta-beta/bin/carta_backend --version
 
 
 5. Install Nginx
