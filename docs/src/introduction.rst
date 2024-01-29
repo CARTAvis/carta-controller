@@ -14,7 +14,7 @@ To allow the controller to serve CARTA sessions, you must give it access to an e
 
 By default, the controller runs on port 8000. It should be run behind a proxy, so that it can be accessed via HTTP and HTTPS. 
 
-MongoDB is required for storing user preferences, layouts and (in the near future) controller metrics.
+MongoDB is required for storing user preferences, layouts, workspaces, and (in the near future) controller metrics.
 
 You also need a working `NodeJS LTS <https://nodejs.org/en/about/releases/>`_ installation with NPM. Use ``npm install`` to install all Node dependencies.
 
