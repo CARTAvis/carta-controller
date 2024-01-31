@@ -25,9 +25,9 @@ We officially support Ubuntu 18.04 and 20.04, and RHEL 7 and 8 (and their freely
    schema
    schema_backend
 
-.. |backend-github| image:: https://img.shields.io/badge/CARTA%20Version-4.0.0-brightgreen
+.. |backend-github| image:: https://img.shields.io/badge/CARTA%20Version-4.1.0-brightgreen
         :alt: View this backend version on GitHub
-        :target: https://github.com/CARTAvis/carta-backend/releases/tag/v4.0.0
+        :target: https://github.com/CARTAvis/carta-backend/releases/tag/v4.1.0
 
 .. |npm-package| image:: https://img.shields.io/npm/v/carta-controller?style=flat
         :alt: View this project on npm

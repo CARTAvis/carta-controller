@@ -10,13 +10,15 @@ The CARTA controller provides a simple dashboard which authenticates users and a
 Dependencies
 ------------
 
-To allow the controller to serve CARTA sessions, you must give it access to an executable CARTA backend, which can be either a compiled executable or a container. If you want to use a non-standard version of the CARTA frontend, you must also build it, and adjust the controller configuration to point to it. You should use the ``v4.0.0`` tag of `the CARTA backend <https://github.com/CARTAvis/carta-backend>`_.
+To allow the controller to serve CARTA sessions, you must give it access to an executable CARTA backend, which can be either a compiled executable or a container. If you want to use a non-standard version of the CARTA frontend, you must also build it, and adjust the controller configuration to point to it.
 
 By default, the controller runs on port 8000. It should be run behind a proxy, so that it can be accessed via HTTP and HTTPS. 
 
-MongoDB is required for storing user preferences, layouts and (in the near future) controller metrics.
+MongoDB is required for storing user preferences, layouts, workspaces, and (in the near future) controller metrics.
 
 You also need a working `NodeJS LTS <https://nodejs.org/en/about/releases/>`_ installation with NPM. Use ``npm install`` to install all Node dependencies.
+
+Detailed installation instructions are available for :ref:`Ubuntu<focal_instructions>` and :ref:`RPM-based distributions<almalinux8_instructions>`.
 
 .. _authentication:
 
