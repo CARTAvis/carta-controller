@@ -89,6 +89,7 @@ if (testUser) {
             googleClientId: ServerConfig.authProviders.google?.clientId,
             oidcClientId: ServerConfig.authProviders.oidc?.clientId,
             hostedDomain: ServerConfig.authProviders.google?.validDomain,
+            googleCallback: ServerConfig.serverAddress + '/api/auth/googleCallback',
             bannerColor: ServerConfig.dashboard?.bannerColor,
             backgroundColor: ServerConfig.dashboard?.backgroundColor,
             bannerImage: bannerDataUri,

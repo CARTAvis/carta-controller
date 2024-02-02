@@ -40,11 +40,7 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
     // If access token expires in under 10 seconds, attempt to refresh before making the call
     if (authRequired && tokenExpiryTime < currentTime + 10) {
         try {
-            if (authenticationType === "local" || authenticationType === "oidc") {
-                await refreshLocalToken();
-            } else if (authenticationType === "google") {
-                await refreshGoogleToken();
-            }
+            await refreshLocalToken();
         } catch (e) {
             console.log(e);
         }
@@ -194,9 +190,7 @@ handleServerStop = async () => {
 
 handleLogout = async () => {
     clearInterval(serverCheckHandle);
-    if (authenticationType === "google") {
-        await handleGoogleLogout();
-    } else if (authenticationType === "oidc") {
+    if (authenticationType === "oidc") {
         window.open(`${apiBase}/auth/logout`, "_self");
     } else {
         await handleLocalLogout();
@@ -250,34 +244,6 @@ handleHideLog = () => {
     document.getElementById("main-div").classList.remove("blurred");
 }
 
-initGoogleAuth = () => {
-    gapi.load("auth2", function () {
-        console.log("Google auth loaded");
-        gapi.auth2.init();
-    });
-};
-
-onSignIn = (googleUser) => {
-    const profile = googleUser.getBasicProfile();
-    const authResponse = googleUser.getAuthResponse();
-    setToken(authResponse.id_token, authResponse.expires_in);
-    onLoginSucceeded(profile.getEmail(), "google");
-}
-
-handleGoogleLogout = async () => {
-    try {
-        if (gapi && gapi.auth2) {
-            const authInstance = gapi.auth2.getAuthInstance();
-            if (authInstance) {
-                await authInstance.disconnect();
-            }
-        }
-    } catch (err) {
-        notyf.error("Error signing out of Google");
-        console.log(err);
-    }
-}
-
 handleLocalLogout = async () => {
     await apiCall("auth/logout", undefined, "post", false);
 }
@@ -288,26 +254,6 @@ handleKeyup = (e) => {
         if (loginButton && !loginButton.disabled) {
             handleLogin();
         }
-    }
-}
-
-refreshGoogleToken = async () => {
-    try {
-        if (gapi && gapi.auth2) {
-            const authInstance = gapi.auth2.getAuthInstance();
-            if (authInstance && authInstance.currentUser) {
-                const user = authInstance.currentUser.get();
-                if (user) {
-                    const authResponse = await user.reloadAuthResponse();
-                    if (authResponse && authResponse.id_token) {
-                        setToken(authResponse.id_token, authResponse.expires_in);
-                    }
-                }
-            }
-        }
-    } catch (err) {
-        notyf.error("Error refreshing Google login");
-        console.log(err);
     }
 }
 
@@ -359,12 +305,14 @@ window.onload = async () => {
         }]
     });
 
-    // Check for completed OIDC login
+    // Check for completed login
     const usp = new URLSearchParams(window.location.search);
     if (usp.has("oidcuser")) {
-        console.log("Completed OIDC login");
         await refreshLocalToken();
         onLoginSucceeded(usp.get("oidcuser"), "oidc")
+    } else if (usp.has("googleuser")) {
+        await refreshLocalToken();
+        onLoginSucceeded(usp.get("googleuser"), "google")
     } else if (usp.has("err")) {
         console.log(usp.get("err"));
         notyf.open({type: "error", message: usp.get("err")});

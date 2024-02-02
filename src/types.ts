@@ -17,7 +17,7 @@ export interface CartaLdapAuthConfig extends CartaLocalAuthConfig {
     ldapOptions: LdapAuth.Options;
 }
 
-export interface CartaGoogleAuthConfig {
+export interface CartaGoogleAuthConfig extends CartaLocalAuthConfig {
     clientId: string;
     // Valid domain to accept. If this is empty or undefined, all domains are accepted. Domain specified by "hd" field
     validDomain?: string;
@@ -159,9 +159,9 @@ export interface CartaCommandLineOptions {
 export interface CartaRuntimeConfig {
     dashboardAddress?: string;
     apiAddress?: string;
-    googleClientId?: string;
     tokenRefreshAddress?: string;
     logoutAddress?: string;
+    logoutUsingGet?: boolean;
     authPath?: string;
 }
 

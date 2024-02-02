@@ -7,6 +7,7 @@ import * as _ from "lodash";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
+import { server } from "websocket";
 
 const defaultConfigPath = "/etc/carta/config.json";
 const argv = yargs.options({
@@ -111,9 +112,7 @@ if (!serverConfig.baseFolderTemplate) {
 const runtimeConfig: CartaRuntimeConfig = {};
 runtimeConfig.dashboardAddress = serverConfig.dashboardAddress || "/dashboard";
 runtimeConfig.apiAddress = serverConfig.apiAddress || "/api";
-if (serverConfig.authProviders.google) {
-    runtimeConfig.googleClientId = serverConfig.authProviders.google.clientId;
-} else if (serverConfig.authProviders.external) {
+if (serverConfig.authProviders.external) {
     runtimeConfig.tokenRefreshAddress = serverConfig.authProviders.external.tokenRefreshAddress;
     runtimeConfig.logoutAddress = serverConfig.authProviders.external.logoutAddress;
 } else {
@@ -124,5 +123,6 @@ if (runtimeConfig.tokenRefreshAddress) {
     const authUrl = url.parse(runtimeConfig.tokenRefreshAddress);
     runtimeConfig.authPath = authUrl.pathname ?? "";
 }
+runtimeConfig.logoutUsingGet = serverConfig.authProviders.oidc !== undefined;
 
 export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser, verboseOutput};

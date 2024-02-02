@@ -8,7 +8,7 @@ import {generateLocalRefreshHandler, generateLocalVerifier} from "./local";
 import {generateLocalOidcRefreshHandler, generateLocalOidcVerifier, oidcCallbackHandler, oidcLogoutHandler, oidcLoginStart, initOidc} from "./oidc";
 import {getLdapLoginHandler} from "./ldap";
 import {getPamLoginHandler} from "./pam";
-import {generateGoogleVerifier, validGoogleIssuers} from "./google";
+import {googleCallbackHandler, generateGoogleRefreshHandler} from "./google";
 
 // maps JWT claim "iss" to a token verifier
 const tokenVerifiers = new Map<string, Verifier>();
@@ -24,7 +24,7 @@ let refreshHandler: AsyncRequestHandler = (req, res) => {
 };
 
 let callbackHandler: AsyncRequestHandler = (req, res) => {
-    throw {statusCode: 501, message: "Token refresh not implemented"};
+    throw {statusCode: 501, message: "Callback handler not implemented"};
 };
 
 // Local providers
@@ -40,9 +40,11 @@ if (ServerConfig.authProviders.pam) {
     refreshHandler = generateLocalRefreshHandler(authConf);
 } else if (ServerConfig.authProviders.google) {
     const authConf = ServerConfig.authProviders.google;
-    generateGoogleVerifier(tokenVerifiers, authConf);
+    generateLocalVerifier(tokenVerifiers, authConf);
+    refreshHandler = generateGoogleRefreshHandler(authConf);
+    callbackHandler = (req, res) => googleCallbackHandler(req, res, authConf);
     if (authConf.userLookupTable) {
-        watchUserTable(userMaps, validGoogleIssuers, authConf.userLookupTable);
+        watchUserTable(userMaps, authConf.issuer, authConf.userLookupTable);
     }
 } else if (ServerConfig.authProviders.external) {
     const authConf = ServerConfig.authProviders.external;
@@ -72,6 +74,7 @@ if (!tokenVerifiers.size) {
 
 export async function verifyToken(cookieString: string) {
     const tokenJson: any = jwt.decode(cookieString);
+
     if (tokenJson && tokenJson.iss) {
         const verifier = tokenVerifiers.get(tokenJson.iss);
         if (verifier) {
@@ -137,6 +140,9 @@ if (ServerConfig.authProviders.oidc) {
     authRouter.get("/logout", noCache, oidcLogoutHandler);
     authRouter.get("/oidcCallback", noCache, callbackHandler);
     authRouter.get("/login", noCache, loginHandler);
+} else if (ServerConfig.authProviders.google) {
+    authRouter.post("/googleCallback", noCache, callbackHandler);
+    authRouter.post("/logout", noCache, logoutHandler);
 }
 else {
     authRouter.post("/login", noCache, loginHandler);
