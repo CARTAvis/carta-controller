@@ -34,7 +34,6 @@
                 "userLookupTable",
                 "publicKeyLocation",
                 "privateKeyLocation",
-                "validDomain",
                 "issuer"
             ],
             "properties": {
