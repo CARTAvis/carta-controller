@@ -25,11 +25,12 @@ Detailed installation instructions are available for :ref:`Ubuntu<focal_instruct
 Authentication support
 ----------------------
 
-The CARTA controller supports four modes for authentication. All four modes use refresh and access tokens, as described in the `OAuth2 Authorization flow <https://tools.ietf.org/html/rfc6749#section-1.3.1>`_, stored in `JWT <https://jwt.io/>`_ format. The modes are:
+The CARTA controller supports five modes for authentication. All four modes use refresh and access tokens, as described in the `OAuth2 Authorization flow <https://tools.ietf.org/html/rfc6749#section-1.3.1>`_, stored in `JWT <https://jwt.io/>`_ format. The modes are:
 
 * **PAM authentication**: The PAM interface of the host system is used for user authentication. After the user's username and password configuration are validated by PAM, ``carta-controller`` returns a long-lived refresh token, signed with a private key, which can be exchanged by the CARTA dashboard or the CARTA frontend client for a short-lived access token.
 * **LDAP authentication**: As above, but an LDAP server is used directly for user authentication.
-* **Google authentication**: Google's authentication libraries are used for handling authentication. You must create a new web application in the `Google API console <https://console.developers.google.com/apis/credentials>`_. You will then use the  client ID provided by this application in a number of places during the configuration.
+* **Google authentication**: Google is used at time of login. You must create a new web application in the `Google API console <https://console.developers.google.com/apis/credentials>`_. You will then use the client ID created during the configuration.  You will also need to add a callback URI to your application - e.g. if your application is installed at "https://example.com", you'd want to specify "https://example.com/api/auth/googleCallback" as an authorized redirect URI.
+* **OIDC authentication**: An OIDC-compatible identity provider is used, such as keycloak.
 * **External authentication**: This allows users to authenticate with some external OAuth2-based authentication system. This requires a fair amount of configuration, and has not been well-tested. It is assumed that the refresh token passed by the authentication system is stored as an ``HttpOnly`` cookie.
 
 .. _getting_help:
