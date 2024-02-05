@@ -312,10 +312,25 @@ window.onload = async () => {
         onLoginSucceeded(usp.get("oidcuser"), "oidc")
     } else if (usp.has("googleuser")) {
         await refreshLocalToken();
+
+        // Handle redirect params via cookie
+        if (localStorage.getItem("redirectParams")) {
+            redirectUrl += atob(localStorage.getItem("redirectParams"));
+            localStorage.removeItem("redirectParams");
+            autoRedirect = true;
+        } else {
+
+        }
+
         onLoginSucceeded(usp.get("googleuser"), "google")
     } else if (usp.has("err")) {
         console.log(usp.get("err"));
         notyf.open({type: "error", message: usp.get("err")});
+    }
+
+    // Store redirectParams in localStorage if using Google login
+    if (usp.has("redirectParams") && document.getElementById("g_id_onload")) {
+        localStorage.setItem("redirectParams", usp.get("redirectParams"));
     }
 
     // Hide open button if using popup
