@@ -1,5 +1,4 @@
-import { eq, result } from "lodash";
-import { RuntimeConfig, ServerConfig } from "../config";
+import {RuntimeConfig, ServerConfig} from "../config";
 import {CartaGoogleAuthConfig, ScriptingAccess, Verifier} from "../types";
 import {OAuth2Client} from "google-auth-library";
 import {generateToken, TokenType} from "./local";

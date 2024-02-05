@@ -7,7 +7,6 @@ import * as _ from "lodash";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
-import { server } from "websocket";
 
 const defaultConfigPath = "/etc/carta/config.json";
 const argv = yargs.options({
