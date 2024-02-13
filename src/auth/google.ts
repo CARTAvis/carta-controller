@@ -8,8 +8,8 @@ import * as express from "express";
 
 export async function googleCallbackHandler (req: express.Request, res: express.Response, authConf: CartaGoogleAuthConfig) {
     // Check for g_csrf_token match between cookie and body
-    if (!req.cookies['g_csrf_token'] || !req.body['g_csrf_token'] || req.cookies['g_csrf_token'] !== req.body['g_csrf_token']) {
-        return res.status(400).json({'error': 'Missing or non-matching CSRF token'})
+    if (!req.cookies["g_csrf_token"] || !req.body["g_csrf_token"] || req.cookies["g_csrf_token"] !== req.body["g_csrf_token"]) {
+        return res.status(400).json({"error": "Missing or non-matching CSRF token"})
     }
 
     const oAuth2Client = new OAuth2Client();
@@ -23,13 +23,13 @@ export async function googleCallbackHandler (req: express.Request, res: express.
         // check that username exists and email is verified
         if (!username || !payload?.email_verified) {
             console.log("Google auth rejected due to lack of unique ID or email verification");
-            return res.status(500).json({'error': 'An error occured processing your login'});
+            return res.status(500).json({"error": "An error occured processing your login"});
         }
         
         // check that domain is valid
         if (authConf.validDomain && authConf.validDomain !== payload.hd) {
             console.log(`Google auth rejected due to incorrect domain: ${payload.hd}`);
-            return res.status(500).json({'error': 'An error occured processing your login'});
+            return res.status(500).json({"error": "An error occured processing your login"});
         }
 
         // create initial refresh token
@@ -46,7 +46,7 @@ export async function googleCallbackHandler (req: express.Request, res: express.
 
     } catch (e) {
         console.debug(e)
-        return res.status(500).json({'error': 'An error occured processing your login'})
+        return res.status(500).json({"error": "An error occured processing your login"})
     }
 }
 

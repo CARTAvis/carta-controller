@@ -25,7 +25,7 @@ Detailed installation instructions are available for :ref:`Ubuntu<focal_instruct
 Authentication support
 ----------------------
 
-The CARTA controller supports five modes for authentication. All four modes use refresh and access tokens, as described in the `OAuth2 Authorization flow <https://tools.ietf.org/html/rfc6749#section-1.3.1>`_, stored in `JWT <https://jwt.io/>`_ format. The modes are:
+The CARTA controller supports five modes for authentication. All five modes use refresh and access tokens, as described in the `OAuth2 Authorization flow <https://tools.ietf.org/html/rfc6749#section-1.3.1>`_, stored in `JWT <https://jwt.io/>`_ format. The modes are:
 
 * **PAM authentication**: The PAM interface of the host system is used for user authentication. After the user's username and password configuration are validated by PAM, ``carta-controller`` returns a long-lived refresh token, signed with a private key, which can be exchanged by the CARTA dashboard or the CARTA frontend client for a short-lived access token.
 * **LDAP authentication**: As above, but an LDAP server is used directly for user authentication.
