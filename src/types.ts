@@ -161,7 +161,6 @@ export interface CartaRuntimeConfig {
     apiAddress?: string;
     tokenRefreshAddress?: string;
     logoutAddress?: string;
-    logoutUsingGet?: boolean;
     authPath?: string;
 }
 

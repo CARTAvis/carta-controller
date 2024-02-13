@@ -189,20 +189,11 @@ handleServerStop = async () => {
 }
 
 handleLogout = async () => {
-    clearInterval(serverCheckHandle);
-    if (authenticationType === "oidc") {
-        window.open(`${apiBase}/auth/logout`, "_self");
-    } else {
-        await handleLocalLogout();
-    }
+    localStorage.removeItem("authenticationType");
     if (serverRunning) {
         await handleServerStop();
     }
-    showMessage();
-    showCartaForm(false);
-    showLoginForm(true);
-    localStorage.removeItem("authenticationType");
-    clearToken();
+    window.open(`${apiBase}/auth/logout`, "_self");
 }
 
 handleOpenCarta = () => {

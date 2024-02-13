@@ -125,7 +125,13 @@ function logoutHandler(req: express.Request, res: express.Response) {
         secure: !ServerConfig.httpOnly,
         sameSite: "strict"
     });
-    return res.json({success: true});
+    if (RuntimeConfig.dashboardAddress) {
+        return res.redirect(new URL(`${RuntimeConfig.dashboardAddress}`, ServerConfig.serverAddress).href);
+    } else if (ServerConfig.serverAddress) {
+        return res.redirect(ServerConfig.serverAddress);
+    } else {
+        return res.json({status: "Logged out"});
+    }
 }
 
 function handleCheckAuth(req: AuthenticatedRequest, res: express.Response) {
@@ -142,11 +148,11 @@ if (ServerConfig.authProviders.oidc) {
     authRouter.get("/login", noCache, loginHandler);
 } else if (ServerConfig.authProviders.google) {
     authRouter.post("/googleCallback", noCache, callbackHandler);
-    authRouter.post("/logout", noCache, logoutHandler);
+    authRouter.get("/logout", noCache, logoutHandler);
 }
 else {
     authRouter.post("/login", noCache, loginHandler);
-    authRouter.post("/logout", noCache, logoutHandler);
+    authRouter.get("/logout", noCache, logoutHandler);
 }
 authRouter.post("/refresh", noCache, refreshHandler);
 authRouter.get("/status", authGuard, noCache, handleCheckAuth);

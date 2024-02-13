@@ -122,6 +122,5 @@ if (runtimeConfig.tokenRefreshAddress) {
     const authUrl = url.parse(runtimeConfig.tokenRefreshAddress);
     runtimeConfig.authPath = authUrl.pathname ?? "";
 }
-runtimeConfig.logoutUsingGet = serverConfig.authProviders.oidc !== undefined;
 
 export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser, verboseOutput};
