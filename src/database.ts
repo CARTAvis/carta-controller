@@ -67,6 +67,8 @@ export async function initDB() {
             let mongoTarget = ServerConfig.database.uri;
             if (lastAt !== -1) {
                 mongoTarget = ServerConfig.database.uri.slice(lastAt + 1)
+            } else {
+                mongoTarget = ServerConfig.database.uri.replace('mongodb://', '')
             }
             console.log(`Connected to server ${mongoTarget} and database ${ServerConfig.database.databaseName}`);
         } catch (err) {
