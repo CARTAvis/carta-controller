@@ -6,6 +6,7 @@ import {authGuard} from "./auth";
 import {noCache, verboseError} from "./util";
 import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
+import url = require('url');
 
 const PREFERENCE_SCHEMA_VERSION = 2;
 const LAYOUT_SCHEMA_VERSION = 2;
@@ -62,7 +63,12 @@ export async function initDB() {
             await updateUsernameIndex(snippetsCollection, false);
             await updateUsernameIndex(workspacesCollection, false);
             await updateUsernameIndex(preferenceCollection, true);
-            console.log(`Connected to server ${ServerConfig.database.uri} and database ${ServerConfig.database.databaseName}`);
+
+            const parsedUri = new url.URL(ServerConfig.database.uri);
+            if (parsedUri.password) {
+                parsedUri.password = '***';
+            }
+            console.log(`Connected to server ${parsedUri} and database ${ServerConfig.database.databaseName}`);
         } catch (err) {
             verboseError(err);
             console.error("Error connecting to database");
