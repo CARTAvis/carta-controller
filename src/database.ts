@@ -6,7 +6,6 @@ import {authGuard} from "./auth";
 import {noCache, verboseError} from "./util";
 import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
-import url = require('url');
 
 const PREFERENCE_SCHEMA_VERSION = 2;
 const LAYOUT_SCHEMA_VERSION = 2;
@@ -64,11 +63,12 @@ export async function initDB() {
             await updateUsernameIndex(workspacesCollection, false);
             await updateUsernameIndex(preferenceCollection, true);
 
-            const parsedUri = new url.URL(ServerConfig.database.uri);
-            if (parsedUri.password) {
-                parsedUri.password = '***';
+            const lastAt = ServerConfig.database.uri.lastIndexOf('@');
+            let mongoTarget = ServerConfig.database.uri;
+            if (lastAt !== -1) {
+                mongoTarget = ServerConfig.database.uri.slice(lastAt + 1)
             }
-            console.log(`Connected to server ${parsedUri} and database ${ServerConfig.database.databaseName}`);
+            console.log(`Connected to server ${mongoTarget} and database ${ServerConfig.database.databaseName}`);
         } catch (err) {
             verboseError(err);
             console.error("Error connecting to database");
