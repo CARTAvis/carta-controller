@@ -62,7 +62,8 @@ export async function initDB() {
             await updateUsernameIndex(snippetsCollection, false);
             await updateUsernameIndex(workspacesCollection, false);
             await updateUsernameIndex(preferenceCollection, true);
-            console.log(`Connected to server ${ServerConfig.database.uri} and database ${ServerConfig.database.databaseName}`);
+
+            console.log(`Connected to ${client.options.dbName} on ${client.options.hosts} (Authenticated: ${client.options.credentials ? 'Yes': 'No'})`);
         } catch (err) {
             verboseError(err);
             console.error("Error connecting to database");
