@@ -63,14 +63,7 @@ export async function initDB() {
             await updateUsernameIndex(workspacesCollection, false);
             await updateUsernameIndex(preferenceCollection, true);
 
-            const lastAt = ServerConfig.database.uri.lastIndexOf('@');
-            let mongoTarget = ServerConfig.database.uri;
-            if (lastAt !== -1) {
-                mongoTarget = ServerConfig.database.uri.slice(lastAt + 1)
-            } else {
-                mongoTarget = ServerConfig.database.uri.replace('mongodb://', '')
-            }
-            console.log(`Connected to server ${mongoTarget} and database ${ServerConfig.database.databaseName}`);
+            console.log(`Connected to ${client.options.dbName} on ${client.options.hosts} (Authenticated: ${client.options.credentials ? 'Yes': 'No'})`);
         } catch (err) {
             verboseError(err);
             console.error("Error connecting to database");
