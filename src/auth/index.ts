@@ -125,13 +125,7 @@ function logoutHandler(req: express.Request, res: express.Response) {
         secure: !ServerConfig.httpOnly,
         sameSite: "strict"
     });
-    if (RuntimeConfig.dashboardAddress) {
-        return res.redirect(new URL(`${RuntimeConfig.dashboardAddress}`, ServerConfig.serverAddress).href);
-    } else if (ServerConfig.serverAddress) {
-        return res.redirect(ServerConfig.serverAddress);
-    } else {
-        return res.json({status: "Logged out"});
-    }
+        return res.redirect(`${RuntimeConfig.dashboardAddress}`);
 }
 
 function handleCheckAuth(req: AuthenticatedRequest, res: express.Response) {

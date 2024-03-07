@@ -42,7 +42,7 @@ export async function googleCallbackHandler (req: express.Request, res: express.
             sameSite: "strict"
         });
 
-        return res.redirect(`${new URL(`${RuntimeConfig.dashboardAddress}`, ServerConfig.serverAddress).href}?googleuser=${username}`)
+        return res.redirect(`${RuntimeConfig.dashboardAddress}?googleuser=${username}`)
 
     } catch (e) {
         console.debug(e)
