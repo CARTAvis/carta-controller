@@ -32,7 +32,7 @@
         "crypto": "^1.0.1",
         "express": "^4.17.1",
         "express-bearer-token": "^2.4.0",
-        "google-auth-library": "^8.7.0",
+        "google-auth-library": "^9.6.0",
         "hjson": "^3.2.2",
         "http-proxy": "^1.18.1",
         "jose": "^4.8.3",

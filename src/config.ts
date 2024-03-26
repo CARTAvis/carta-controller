@@ -111,9 +111,7 @@ if (!serverConfig.baseFolderTemplate) {
 const runtimeConfig: CartaRuntimeConfig = {};
 runtimeConfig.dashboardAddress = serverConfig.dashboardAddress || "/dashboard";
 runtimeConfig.apiAddress = serverConfig.apiAddress || "/api";
-if (serverConfig.authProviders.google) {
-    runtimeConfig.googleClientId = serverConfig.authProviders.google.clientId;
-} else if (serverConfig.authProviders.external) {
+if (serverConfig.authProviders.external) {
     runtimeConfig.tokenRefreshAddress = serverConfig.authProviders.external.tokenRefreshAddress;
     runtimeConfig.logoutAddress = serverConfig.authProviders.external.logoutAddress;
 } else {

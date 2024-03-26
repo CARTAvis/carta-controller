@@ -31,7 +31,10 @@
             "additionalProperties": false,
             "required": [
                 "clientId",
-                "userLookupTable"
+                "userLookupTable",
+                "publicKeyLocation",
+                "privateKeyLocation",
+                "issuer"
             ],
             "properties": {
                 "clientId": {
@@ -65,6 +68,61 @@
                     "type": "string",
                     "examples": [
                         "/etc/carta/userlookup.txt"
+                    ]
+                },
+                "publicKeyLocation": {
+                    "description": "Path to public key (in PEM format) used for verifying JWTs",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/carta_public.pem"
+                    ]
+                },
+                "privateKeyLocation": {
+                    "description": "Path to private key (in PEM format) used for signing JWTs",
+                    "type": "string",
+                    "examples": [
+                        "/etc/carta/carta_private.pem"
+                    ]
+                },
+                "keyAlgorithm": {
+                    "$ref": "#/definitions/keyAlgorithm",
+                    "default": "RS256"
+                },
+                "issuer": {
+                    "description": "Issuer field for JWT",
+                    "type": "string",
+                    "examples": [
+                        "my-carta-server"
+                    ]
+                },
+                "refreshTokenAge": {
+                    "description": "Lifetime of refresh tokens",
+                    "type": "string",
+                    "default": "1w",
+                    "examples": [
+                        "1w",
+                        "15h",
+                        "2d"
+                    ]
+                },
+                "accessTokenAge": {
+                    "description": "Lifetime of access tokens",
+                    "type": "string",
+                    "default": "15m",
+                    "examples": [
+                        "90s",
+                        "1h",
+                        "15m"
+                    ]
+                },
+                "scriptingTokenAge": {
+                    "description": "Lifetime of scripting tokens",
+                    "type": "string",
+                    "default": "1w",
+                    "examples": [
+                        "1w",
+                        "5d",
+                        "10h"
                     ]
                 }
             }

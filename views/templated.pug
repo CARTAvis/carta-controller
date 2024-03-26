@@ -4,11 +4,7 @@ html
         meta(charset="UTF-8")
         title CARTA Dashboard
         if googleClientId
-            meta(name='google-signin-scope' content='profile email')
-            meta(name='google-signin-client_id' content=googleClientId)
-            if hostedDomain
-                meta(name='google-signin-hosted_domain' content=hostedDomain)
-            script(src='https://apis.google.com/js/platform.js?onload=initGoogleAuth' async='' defer='')
+            script(src='https://accounts.google.com/gsi/client' async defer)
         link(href="dashboard/templated.css" rel="stylesheet" type="text/css")
         link(rel='stylesheet' href='dashboard/notyf.min.css')
         link(rel='shortcut icon' href='dashboard/carta_icon_128px.png')
@@ -38,7 +34,8 @@ html
                             | !{loginText}
                     if googleClientId
                         .sso-buttons
-                            .g-signin2(data-onsuccess='onSignIn' data-theme='dark' data-width="220" data-height="46")
+                            div#g_id_onload(data-client_id=googleClientId, data-ux_mode="redirect" data-login_uri=googleCallback data-auto_prompt='false')
+                            .g_id_signin(data-type="standard" data-size="large" data-theme="filled_blue" data-width="220" data-height="46")
                     else if oidcClientId
                         .formcontainer
                             button.button.button-signin#oidcLogin SIGN IN

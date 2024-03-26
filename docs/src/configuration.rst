@@ -43,7 +43,7 @@ The controller signs and validates tokens with SSL keys. You can generate a priv
     openssl genrsa -out carta_private.pem 4096
     openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
 
-A public/private keypair is used to authenticate access tokens. OIDC authentication requires an additional symmetric encryption key for refresh tokens. LDAP or PAM authentication uses the same public/private keypair both for access tokens and for refresh tokens. If you use the default encryption algorithm, you can again use `openssl` to generate the needed key:
+In addition to the keypair above for authenticating access tokens and refresh tokens, those using OIDC authentication require an additional symmetric encryption key. If you use the default encryption algorithm, you can again use `openssl` to generate the needed key:
 
 .. code-block:: shell
 

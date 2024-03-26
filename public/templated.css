@@ -185,11 +185,14 @@ button {
 
 .sso-buttons {
 	padding-bottom: 15px;
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
-.sso-buttons .g-signin2 div {
-	margin-left: auto;
-	margin-right: auto;
+.sso-buttons .g_id_signin div {
+	margin: 0 auto;
 }
 
 a {
