@@ -2,16 +2,31 @@
 # This script is a safe way to allow a user to kill specific commands of other users via sudo
 COMMAND_TO_MATCH="carta_backend"
 
-# Gets the child PID of the command (because it is run via sudo)
-CHILD_PID=`pgrep -P $1`
-# Gets the command name of the process to be killed
-COMMAND_OF_PID=`ps -p $CHILD_PID -o comm=`
+# The backend is started with sudo, and there may be multiple nested sudo processes,
+# so we recursively search for a child process with the correct name.
 
-# Only allow processes with the same command name to be killed
-if [ "$COMMAND_OF_PID" == "$COMMAND_TO_MATCH" ]; then
-    kill -9 $CHILD_PID
-    exit $?
-else
-    echo "$COMMAND_OF_PID does not match $COMMAND_TO_MATCH"
-    exit 1
-fi
+# Start with the PID that was passed in
+PID=$1
+
+while : ; do
+    # Get the command name of the process
+    COMMAND_OF_PID=`ps -p $PID -o comm=`
+
+    # If this is the backend process, try to kill it
+    if [ "$COMMAND_OF_PID" == "$COMMAND_TO_MATCH" ]; then
+        kill -9 $PID
+        exit $?
+    fi
+
+    # Otherwise look for a child
+    CHILD_PID=`pgrep -P $PID`
+
+    # If there's no child, exit with an error
+    if [ -z "${CHILD_PID}" ]; then
+        echo "Could not find child process named $COMMAND_TO_MATCH."
+        exit 1
+    fi
+
+    # Otherwise start over with the child process
+    PID=$CHILD_PID
+done
