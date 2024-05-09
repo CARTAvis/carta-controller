@@ -38,9 +38,9 @@ if (testUser) {
     app.use(compression());
     app.set("view engine", "pug");
     app.set("views", path.join(__dirname, "../views"));
-    app.use("/api/auth", bodyParser.json(), authRouter);
-    app.use("/api/server", bodyParser.json(), serverRouter);
-    app.use("/api/database", bodyParser.json(), databaseRouter);
+    app.use(`${RuntimeConfig.apiAddress}/auth`, bodyParser.json(), authRouter);
+    app.use(`${RuntimeConfig.apiAddress}/server`, bodyParser.json(), serverRouter);
+    app.use(`${RuntimeConfig.apiAddress}/database`, bodyParser.json(), databaseRouter);
 
     app.use("/config", (req: express.Request, res: express.Response) => {
         return res.json(RuntimeConfig);
@@ -89,7 +89,7 @@ if (testUser) {
             googleClientId: ServerConfig.authProviders.google?.clientId,
             oidcClientId: ServerConfig.authProviders.oidc?.clientId,
             hostedDomain: ServerConfig.authProviders.google?.validDomain,
-            googleCallback: ServerConfig.serverAddress + '/api/auth/googleCallback',
+            googleCallback: `${ServerConfig.serverAddress}${RuntimeConfig.apiAddress}/auth/googleCallback`,
             bannerColor: ServerConfig.dashboard?.bannerColor,
             backgroundColor: ServerConfig.dashboard?.backgroundColor,
             bannerImage: bannerDataUri,
@@ -104,7 +104,7 @@ if (testUser) {
 
     // Scripting proxy
     const backendProxy = httpProxy.createServer({ws: true});
-    app.post("/api/scripting/*", authGuard, createScriptingProxyHandler(backendProxy));
+    app.post(`${RuntimeConfig.apiAddress}/scripting/*`, authGuard, createScriptingProxyHandler(backendProxy));
 
     // Simplified error handling
     app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
