@@ -108,6 +108,7 @@ export interface CartaServerConfig {
     // If you need to optionally specify a different API or dashboard address
     dashboardAddress: string;
     apiAddress?: string;
+    frontendBaseUrl: string;
     frontendPath: string;
     // Range of ports to user for backend processes. Effectively limits the number of simultaneous users
     backendPorts: {

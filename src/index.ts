@@ -10,12 +10,16 @@ import * as fs from "fs";
 import * as path from "path";
 import * as compression from "compression";
 import * as chalk from "chalk";
+import axios from 'axios';
+import cheerio from 'cheerio';
 import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./serverHandlers";
 import {authGuard, authRouter} from "./auth";
 import {databaseRouter, initDB} from "./database";
 import {RuntimeConfig, ServerConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
 import * as logSymbols from "log-symbols";
+
+let frontendBaseUrlContents;
 
 if (testUser) {
     runTests(testUser).then(
@@ -53,7 +57,50 @@ if (testUser) {
         }
     };
 
-    if (ServerConfig.frontendPath) {
+    if (ServerConfig.frontendBaseUrl) {
+        console.log(`Serving CARTA frontend from: ${ServerConfig.frontendBaseUrl}`)
+
+        // Get copy of the index.html
+        axios.get(`${ServerConfig.frontendBaseUrl}index.html`)
+            .then(response => {
+                // Replace absolute paths using URL as prefix
+                const $ = cheerio.load(response.data);
+
+                $('a, img, link, script').each((i, elem) => {
+                    const tagName = elem.tagName.toLowerCase();
+                    let attr: string;
+
+                    switch (tagName) {
+                      case 'a':
+                      case 'link':
+                        attr = 'href';
+                        break;
+                      case 'img':
+                      case 'script':
+                        attr = 'src';
+                        break;
+                      default:
+                        attr = '';
+                    }
+
+                    const url = $(elem).attr(attr);
+                    if (url && !url.startsWith('http')) {
+                      $(elem).attr(attr, `${ServerConfig.frontendBaseUrl}${url}`);
+                    }
+                });
+
+                // cache results as frontendBaseUrlContents
+                frontendBaseUrlContents = $.html();
+                // setup express to return that as static html in response to request
+                app.use('/', async (req, res) => {
+                    res.send(frontendBaseUrlContents);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                process.exit(1);
+            })
+    } else if (ServerConfig.frontendPath) {
         console.log(chalk.green.bold(`Serving CARTA frontend from ${ServerConfig.frontendPath}`));
         app.use("/", express.static(ServerConfig.frontendPath, {setHeaders: staticHeaderHandler}));
     } else {

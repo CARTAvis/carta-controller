@@ -646,6 +646,10 @@
             "format": "uri-reference",
             "examples": ["https://my-server.com/carta/api", "/carta/api", "/carta-versions/dev/api"]
         },
+        "frontendBaseUrl": {
+            "description": "URL prefix wherein a frontend build can be found",
+            "type": "string"
+        },
         "frontendPath": {
             "description": "Path to the built frontend folder. If no path is provided, the packaged version will be used",
             "type": "string"
