@@ -74,7 +74,7 @@ Install CARTA controller
 
 .. note::
 
-    Currently supported versions of NodeJS are v12, v14 and v16. In the example below we install the latest LTS version of NodeJS from the `NodeSource repo <https://github.com/nodesource/distributions>`_. Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a local install.
+    We recommend using the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_ of NodeJS. The oldest version known to work with the controller is v16. In the example below we install the latest LTS version from the `NodeSource repo <https://github.com/nodesource/distributions>`_. Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a local install.
 
 .. code-block:: shell
 
