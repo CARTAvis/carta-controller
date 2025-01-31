@@ -121,9 +121,6 @@ function testUid(username: string) {
         verboseError(e);
         throw new Error(`Cannot verify uid of user ${username}`);
     }
-    if (!uid) {
-        throw new Error(`Cannot verify uid of user ${username}`);
-    }
     console.log(logSymbols.success, `Verified uid (${uid}) for user ${username}`);
 }
 
@@ -136,7 +133,7 @@ function testToken(authConf: CartaLocalAuthConfig, username: string) {
         throw new Error(`Cannot generate access token. Please check your config file's ldap auth section!`);
     }
     if (!token) {
-        throw new Error(`Cannot generate access token. Please check your config file's ldap auth section!`);
+        throw new Error(`Invalid access token. Please check your config file's ldap auth section!`);
     }
     console.log(logSymbols.success, `Generated access token for user ${username}`);
 }
@@ -155,7 +152,7 @@ function testFrontend() {
     }
 
     if (!indexContents) {
-        throw new Error(`Cannot access frontend at ${ServerConfig.frontendPath}`);
+        throw new Error(`Invalid frontend at ${ServerConfig.frontendPath}`);
     } else {
         console.log(logSymbols.success, `Read frontend index.html from ${ServerConfig.frontendPath}`);
     }
@@ -211,6 +208,9 @@ async function testBackendStartup(username: string) {
     wsClient.on("connect", () => {
         wsConnected = true;
     });
+    wsClient.on("connectFailed", (e) => {
+        verboseError(e);
+    });
 
     wsClient.connect(`ws://localhost:${port}`);
     await delay(1000);
@@ -229,7 +229,12 @@ async function testKillScript(username: string, existingProcess: ChildProcess) {
     }
     const args = ["-u", `${username}`, ServerConfig.killCommand, `${existingProcess.pid}`];
     verboseLog(`running sudo ${args.join(" ")}`);
-    const res = spawnSync("sudo", args);
+    const res = spawnSync("sudo", args, { encoding : 'utf8' });
+    if (res.error) {
+        verboseError(res.error);
+        verboseError(`stdout:\t${res.stdout}`)
+        verboseError(`stderr:\t${res.stderr}`)
+    }
     if (res.status) {
         throw new Error(`Cannot execute kill script (error status ${res.status}. Please check your killCommand option`);
     }
