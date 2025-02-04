@@ -14,23 +14,23 @@ const argv = yargs
         'short-option-groups': false,
     })
     .options({
-    config: {
-        type: "string",
-        default: defaultConfigPath,
-        alias: "c",
-        description: "Path to config file in JSON format"
-    },
-    test: {
-        type: "string",
-        alias: "t",
-        requiresArg: true,
-        description: "Test configuration with the provided user"
-    },
-    verbose: {
-        type: "boolean",
-        alias: "v"
-    }
-}).argv as CartaCommandLineOptions;
+        config: {
+            type: "string",
+            default: defaultConfigPath,
+            alias: "c",
+            description: "Path to config file in JSON format"
+        },
+        test: {
+            type: "string",
+            alias: "t",
+            requiresArg: true,
+            description: "Test configuration with the provided user"
+        },
+        verbose: {
+            type: "boolean",
+            alias: "v"
+        }
+    }).argv as CartaCommandLineOptions;
 
 const usingCustomConfig = argv.config !== defaultConfigPath;
 const testUser = argv.test;
