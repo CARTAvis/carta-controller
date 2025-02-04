@@ -130,10 +130,10 @@ function testToken(authConf: CartaLocalAuthConfig, username: string) {
         token = generateToken(authConf, username, TokenType.Access);
     } catch (e) {
         verboseError(e);
-        throw new Error(`Cannot generate access token. Please check your config file's ldap auth section!`);
+        throw new Error("Cannot generate access token. Please check your config file's auth section!");
     }
     if (!token) {
-        throw new Error(`Invalid access token. Please check your config file's ldap auth section!`);
+        throw new Error("Invalid access token. Please check your config file's auth section!");
     }
     console.log(logSymbols.success, `Generated access token for user ${username}`);
 }
