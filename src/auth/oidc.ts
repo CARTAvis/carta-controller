@@ -1,7 +1,7 @@
 import axios from "axios";
-import * as express from "express";
-import * as fs from "fs";
-import * as jose from 'jose';
+import express, {Request, Response} from "express";
+import fs = require("fs");
+import jose = require('jose');
 import type { GetKeyFunction } from "jose/dist/types/types"
 
 import {CartaOidcAuthConfig} from "../types";
@@ -52,7 +52,7 @@ export async function initOidc(authConf: CartaOidcAuthConfig) {
     await initRefreshManager();
 }
 
-function returnErrorMsg (req: express.Request, res: express.Response, statusCode: number, msg: string) {
+function returnErrorMsg (req: Request, res: Response, statusCode: number, msg: string) {
     if (req.header('accept') == 'application/json') {
         return res.status(statusCode).json({ statusCode: statusCode, message: msg })
     }
@@ -65,7 +65,7 @@ function returnErrorMsg (req: express.Request, res: express.Response, statusCode
 }
 
 // A helper function as initial call to the IdP token endpoint and renewals are mostly the same
-async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request, res: express.Response,
+async function callIdpTokenEndpoint (usp: URLSearchParams, req: Request, res: Response,
                                      authConf: CartaOidcAuthConfig, scriptingToken: boolean = false,
                                      isLogin: boolean = false, sessionId: string, sessionEncKey: Buffer | undefined) {
 
@@ -199,7 +199,7 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: express.Request,
 }
 
 export function generateLocalOidcRefreshHandler (authConf: CartaOidcAuthConfig) {
-    return async (req: express.Request, res: express.Response) => {
+    return async (req: Request, res: Response) => {
         //console.debug("Running OIDC refresh handler")
         const refreshTokenCookie = req.cookies["Refresh-Token"];
         const scriptingToken = req.body?.scripting === true;
@@ -273,7 +273,7 @@ export function generateLocalOidcVerifier (verifierMap: Map<string, Verifier>, a
     });
 }
 
-export async function oidcLoginStart (req: express.Request, res: express.Response, authConf: CartaOidcAuthConfig) {
+export async function oidcLoginStart (req: Request, res: Response, authConf: CartaOidcAuthConfig) {
     try {
         const usp = new URLSearchParams();
 
@@ -331,7 +331,7 @@ export async function oidcLoginStart (req: express.Request, res: express.Respons
     }
 }
 
-export async function oidcCallbackHandler(req: express.Request, res: express.Response, authConf: CartaOidcAuthConfig) {
+export async function oidcCallbackHandler(req: Request, res: Response, authConf: CartaOidcAuthConfig) {
     try {
         //console.debug("Running OIDC callback handler");
         const usp = new URLSearchParams();
@@ -363,7 +363,7 @@ export async function oidcCallbackHandler(req: express.Request, res: express.Res
     }
 }
 
-export async function oidcLogoutHandler(req: express.Request, res: express.Response) {
+export async function oidcLogoutHandler(req: Request, res: Response) {
     try {
         res.cookie("Refresh-Token", "", {
             path: RuntimeConfig.authPath,

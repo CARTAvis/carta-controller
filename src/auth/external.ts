@@ -1,6 +1,6 @@
-import * as fs from "fs";
+import fs = require('fs');
 import {CartaExternalAuthConfig, UserMap, Verifier} from "../types";
-import * as jwt from "jsonwebtoken";
+import jwt = require("jsonwebtoken");
 import {VerifyOptions} from "jsonwebtoken";
 
 function populateUserMap(userMaps: Map<string, UserMap>, issuer: string | string[], filename: string) {

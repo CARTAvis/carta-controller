@@ -1,4 +1,4 @@
-import * as express from "express";
+import express, {Request, Response} from "express";
 import {CartaLocalAuthConfig} from "../types";
 import {addTokensToResponse} from "./local";
 import {getUserId} from "../util";
@@ -6,7 +6,7 @@ import {getUserId} from "../util";
 export function getPamLoginHandler(authConf: CartaLocalAuthConfig) {
     const {pamAuthenticate} = require("node-linux-pam");
 
-    return (req: express.Request, res: express.Response) => {
+    return (req: Request, res: Response) => {
         let username = req.body?.username;
         const password = req.body?.password;
 

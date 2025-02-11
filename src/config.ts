@@ -1,9 +1,9 @@
-import * as yargs from "yargs";
-import * as url from "url";
-import * as fs from "fs";
-import * as path from "path";
-import * as JSONC from "jsonc-parser";
-import * as _ from "lodash";
+import yargs = require("yargs");
+import url = require("url");
+import fs = require("fs");
+import path = require("path");
+import JSONC = require("jsonc-parser");
+import _ from "lodash";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";

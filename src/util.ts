@@ -1,4 +1,4 @@
-import * as express from "express";
+import express, {NextFunction, Request, Response} from "express";
 import {spawnSync} from "child_process";
 
 import {verboseOutput} from "./config";
@@ -10,7 +10,7 @@ export async function delay(delay: number) {
     });
 }
 
-export function noCache(req: express.Request, res: express.Response, next: express.NextFunction) {
+export function noCache(req: Request, res: Response, next: NextFunction) {
     res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
     res.header("Expires", "-1");
     res.header("Pragma", "no-cache");
@@ -36,7 +36,7 @@ export function getUserId(username: string) {
 
     const result = spawnSync("id", ["-u", username]);
     if (!result.status && result?.stdout) {
-        const uid = Number.parseInt(result.stdout);
+        const uid = Number.parseInt(result.stdout.toString());
         if (isFinite(uid)) {
             return uid;
         }

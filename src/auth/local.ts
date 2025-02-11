@@ -1,8 +1,8 @@
 import {AuthenticatedRequest, CartaLocalAuthConfig, ScriptingAccess, Verifier} from "../types";
-import * as fs from "fs";
-import * as jwt from "jsonwebtoken";
+import fs = require("fs");
+import jwt = require("jsonwebtoken");
 import {VerifyOptions} from "jsonwebtoken";
-import * as express from "express";
+import express from "express";
 import {verifyToken} from "./index";
 import {RuntimeConfig, ServerConfig} from "../config";
 import ms = require("ms");

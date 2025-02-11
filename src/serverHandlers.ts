@@ -1,12 +1,13 @@
-import * as express from "express";
-import * as httpProxy from "http-proxy";
-import * as url from "url";
-import * as fs from "fs";
-import * as moment from "moment";
-import * as querystring from "querystring";
+import express, { Request, Response, NextFunction } from "express";
+import Server from "http-proxy";
+import url = require("url");
+import fs = require("fs");
+import {WriteStream} from "fs";
+import moment = require("moment");
+import querystring = require("querystring");
 import {v4} from "uuid";
-import * as io from "@pm2/io";
-import * as tcpPortUsed from "tcp-port-used";
+import io = require("@pm2/io");
+import tcpPortUsed = require("tcp-port-used");
 import {ChildProcess, spawn, spawnSync} from "child_process";
 import {IncomingMessage} from "http";
 import {LinkedList} from "mnemonist";
@@ -91,7 +92,7 @@ async function nextAvailablePort() {
     return -1;
 }
 
-function handleCheckServer(req: AuthenticatedRequest, res: express.Response) {
+function handleCheckServer(req: AuthenticatedRequest, res: Response) {
     if (!req.username) {
         res.status(403).json({success: false, message: "Invalid username"});
         return;
@@ -111,7 +112,7 @@ function handleCheckServer(req: AuthenticatedRequest, res: express.Response) {
     }
 }
 
-function handleLog(req: AuthenticatedRequest, res: express.Response) {
+function handleLog(req: AuthenticatedRequest, res: Response) {
     if (!req.username) {
         res.status(403).json({success: false, message: "Invalid username"});
         return;
@@ -129,7 +130,7 @@ function handleLog(req: AuthenticatedRequest, res: express.Response) {
     });
 }
 
-async function handleStartServer(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+async function handleStartServer(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     const username = req.username;
     const forceRestart = req.body?.forceRestart;
     if (!username) {
@@ -170,7 +171,7 @@ async function handleStartServer(req: AuthenticatedRequest, res: express.Respons
 }
 
 async function startServer(username: string) {
-    let logStream: fs.WriteStream | undefined;
+    let logStream: WriteStream | undefined;
 
     try {
         const port = await nextAvailablePort();
@@ -210,6 +211,9 @@ async function startServer(username: string) {
 
         const headerToken = v4();
         const child = spawn("sudo", args, {env: {CARTA_AUTH_TOKEN: headerToken}});
+        if (child?.pid == undefined) {
+            throw {statusCode: 500, message: `Problem starting process for user ${username}`};
+        }
         setPendingProcess(username, port, headerToken, child);
 
         let logLocation;
@@ -219,6 +223,9 @@ async function startServer(username: string) {
 
             try {
                 logStream = fs.createWriteStream(logLocation, {flags: "a"});
+                if (logStream == undefined) {
+                    throw new Error("Unable to open stream");
+                }
                 child.stdout.pipe(logStream);
                 child.stderr.pipe(logStream);
                 child.stdout.on("data", function (data) {
@@ -276,7 +283,7 @@ async function startServer(username: string) {
     }
 }
 
-async function handleStopServer(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+async function handleStopServer(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     if (!req.username) {
         return next({statusCode: 403, message: "Invalid username"});
     }
@@ -303,7 +310,7 @@ async function handleStopServer(req: AuthenticatedRequest, res: express.Response
     }
 }
 
-export const createUpgradeHandler = (server: httpProxy) => async (req: IncomingMessage, socket: any, head: any) => {
+export const createUpgradeHandler = (server: Server) => async (req: IncomingMessage, socket: any, head: any) => {
     try {
         if (!req?.url) {
             return socket.end();
@@ -363,7 +370,7 @@ export const createUpgradeHandler = (server: httpProxy) => async (req: IncomingM
     }
 };
 
-export const createScriptingProxyHandler = (server: httpProxy) => async (req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) => {
+export const createScriptingProxyHandler = (server: Server) => async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const username = req?.username;
     if (!username) {
         return next({statusCode: 401, message: "Not authorized"});

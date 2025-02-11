@@ -1,5 +1,5 @@
-import * as express from "express";
-import * as LdapAuth from "ldapauth-fork";
+import express, {NextFunction, Request, Response} from "express";
+import LdapAuth = require("ldapauth-fork");
 import {Algorithm} from "jsonwebtoken";
 
 export interface CartaLocalAuthConfig {
@@ -164,9 +164,9 @@ export interface CartaRuntimeConfig {
     authPath?: string;
 }
 
-export type RequestHandler = (req: express.Request, res: express.Response) => void;
-export type AsyncRequestHandler = (req: express.Request, res: express.Response, next: express.NextFunction) => void;
-export type AuthenticatedRequest = express.Request & {username?: string; scripting?: boolean};
+export type RequestHandler = (req: Request, res: Response) => void;
+export type AsyncRequestHandler = (req: Request, res: Response, next: NextFunction) => void;
+export type AuthenticatedRequest = Request & {username?: string; scripting?: boolean};
 
 // Token verifier function
 export type Verifier = (cookieString: string) => any;

@@ -4,9 +4,9 @@ import {OAuth2Client} from "google-auth-library";
 import {generateToken, TokenType} from "./local";
 import {getUser, verifyToken} from "./index";
 import ms = require("ms");
-import * as express from "express";
+import express, {NextFunction, Request, Response} from "express";
 
-export async function googleCallbackHandler (req: express.Request, res: express.Response, authConf: CartaGoogleAuthConfig) {
+export async function googleCallbackHandler (req: Request, res: Response, authConf: CartaGoogleAuthConfig) {
     // Check for g_csrf_token match between cookie and body
     if (!req.cookies["g_csrf_token"] || !req.body["g_csrf_token"] || req.cookies["g_csrf_token"] !== req.body["g_csrf_token"]) {
         return res.status(400).json({"error": "Missing or non-matching CSRF token"})
@@ -52,7 +52,7 @@ export async function googleCallbackHandler (req: express.Request, res: express.
 
 
 export function generateGoogleRefreshHandler(authConf: CartaGoogleAuthConfig) {
-    return async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         const refreshTokenCookie = req.cookies["Refresh-Token"];
         const scriptingToken = req.body?.scripting === true;
         if (refreshTokenCookie) {
