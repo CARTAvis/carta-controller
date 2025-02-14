@@ -20,11 +20,11 @@
     "license": "ISC",
     "dependencies": {
         "@pm2/io": "^5.0.0",
-        "@yuhsuanh/carta-frontend": "^5.0.0-dev",
         "ajv": "^8.2.0",
         "ajv-formats": "^2.1.0",
         "axios": "^0.28.0",
         "body-parser": "^1.19.0",
+        "carta-frontend": "^5.0.0-beta.1",
         "chalk": "^4.1.2",
         "compression": "^1.7.4",
         "cookie-parser": "^1.4.5",
