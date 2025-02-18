@@ -1,14 +1,45 @@
 .. _focal_instructions:
 
-Step-by-step instructions for Ubuntu 20.04.2 (Focal Fossa)
-==========================================================
+Step-by-step instructions for Ubuntu 22.04 (Jammy Jellyfish) and 24.04 (Noble Numbat)
+=====================================================================================
 
 .. note::
 
-    These instructions can be used almost unchanged on Ubuntu 18.04 (Bionic Badger). We note differences where they occur.
+    CARTA version 4.x is supported on Ubuntu 20.04 (Focal Fossa) and 22.04 (Jammy Jellyfish).
+
+    These instructions can be used almost unchanged on Ubuntu 20.04 (Focal Fossa). We note differences where they occur.
 
 Dependencies
 ------------
+
+Install MongoDB
+~~~~~~~~~~~~~~~
+
+We recommend installing the [Community Edition package of MongoDB](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/) on all supported Ubuntu versions.
+
+.. note::
+
+    There is a `mongodb` package available from the official Ubuntu repositories on Ubuntu 20.04 (Focal Fossa). However, this package is older than the Community Edition package, and it has been discontinued in later LTS releases.
+
+.. code-block:: shell
+
+    # Import public key for MongoDB repo
+    curl -fsSL https://www.mongodb.org/static/pgp/server-8.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
+    
+    # Add MongoDB repository
+    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/8.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+    sudo apt-get update
+    
+    # Install MongoDB
+    sudo apt-get install mongodb-org
+    
+    # Start MongoDB
+    sudo systemctl start mongod
+    
+    # Make MongoDB start automatically on system restart
+    sudo systemctl enable mongod
+    
+Please refer to the [detailed MongoDB installation instructions](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/) for more information.
 
 Install the CARTA backend and other required packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,7 +54,7 @@ Install the CARTA backend and other required packages
     sudo apt-get install carta-backend
     
     # Install additional packages
-    sudo apt-get install nginx g++ mongodb make curl
+    sudo apt-get install nginx g++ make curl
 
 .. note::
     The ``carta-backend`` package is updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please install the ``carta-backend-beta`` package instead:
@@ -35,6 +66,8 @@ Install the CARTA backend and other required packages
     These packages cannot be installed simultaneously, as they use the same install locations. If you install one, you will automatically be prompted to uninstall the other.
     
     Make sure that you install the matching controller version (using the ``beta`` tag).
+    
+    Please note that Ubuntu packages for the latest stable release (v4.1.0) are only available on Focal and Jammy, and packages for the latest Beta release (v5.0.0-beta.1) are only available on Jammy and Noble.
 
 Set up directories and permissions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,7 +107,7 @@ Install CARTA controller
 
 .. note::
 
-    We recommend using the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_ of NodeJS. The oldest version known to work with the controller is v16. In the example below we install the latest LTS version from the `NodeSource repo <https://github.com/nodesource/distributions>`_. Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a local install.
+    We recommend using the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_ of NodeJS. The minimum version required for CARTA 5.x is v20. The oldest version known to work with CARTA 4.x is v16. In the example below we install the latest LTS version from the `NodeSource repo <https://github.com/nodesource/distributions>`_. Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a local install.
 
 .. code-block:: shell
 
