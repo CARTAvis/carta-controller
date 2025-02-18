@@ -11,7 +11,7 @@ Step-by-step instructions for AlmaLinux 8
 1. Install Node.js
 ~~~~~~~~~~~~~~~~~~
 
-The CARTA controller uses `Node.js <https://nodejs.org/>`_, which can easily be installed from the AlmaLinux 8 AppStream repository. We recommend using the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_. The oldest version known to work with the controller is v16. Here we install v20, as well as the ``npm`` package manager.
+The CARTA controller uses `Node.js <https://nodejs.org/>`_, which can easily be installed from the AlmaLinux 8 AppStream repository. We recommend using the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_. The minimum version required for CARTA 5.x is v20. The oldest version known to work with CARTA 4.x is v16. Here we install v20, as well as the ``npm`` package manager.
 
 .. code-block:: shell
 
