@@ -1,6 +1,6 @@
 {
     "name": "carta-controller",
-    "version": "4.1.0",
+    "version": "5.0.0-dev",
     "description": "NodeJS-based controller for CARTA",
     "repository": "https://github.com/CARTAvis/carta-controller",
     "homepage": "https://www.cartavis.org",
