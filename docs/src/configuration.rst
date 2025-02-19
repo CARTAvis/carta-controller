@@ -24,6 +24,8 @@ To provide the ``carta`` user with these privileges, you must make modifications
    :language: cfg
    :name: example_sudoers
 
+Please ensure that the paths to the executables in this file match their install locations on your system (especially if you have installed multiple different versions of the backend or the controller).
+   
 .. warning::
     Please only edit your sudoers configuration with ``visudo`` or equivalent.
 

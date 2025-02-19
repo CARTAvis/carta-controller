@@ -1,7 +1,7 @@
 server {
     listen 443 ssl;
     ssl on;
-    server_name my-carta-server.com;
+    server_name carta.example.com;
     ssl_certificate /etc/nginx/ssl/cert.pem; 
     ssl_certificate_key /etc/nginx/ssl/key.pem;
     location / {
@@ -16,8 +16,8 @@ server {
 }
 
 server {
-    server_name my-carta-server.com;    
-    if ($host = my-carta-server.com) {
+    server_name carta.example.com;    
+    if ($host = carta.example.com) {
         return 301 https://$host$request_uri;
     }
     listen 80 ;
