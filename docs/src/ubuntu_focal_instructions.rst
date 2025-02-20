@@ -5,7 +5,7 @@ Step-by-step instructions for Ubuntu 22.04 (Jammy Jellyfish) and 24.04 (Noble Nu
 
 .. note::
 
-    These instructions aim to be a complete guide for installing CARTA for multiple users on a dedicated server, with authentication of local users via PAM, and other simple suggested defaults. If you need to integrate CARTA into an existing system, please refer to the more detailed :ref:`installation` and :ref:`configuration` instructions for more options.
+    These instructions aim to be a complete guide for installing CARTA for multiple users on a dedicated server, with authentication of local users via PAM, and other simple suggested defaults. If you are integrating CARTA into an existing system, you may need to adjust some of these steps. Please refer to the more detailed :ref:`installation` and :ref:`configuration` instructions for more options.
 
 .. note::
 
@@ -187,8 +187,7 @@ Let's Encrypt only issues certificates for publically resolvable domain names, s
 .. code-block:: shell
 
     # Install certbot
-    sudo snap install --classic certbot
-    sudo ln -s /snap/bin/certbot /usr/bin/certbot
+    sudo apt-get install certbot python3-certbot-nginx
 
     # Run certbot and follow the prompts to generate the certificates
     sudo certbot certonly --nginx
@@ -197,7 +196,7 @@ For more detailed instructions, please refer to the `Certbot documentation <http
 
 .. note::
 
-    Certbot can also be installed from the default Ubuntu repositories with `apt`. However, these packages are much older, particularly in older Ubuntu releases. The officially recommended installation method is via `snap`.
+    For simplicity we have provided instructions for installing Certbot from the Ubuntu repositories with ``apt``. However, these packages are far behind the latest version, particularly in older Ubuntu releases. The `official instructions <https://certbot.eff.org/instructions?ws=nginx&os=snap>`_ recommend installation via ``snap``.
 
 Once you have obtained the certificates, edit the Nginx configuration. A :ref:`sample configuration file<example_nginx>` is provided in the configuration section. Adjust the paths to the certificate and the certificate key.
 
