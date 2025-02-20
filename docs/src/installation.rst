@@ -23,10 +23,35 @@ On AlmaLinux you can add our Copr repository and run ``sudo dnf install carta-ba
 
     The ``carta-backend`` package is updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please install the ``carta-backend-beta`` package instead.
 
-Rebuilding Ubuntu packages
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Packaged debug symbols
+~~~~~~~~~~~~~~~~~~~~~~
+
+You can install debugging symbols for our Ubuntu packages with ``apt`` if you enable this option for our PPA.
+
+.. code-block:: shell
+
+    sudo add-apt-repository -c main/debug ppa:cartavis-team/carta
+    sudo apt-get install carta-backend-dbgsym
+    
+Rebuilding packages
+~~~~~~~~~~~~~~~~~~~
     
 Our Ubuntu package configuration is available in `a collection of public repositories <https://github.com/search?q=org%3Aidia-astro+-deb&type=repositories>`_. Please refer to the ``debian`` subdirectories in these repositories if you would like to build your own Debian packages, or to check what build options we use.
+
+You can also obtain the Ubuntu package source with ``apt-src`` (after enabling source packages for our PPA).
+
+.. code-block:: shell
+
+    sudo add-apt-repository -s ppa:cartavis-team/carta
+    sudo apt-get update
+    sudo apt-get install apt-src
+    apt-src install carta-backend
+    
+You can obtain the RPM package source with ``dnf``.
+
+.. code-block:: shell
+
+    dnf download --source carta-backend
     
 External data for Casacore
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
