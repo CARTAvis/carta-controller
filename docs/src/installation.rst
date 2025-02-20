@@ -67,6 +67,8 @@ Once all dependencies have been installed, check out the backend repository with
     # Build
     make -j8
 
+The backend executable will be located in the ``build`` directory.
+
 .. _install_frontend:
 
 Installing the frontend
