@@ -23,7 +23,7 @@ We recommend installing the `Community Edition package of MongoDB <https://www.m
 
 .. note::
 
-    There is a `mongodb` package available from the official Ubuntu repositories on Ubuntu 20.04 (Focal Fossa). However, this package is older than the Community Edition package, and it has been discontinued in later LTS releases.
+    There is a ``mongodb`` package available from the official Ubuntu repositories on Ubuntu 20.04 (Focal Fossa). However, this package is older than the Community Edition package, and it has been discontinued in later LTS releases.
 
 .. code-block:: shell
 
@@ -141,8 +141,8 @@ For security reasons, we do not recommend running the CARTA controller as the ro
     sudo mkdir -p /etc/carta
     sudo chown carta: /etc/carta
 
-Set up permissions and keys
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Set up permissions
+~~~~~~~~~~~~~~~~~~
 
 .. warning::
 
@@ -157,32 +157,22 @@ The ``carta`` user must be given permission to execute the CARTA backend and the
 
 .. code-block:: shell
 
-    # Edit sudoers file to grant `carta` user permission to execute
+    # Edit sudoers file to grant 'carta' user permission to execute
     # the backend and kill script as any user in `carta-users` group
     sudo visudo -f /etc/sudoers.d/carta_controller
 
 An :ref:`example sudoers configuration<example_sudoers>` is provided in the configuration section. Make sure that the paths to the two executables in the file match their install locations on your system.
-
-The CARTA controller uses SSL keys for authentication.
-
-.. code-block:: shell
-
-    # Switch to carta user
-    sudo su - carta
-
-    # Generate private/public keys
-    cd /etc/carta
-    openssl genrsa -out carta_private.pem 4096
-    openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
 
 Configure Nginx and SSL certificates
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The CARTA controller requires a webserver. We provide instructions for `Nginx <https://www.nginx.com/>`_.
 
-For security reasons, we strongly recommend configuring HTTPS on your server and redirecting all HTTP traffic to HTTPS. We provide instructions for obtaining certificates from `Let's Encrypt <https://letsencrypt.org>`_ using the `Certbot <https://certbot.eff.org/>`_ tool. Certbot will automatically renew your certificates for you.
+For security reasons, we strongly recommend configuring HTTPS on your server and redirecting all HTTP traffic to HTTPS. We provide instructions for obtaining certificates from `Let's Encrypt <https://letsencrypt.org>`_ using the `Certbot <https://certbot.eff.org/>`_ tool. Certbot will automatically renew your certificates for you. If your organisation can provide you with certificates for your domain, you can skip this step.
 
-Let's Encrypt only issues certificates for publically resolvable domain names, so make sure that you have configured DNS appropriately before this point, and that Nginx is already running.
+.. note::
+
+    Let's Encrypt only issues certificates for publically resolvable domain names, so make sure that you have configured DNS appropriately before this point, and that Nginx is already running.
 
 .. code-block:: shell
 
@@ -191,8 +181,6 @@ Let's Encrypt only issues certificates for publically resolvable domain names, s
 
     # Run certbot and follow the prompts to generate the certificates
     sudo certbot certonly --nginx
-
-For more detailed instructions, please refer to the `Certbot documentation <https://certbot.eff.org/instructions?ws=nginx&os=snap>`_.
 
 .. note::
 
@@ -213,7 +201,21 @@ Once you have obtained the certificates, edit the Nginx configuration. A :ref:`s
 Configure CARTA controller
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Edit ``/etc/carta/config.json`` to customise the appearance of the dashboard and other options. A :ref:`sample configuration file<example_config>` is provided in the configuration section.
+The CARTA controller uses SSL keys for authentication.
+
+.. code-block:: shell
+
+    # Switch to carta user
+    sudo su - carta
+
+    # Generate private/public keys
+    cd /etc/carta
+    openssl genrsa -out carta_private.pem 4096
+    openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
+
+Edit ``/etc/carta/config.json`` to customise the appearance of the dashboard and other controller options. We recommend configuring options for the backend in a separate ``/etc/carta/backend.json`` file.
+
+Please refer to the :ref:`configuration` instructions for more details. We provide sample :ref:`controller<example_config>` and :ref:`backend<example_backend>` configuration files.
 
 Test CARTA controller
 ~~~~~~~~~~~~~~~~~~~~~
