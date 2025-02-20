@@ -18,7 +18,7 @@ MongoDB is required for storing user preferences, layouts, workspaces, and (in t
 
 You also need a working `NodeJS LTS <https://nodejs.org/en/about/releases/>`_ installation with NPM. Use ``npm install`` to install all Node dependencies.
 
-Detailed installation instructions are available for :ref:`Ubuntu<focal_instructions>` and :ref:`RPM-based distributions<almalinux8_instructions>`.
+:ref:`Step-by-step installation instructions <step_by_step>` are available for officially supported platforms.
 
 .. _authentication:
 

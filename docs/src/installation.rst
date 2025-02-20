@@ -3,7 +3,7 @@
 Installation
 ============
 
-This section provides a general overview. For a more detailed installation guide, please refer to our step-by-step instructions for :ref:`Ubuntu<focal_instructions>` or :ref:`RPM-based distributions<almalinux8_instructions>`.
+This section provides an overview of different ways to install specific components of CARTA. Please refer to our :ref:`step-by-step instructions <step_by_step>` for a complete set of installation and configuration instructions for supported platforms.
 
 .. _install_backend:
 
@@ -18,9 +18,22 @@ We provide binary `Ubuntu packages <https://launchpad.net/~cartavis-team/+archiv
 
 .. note::
 
-    The ``casacore-data`` package is recommended by the Ubuntu backend package, but installing it is optional. The packages in our PPA should be compatible both with the ``casacore-data`` package in the core Ubuntu repositories and with the package provided by the `Kern PPAs <https://launchpad.net/~kernsuite>`_. You may also wish to manage the required data files without using a package.
+    The ``casacore-data`` package is recommended by the Ubuntu backend package, but installing it is optional. The packages in our PPA should be compatible both with the ``casacore-data`` package in the core Ubuntu repositories and with the package provided by the `Kern PPAs <https://launchpad.net/~kernsuite>`_.
+    
+    You may also wish to manage the required data files without using a package. To avoid installing the ``casacore-data`` package, use the ``--no-install-recommends`` flag when installing the backend package.
+    
+    An example script for fetching the data manually (configure ``cron`` to run this weekly):
+    
+    .. code-block:: shell
 
-To install the backend on a different host system, or to install a custom version, you can build it from source from the `backend repository <https://github.com/CARTAvis/carta-backend/>`_ on GitHub.
+        #!/bin/bash
+
+        rm -f /tmp/WSRT_Measures.ztar
+        wget ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar -P /tmp -q
+        tar zxf /tmp/WSRT_Measures.ztar -C /var/lib/casacore/data
+        chmod -R 755 /var/lib/casacore/data
+
+To install the backend on a different host system, or to install a custom version, you can build it from source from the `backend repository <https://github.com/CARTAvis/carta-backend/>`_ on GitHub. The dockerfiles in the backend repository are a good starting point for installing and configuring all the build dependencies on different Linux distributions.
 
 .. _install_frontend:
 
