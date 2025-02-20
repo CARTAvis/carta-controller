@@ -86,8 +86,8 @@ Install MongoDB
 
 Please refer to the `detailed MongoDB installation instructions <https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/>`_ for more information.
 
-Install the CARTA backend and other required packages
------------------------------------------------------
+Install CARTA backend and other required packages
+-------------------------------------------------
 
 .. tabs::
 
@@ -154,8 +154,8 @@ Install the CARTA backend and other required packages
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
 
-Install Node.js
----------------
+Install Node.js and PM2
+-----------------------
 
 .. tabs::
 
