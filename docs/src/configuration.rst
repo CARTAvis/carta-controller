@@ -128,6 +128,10 @@ The backend configuration file must adhere to the :ref:`CARTA backend configurat
    
 .. _test-config:
 
+.. note::
+
+    If you use the global configuration file, please ensure that it is readable by all users in the ``carta-users`` group, *and* that the parent ``/etc/carta/`` directory is readable and executable by all users in the ``carta-users`` group, otherwise the starting backend processes will not be able to access it.
+
 Testing the configuration
 -------------------------
 

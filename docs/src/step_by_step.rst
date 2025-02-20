@@ -371,6 +371,10 @@ The CARTA controller uses SSL keys for authentication.
 
 Edit ``/etc/carta/config.json`` to customise the appearance of the dashboard and other controller options. We recommend configuring options for the backend in a separate ``/etc/carta/backend.json`` file.
 
+.. note::
+
+    If you use ``/etc/carta/backend.json``, please ensure that it is readable by all users in the ``carta-users`` group, *and* that ``/etc/carta/`` is readable and executable by these users.
+
 Please refer to the :ref:`configuration` instructions for more details. We provide sample :ref:`controller<example_config>` and :ref:`backend<example_backend>` configuration files.
 
 Test CARTA controller
