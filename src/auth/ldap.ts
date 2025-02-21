@@ -1,5 +1,5 @@
 import express from "express";
-import LdapAuth = require("ldapauth-fork");
+import LdapAuth from "ldapauth-fork";
 import {CartaLdapAuthConfig} from "../types";
 import {addTokensToResponse} from "./local";
 import {getUserId, verboseError, verboseLog} from "../util";

@@ -1,5 +1,5 @@
 import express, {NextFunction, Request, Response} from "express";
-import LdapAuth = require("ldapauth-fork");
+import LdapAuth from "ldapauth-fork";
 import {Algorithm} from "jsonwebtoken";
 
 export interface CartaLocalAuthConfig {

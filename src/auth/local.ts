@@ -1,11 +1,11 @@
 import {AuthenticatedRequest, CartaLocalAuthConfig, ScriptingAccess, Verifier} from "../types";
-import fs = require("fs");
+import * as fs from "fs";
 import jwt = require("jsonwebtoken");
 import {VerifyOptions} from "jsonwebtoken";
 import express from "express";
 import {verifyToken} from "./index";
 import {RuntimeConfig, ServerConfig} from "../config";
-import ms = require("ms");
+import ms from "ms";
 import {getUserId} from "../util";
 
 let privateKey: Buffer;

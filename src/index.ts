@@ -1,21 +1,21 @@
 import express, {Request, Response, NextFunction} from 'express';
-import bodyParser = require("body-parser");
-import bearerToken = require("express-bearer-token");
-import cookieParser = require("cookie-parser");
-import httpProxy = require("http-proxy");
-import http = require("http");
-import url = require("url");
-import cors = require("cors");
-import fs = require("fs");
-import path = require("path");
-import compression = require("compression");
-import chalk = require("chalk");
+import * as bodyParser from "body-parser";
+import bearerToken from "express-bearer-token";
+import cookieParser from "cookie-parser";
+import httpProxy from "http-proxy";
+import * as http from "http";
+import * as url from "url";
+import cors from "cors";
+import * as fs from "fs";
+import * as path from "path";
+import compression from "compression";
+import chalk from "chalk";
 import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./serverHandlers";
 import {authGuard, authRouter} from "./auth";
 import {databaseRouter, initDB} from "./database";
 import {RuntimeConfig, ServerConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
-import logSymbols = require("log-symbols");
+import * as logSymbols from "log-symbols";
 
 if (testUser) {
     runTests(testUser).then(

@@ -3,7 +3,7 @@ import {CartaGoogleAuthConfig, ScriptingAccess, Verifier} from "../types";
 import {OAuth2Client} from "google-auth-library";
 import {generateToken, TokenType} from "./local";
 import {getUser, verifyToken} from "./index";
-import ms = require("ms");
+import ms from "ms";
 import express, {NextFunction, Request, Response} from "express";
 
 export async function googleCallbackHandler (req: Request, res: Response, authConf: CartaGoogleAuthConfig) {

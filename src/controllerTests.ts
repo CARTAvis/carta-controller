@@ -1,10 +1,10 @@
-import path = require("path");
-import fs = require("fs");
+import * as path from "path";
+import * as fs from "fs";
 import {MongoClient} from "mongodb";
-import LdapAuth = require("ldapauth-fork");
-import logSymbols = require("log-symbols");
-import chalk = require("chalk");
-import moment = require("moment");
+import LdapAuth from "ldapauth-fork";
+import * as logSymbols from "log-symbols";
+import chalk from "chalk";
+import moment from "moment";
 import {ServerConfig, testUser} from "./config";
 import {ChildProcess, spawn, spawnSync} from "child_process";
 import {delay, getUserId, verboseError, verboseLog} from "./util";

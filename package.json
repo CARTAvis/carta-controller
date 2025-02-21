@@ -19,7 +19,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@pm2/io": "^5.0.0",
+        "@pm2/io": "^6.1.0",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",
         "axios": "^0.28.0",
@@ -27,7 +27,7 @@
         "carta-frontend": "^5.0.0-beta.1b",
         "chalk": "^4.1.2",
         "compression": "^1.8.0",
-        "cookie-parser": "^1.4.5",
+        "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "express": "^4.21.2",
         "express-bearer-token": "^3.0.0",
@@ -54,7 +54,7 @@
     },
     "devDependencies": {
         "@types/compression": "^1.7.0",
-        "@types/cookie-parser": "^1.4.2",
+        "@types/cookie-parser": "^1.4.8",
         "@types/cors": "^2.8.10",
         "@types/express": "^4.17.11",
         "@types/http-proxy": "^1.17.16",

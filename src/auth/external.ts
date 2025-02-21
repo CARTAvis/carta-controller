@@ -1,4 +1,4 @@
-import fs = require('fs');
+import * as fs from "fs";
 import {CartaExternalAuthConfig, UserMap, Verifier} from "../types";
 import jwt = require("jsonwebtoken");
 import {VerifyOptions} from "jsonwebtoken";

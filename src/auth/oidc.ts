@@ -1,7 +1,7 @@
 import axios from "axios";
 import express, {Request, Response} from "express";
-import fs = require("fs");
-import jose = require('jose');
+import * as fs from "fs";
+import * as jose from "jose";
 import type { GetKeyFunction } from "jose/dist/types/types"
 
 import {CartaOidcAuthConfig} from "../types";
