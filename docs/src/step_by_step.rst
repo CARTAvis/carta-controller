@@ -7,6 +7,8 @@ Step-by-step instructions for a complete deployment
 
     These instructions aim to be a complete guide for installing CARTA for multiple users on a dedicated server, with authentication of local users via PAM, and other simple suggested defaults. If you are integrating CARTA into an existing system, you may need to adjust some of these steps. Please refer to the more detailed :ref:`installation` and :ref:`configuration` instructions for more options.
 
+    We include instructions for configuring SSL in your webserver. This requires either a domain name and certificates provided by your organisation, or a domain from a provider compatible with Let's Encrypt (or your preferred certificate authority). Domain name setup is outside the scope of this document.
+
 .. tabs::
 
     .. tab:: Ubuntu
@@ -310,7 +312,7 @@ For security reasons, we strongly recommend configuring HTTPS on your server and
 
 .. note::
 
-    Let's Encrypt only issues certificates for publically resolvable domain names, so make sure that you have configured DNS appropriately before this point, and that Nginx is already running.
+    Let's Encrypt only issues certificates for publically resolvable domain names, so make sure that you have configured DNS appropriately before this point, and that Nginx is already running and serving its default index page over HTTP.
 
 .. tabs::
 
