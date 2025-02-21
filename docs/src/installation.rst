@@ -201,7 +201,7 @@ Kill script location
 
 The kill script executable path is
 
-* ``/usr/bin/carta-kill-script`` or ``/usr/local/bin/carta-kill-script``, if you installed the NPM package globally (depending on the ``npm`` distribution)
+* ``/usr/bin/carta-kill-script`` or ``/usr/local/bin/carta-kill-script``, if you installed the NPM package globally (depending on the Node.js distribution)
 * ``node_modules/.bin/carta-kill-script``, if you installed the NPM package locally
 * ``carta-controller/scripts/carta_kill_script.sh``, if you installed from the source directory.
 
