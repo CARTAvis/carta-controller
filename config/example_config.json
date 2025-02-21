@@ -4,7 +4,7 @@
         "pam": {
             "publicKeyLocation": "/etc/carta/carta_public.pem",
             "privateKeyLocation": "/etc/carta/carta_private.pem",
-            "issuer": "my-carta-server.com"
+            "issuer": "carta.example.com"
         }
     },
     "database": {
@@ -14,7 +14,7 @@
     "serverPort": 8000,
     "serverInterface": "localhost",
     "processCommand": "/usr/bin/carta_backend",
-    "killCommand": "/usr/local/bin/carta-kill-script",
+    "killCommand": "/usr/bin/carta-kill-script",
     "rootFolderTemplate": "/home/{username}",
     "baseFolderTemplate": "/home/{username}",
     "dashboard": {

@@ -7,8 +7,6 @@ Step-by-step instructions for a complete deployment
 
     These instructions aim to be a complete guide for installing CARTA for multiple users on a dedicated server, with authentication of local users via PAM, and other simple suggested defaults. If you are integrating CARTA into an existing system, you may need to adjust some of these steps. Please refer to the more detailed :ref:`installation` and :ref:`configuration` instructions for more options.
 
-    We include instructions for configuring SSL in your webserver. This requires either a domain name and certificates provided by your organisation, or a domain from a provider compatible with Let's Encrypt (or your preferred certificate authority). Domain name setup is outside the scope of this document.
-
 .. tabs::
 
     .. tab:: Ubuntu
@@ -26,6 +24,15 @@ Step-by-step instructions for a complete deployment
             CARTA versions 4.x and 5.x are both supported on AlmaLinux 8 and 9. The AlmaLinux instructions should also work on other equivalent RPM-based distributions.
 
             We also support legacy installations of CARTA 4.x on RHEL 7 and CentOS 7, but as both of these releases have reached end of life and are widely unsupported, we do not recommend using them for new installations. Adapting these instructions to these releases requires multiple workarounds, which are outside the scope of this document.
+
+Prerequisites
+-------------
+
+These instructions assume that you are logged in as an ordinary user with passwordless ``sudo`` access. Ubuntu server images have a default ``ubuntu`` user configured with these privileges. On AlmaLinux this user is called ``almalinux``.
+
+We assume that ``curl`` is already installed.
+
+We include instructions for configuring SSL in your webserver. This requires either a domain name and certificates provided by your organisation, or a domain from a provider compatible with Let's Encrypt (or your preferred certificate authority). Domain name setup is outside the scope of this document.
 
 Install MongoDB
 ---------------
@@ -107,7 +114,7 @@ Install CARTA backend and other required packages
             sudo apt-get install carta-backend
 
             # Install additional packages
-            sudo apt-get install nginx g++ make curl build-essential
+            sudo apt-get install g++ make build-essential libpam0g-dev
 
         .. note::
 
@@ -115,7 +122,7 @@ Install CARTA backend and other required packages
 
             .. code-block:: shell
 
-                sudo apt-get install install carta-backend-beta
+                sudo apt-get install carta-backend-beta
 
             These packages cannot be installed simultaneously, as they use the same install locations. If you install one, you will automatically be prompted to uninstall the other.
 
@@ -141,9 +148,12 @@ Install CARTA backend and other required packages
 
             # Install additional packages
 
-            sudo dnf install nginx
-            sudo dnf install nginx python3 make curl gcc-c++
+            sudo dnf install python3 make gcc-c++ pam-devel
 
+        .. note::
+        
+            A minimum Python version of 3.8 is required to build the controller. On AlmaLinux 8, install the ``python38`` or ``python39`` package instead.
+        
         .. note::
 
             The ``carta-backend`` package is updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please install ``carta-backend-beta`` instead:
@@ -156,40 +166,42 @@ Install CARTA backend and other required packages
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
 
-Install Node.js and PM2
------------------------
+Install Node.js
+---------------
+
+We recommend installing the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_ of Node.js (currently v22) from the `NodeSource repository <https://github.com/nodesource/distributions>`_. The minimum version required for CARTA 5.x is v20. The oldest version known to work with CARTA 4.x is v16.
 
 .. tabs::
 
     .. tab:: Ubuntu
-
-        We recommend using the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_ of Node.js. The minimum version required for CARTA 5.x is v20. The oldest version known to work with CARTA 4.x is v16. In the example below, the latest LTS version will be installed from the `NodeSource repository <https://github.com/nodesource/distributions>`_.
 
         .. code-block:: shell
 
             # Install the latest Node.js LTS repo
             curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 
-            # Install Node.js and NPM
-            sudo apt-get install -y nodejs
-
-            # Install PM2 process manager
-            sudo npm install -g pm2
+            # Install Node.js (includes NPM)
+            sudo apt-get install nodejs
 
     .. tab:: AlmaLinux
 
-        Node.js can be installed from the AlmaLinux AppStream repository on AlmaLinux 8 and 9. We recommend using the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_. The minimum version required for CARTA 5.x is v20. The oldest version known to work with CARTA 4.x is v16. In the example below, v22 will be installed.
-
         .. code-block:: shell
 
-            # Install Node.js and NPM
-            sudo dnf module enable nodejs:22
-            sudo dnf install nodejs npm
+            # Install the latest Node.js LTS repo
+            curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo -E bash -
 
-            # Install PM2 process manager
-            sudo npm install -g pm2
+            # Install Node.js (includes NPM)
+            sudo dnf install nodejs
 
-        Alternatively, Node.js can be installed from the `NodeSource repository <https://github.com/nodesource/distributions>`_.
+        .. note::
+
+            Node.js and NPM can also be installed from the AlmaLinux AppStream repository on AlmaLinux 8 and 9. This version of ``npm`` installs executables into ``/usr/local/bin``. If you use it, be sure to update the kill script path in the sudoers and controller configuration.
+
+            .. code-block:: shell
+
+                # Install Node.js and NPM
+                sudo dnf module enable nodejs:22
+                sudo dnf install nodejs npm
 
 Install CARTA controller
 ------------------------
@@ -209,7 +221,7 @@ Install CARTA controller
 
 .. note::
 
-    Do not pass the ``--unsafe-perm`` flag to ``npm`` if using an installation of Node.js in a user directory.
+    Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a custom installation of Node.js in a local directory.
 
 Set up users and directories
 ----------------------------
@@ -281,8 +293,8 @@ The ``carta`` user must be given permission to execute the CARTA backend and the
 
 An :ref:`example sudoers configuration<example_sudoers>` is provided in the configuration section. Make sure that the paths to the two executables in the file match their install locations on your system.
 
-Configure Nginx and SSL certificates
-------------------------------------
+Install and configure Nginx and SSL certificates
+------------------------------------------------
 
 The CARTA controller requires a webserver. We provide instructions for `Nginx <https://www.nginx.com/>`_.
 
@@ -290,11 +302,17 @@ The CARTA controller requires a webserver. We provide instructions for `Nginx <h
 
     .. tab:: Ubuntu
     
-        On Ubuntu, Nginx should already be running once it has been installed, and no firewall configuration should be necessary.
+        .. code-block:: shell
+        
+            # Install Nginx
+            sudo apt-get install nginx
 
     .. tab:: AlmaLinux
     
         .. code-block:: shell
+        
+            # Install Nginx
+            sudo dnf install nginx
 
             # Start Nginx
             sudo systemctl start nginx
@@ -408,12 +426,15 @@ Start CARTA controller
 
     pm2 start carta-controller
 
-Configure PM2
--------------
+Install and configure PM2
+-------------------------
 
 This service will start the controller automatically after a reboot.
 
 .. code-block:: shell
+
+    # Install PM2 process manager
+    sudo npm install -g pm2
 
     # Switch to carta user
     sudo su - carta
