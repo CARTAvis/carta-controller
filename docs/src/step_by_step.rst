@@ -209,7 +209,7 @@ Install CARTA controller
 
 .. note::
 
-    Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a local installation of Node.js.
+    Do not pass the ``--unsafe-perm`` flag to ``npm`` if using an installation of Node.js in a user directory.
 
 Set up users and directories
 ----------------------------
