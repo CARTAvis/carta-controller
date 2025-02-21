@@ -101,12 +101,20 @@ Once all dependencies have been installed, check out the backend repository with
 
 The backend executable will be located in the ``build`` directory.
 
+.. note::
+
+    Ensure that a custom ``processCommand`` is set in the controller configuration and that the backend path is updated in the sudoers file.
+
 .. _install_frontend:
 
 Installing the frontend
 -----------------------
 
 If you install the controller package from NPM, the corresponding packaged version of the frontend will be installed automatically as a dependency. However, you may wish to install a custom version of the frontend if you are installing the controller from source, or if you would like to test an updated frontend version.
+
+.. note::
+    
+    Ensure that a custom ``frontendPath`` is set in the controller configuration.
 
 NPM package
 ~~~~~~~~~~~
@@ -116,7 +124,7 @@ You can manually install a `specific published version <https://www.npmjs.com/pa
 .. code-block:: shell
 
     # Install latest pre-release version into the current directory
-    npm i carta-frontend@dev
+    npm install carta-frontend@dev
 
 Installing from source
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -155,6 +163,8 @@ You can install the latest stable version of the CARTA controller from NPM by ru
 .. note::
 
     If you would like to install the latest **beta** release of CARTA, please install ``carta-controller@beta`` instead.
+    
+    If you would like to install the package in a local directory, omit the ``-g`` flag.
 
 Installing from source
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -179,11 +189,23 @@ Executable location
 ~~~~~~~~~~~~~~~~~~~
 
 The ``carta-controller`` executable can be found
+
 * on the system path, if you installed the NPM package globally
 * in ``node_modules/.bin`` and ``node_modules/carta-controller/dist``, if you installed the NPM package locally
 * in ``carta-controller/dist``, if you installed from the source directory.
 
 If you installed the controller from source, you can also launch it by running ``npm run start`` in the source directory.
+
+Kill script location
+~~~~~~~~~~~~~~~~~~~~
+
+The kill script executable path is
+
+* ``/usr/bin/carta-kill-script`` or ``/usr/local/bin/carta-kill-script``, if you installed the NPM package globally (depending on the ``npm`` distribution)
+* ``node_modules/.bin/carta-kill-script``, if you installed the NPM package locally
+* ``carta-controller/scripts/carta_kill_script.sh``, if you installed from the source directory.
+
+Ensure that the correct ``killCommand`` is set in the controller configuration, and that the kill script path is correct in the sudoers file.
 
 Persistence
 ~~~~~~~~~~~
