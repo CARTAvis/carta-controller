@@ -30,7 +30,7 @@ Prerequisites
 
 These instructions assume that you are logged in as an ordinary user with passwordless ``sudo`` access. Ubuntu server images have a default ``ubuntu`` user configured with these privileges. On AlmaLinux this user is called ``almalinux``.
 
-We assume that ``curl`` is already installed.
+We assume that ``curl`` and ``vim`` are already installed, and that your shell is ``bash``.
 
 We include instructions for configuring SSL in your webserver. This requires either a domain name and certificates provided by your organisation, or a domain from a provider compatible with Let's Encrypt (or your preferred certificate authority). Domain name setup is outside the scope of this document.
 
@@ -73,14 +73,14 @@ Install MongoDB
         .. code-block:: shell
 
             # Add MongoDB repository
-            sudo cat <<EOT >> /etc/yum.repos.d/mongodb-org.repo
+            sudo bash -c 'cat > /etc/yum.repos.d/mongodb-org.repo' << 'EOF'
             [mongodb-org-8.0]
             name=MongoDB Repository
             baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/8.0/$basearch/
             gpgcheck=1
             enabled=1
             gpgkey=https://www.mongodb.org/static/pgp/server-8.0.asc
-            EOT
+            EOF
 
             sudo dnf update
 
@@ -236,7 +236,7 @@ For security reasons, we do not recommend running the CARTA controller as the ro
     sudo groupadd carta-users
 
     # Create a 'carta' user to run the controller
-    sudo adduser --system --home /var/lib/carta --shell=/bin/bash --group carta
+    sudo useradd --system --create-home --home /var/lib/carta --shell=/bin/bash --user-group carta
 
     # Create a log directory owned by carta
     sudo mkdir -p /var/log/carta
@@ -262,7 +262,7 @@ Set up permissions
         .. code-block:: shell
 
             # Add 'carta' user to the shadow group
-            sudo usermod -a -G shadow carta
+            sudo usermod -a --groups shadow carta
 
     .. tab:: AlmaLinux
 
@@ -281,7 +281,7 @@ Set up permissions
             sudo reboot
 
             # Add 'carta' user to the shadow group
-            sudo usermod -a -G shadow carta
+            sudo usermod -a --groups shadow carta
 
 The ``carta`` user must be given permission to execute the CARTA backend and the script to kill the CARTA backend on behalf of CARTA users using ``sudo`` without providing a password.
 
@@ -320,17 +320,18 @@ The CARTA controller requires a webserver. We provide instructions for `Nginx <h
             # Make Nginx start automatically
             sudo systemctl enable nginx
 
-            # Configure firewall
-            sudo setsebool -P httpd_can_network_connect 1
-            sudo firewall-cmd --permanent --zone=public --add-service=http
-            sudo firewall-cmd --permanent --zone=public --add-service=https
-            sudo firewall-cmd --reload
+            # Configure SELinux
+            sudo setsebool -P httpd_can_network_connect on
+
+.. note::
+
+    If you have also installed a firewall on your server, ensure that it allows both HTTP and HTTPS traffic.
 
 For security reasons, we strongly recommend configuring HTTPS on your server and redirecting all HTTP traffic to HTTPS. We provide instructions for obtaining certificates from `Let's Encrypt <https://letsencrypt.org>`_ using the `Certbot <https://certbot.eff.org/>`_ tool. Certbot will automatically renew your certificates for you. If your organisation can provide you with certificates for your domain, you can skip this step.
 
 .. note::
 
-    Let's Encrypt only issues certificates for publically resolvable domain names, so make sure that you have configured DNS appropriately before this point, and that Nginx is already running and serving its default index page over HTTP.
+    Let's Encrypt only issues certificates for publically resolvable domain names, so make sure that you have configured DNS appropriately before this point, and that Nginx is already running and serving its default index page over HTTP at your public domain.
 
 .. tabs::
 
@@ -342,6 +343,7 @@ For security reasons, we strongly recommend configuring HTTPS on your server and
             sudo apt-get install certbot python3-certbot-nginx
 
             # Run certbot and follow the prompts to generate the certificates
+            # Note the certificate and key locations which are printed out
             sudo certbot certonly --nginx
 
         .. note::
@@ -356,18 +358,19 @@ For security reasons, we strongly recommend configuring HTTPS on your server and
             sudo dnf install certbot python3-certbot-nginx
 
             # Run certbot and follow the prompts to generate the certificates
+            # Note the certificate and key locations which are printed out
             sudo certbot certonly --nginx
 
         .. note::
 
             For simplicity we have provided instructions for installing Certbot from the EPEL repositories with ``dnf``. However, these packages are far behind the latest version, particularly in older AlmaLinux releases. The `official instructions <https://certbot.eff.org/instructions?ws=nginx&os=snap>`_ recommend installation via ``snap``.
 
-Once you have obtained the certificates, edit the Nginx configuration. A :ref:`sample configuration file<example_nginx>` is provided in the configuration section. Adjust the paths to the certificate and the certificate key.
+Once you have obtained the certificates, edit the Nginx configuration. A :ref:`sample configuration file<example_nginx>` is provided in the configuration section. Adjust the paths to the certificate and the certificate key, using the paths printed by ``certbot`` in the previous step.
 
 .. code-block:: shell
 
-    # Edit the default Nginx configuration
-    sudo vi /etc/nginx/sites-enabled/default
+    # Create an Nginx configuration file for CARTA
+    sudo vim /etc/nginx/conf.d/carta.conf
 
     # Restart Nginx
     sudo systemctl restart nginx
@@ -377,6 +380,8 @@ Once you have obtained the certificates, edit the Nginx configuration. A :ref:`s
 Configure CARTA controller
 --------------------------
 
+These configuration steps should be performed as the ``carta`` user. This user should own all the files in the ``/etc/carta`` directory.
+
 The CARTA controller uses SSL keys for authentication.
 
 .. code-block:: shell
@@ -385,17 +390,22 @@ The CARTA controller uses SSL keys for authentication.
     sudo su - carta
 
     # Generate private/public keys
-    cd /etc/carta
-    openssl genrsa -out carta_private.pem 4096
-    openssl rsa -in carta_private.pem -outform PEM -pubout -out carta_public.pem
+    openssl genrsa -out /etc/carta/carta_private.pem 4096
+    openssl rsa -in /etc/carta/carta_private.pem -outform PEM -pubout -out /etc/carta/carta_public.pem
 
-Edit ``/etc/carta/config.json`` to customise the appearance of the dashboard and other controller options. We recommend configuring options for the backend in a separate ``/etc/carta/backend.json`` file.
+Edit ``/etc/carta/config.json`` to customise the appearance of the dashboard and other controller options. We recommend configuring options for the backend in a separate ``/etc/carta/backend.json`` file.  We provide sample :ref:`controller<example_config>` and :ref:`backend<example_backend>` configuration files. Please refer to the :ref:`configuration` instructions for more details.
+
+.. code-block:: shell
+
+    # Create a controller configuration file
+    vim /etc/carta/config.json
+
+    # Create a global backend configuration file
+    vim /etc/carta/backend.json
 
 .. note::
 
     If you use ``/etc/carta/backend.json``, please ensure that it is readable by all users in the ``carta-users`` group, *and* that ``/etc/carta/`` is readable and executable by these users.
-
-Please refer to the :ref:`configuration` instructions for more details. We provide sample :ref:`controller<example_config>` and :ref:`backend<example_backend>` configuration files.
 
 Test CARTA controller
 ---------------------
@@ -404,8 +414,11 @@ To test that the controller is functioning correctly, use the built-in test feat
 
 .. code-block:: shell
 
-    # Create a test user
-    sudo adduser --groups carta-users alice
+    # Switch back to user with sudo access
+    exit
+
+    # Create a test user in the 'carta-users' group
+    sudo useradd --create-home --groups carta-users alice
     sudo passwd alice
 
     # Switch to 'carta' user
@@ -421,10 +434,27 @@ Start CARTA controller
 
 .. code-block:: shell
 
+    # Switch back to user with sudo access
+    exit
+
+    # Copy test image to user's home directory
+    sudo cp /usr/share/carta/default.fits /home/alice/test.fits
+    sudo chown alice: /home/alice/test.fits
+
     # Switch to carta user
     sudo su - carta
 
-    pm2 start carta-controller
+    carta-controller
+
+You should now be able to navigate to your domain, log into CARTA with your test user's credentials, and open and view the test image.
+
+.. note::
+
+    In the example above, the default test image packaged with the CARTA backend is copied into the test user's home directory -- if you configured a different user directory structure, or installed a custom backend, please adjust these paths.
+
+.. warning::
+
+    A known issue in the CARTA v5 beta release prevents the packaged test image from rendering correctly. Please use a different image to test this version of CARTA. Example FITS images can be downloaded from various astronomical `institutions <https://fits.gsfc.nasa.gov/fits_samples.html>`_ and `software projects <https://www.astropy.org/astropy-data/>`_.
 
 Install and configure PM2
 -------------------------
@@ -432,6 +462,9 @@ Install and configure PM2
 This service will start the controller automatically after a reboot.
 
 .. code-block:: shell
+
+    # Switch to user with sudo access
+    exit
 
     # Install PM2 process manager
     sudo npm install -g pm2
@@ -450,10 +483,19 @@ This service will start the controller automatically after a reboot.
     # Switch back to the 'carta' user
     sudo su - carta
 
-    # Start the controller if it isn't running
+    # Start the controller
     pm2 start carta-controller
 
     # Save the running process
     pm2 save
 
 Please refer to the `PM2 documentation <https://pm2.keymetrics.io/docs/usage/startup/>`_ for more detailed instructions.
+
+Clean up
+--------
+
+Once you have finished testing the controller, remove the test user.
+
+.. code-block:: shell
+
+    sudo userdel --remove alice
