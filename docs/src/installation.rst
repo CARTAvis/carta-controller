@@ -201,7 +201,7 @@ The ``carta-controller`` executable can be found
 * in ``node_modules/.bin`` and ``node_modules/carta-controller/dist``, if you installed the NPM package locally
 * in ``carta-controller/dist``, if you installed from the source directory.
 
-If you installed the controller from source, you can also launch it by running ``npm run start`` in the source directory.
+If you installed the controller from source, you can also launch it by running ``npm start`` in the source directory.
 
 Kill script location
 ~~~~~~~~~~~~~~~~~~~~
