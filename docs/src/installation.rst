@@ -34,6 +34,13 @@ You can install debugging symbols for our Ubuntu packages with ``apt`` if you en
 
     sudo add-apt-repository -c main/debug ppa:cartavis-team/carta
     sudo apt-get install carta-backend-dbgsym
+
+..
+    From CARTA v5 beta onwards, debugging symbols can also be installed for our RPM packages.
+
+    .. code-block:: shell
+
+        dnf debuginfo-install carta-backend
     
 Rebuilding packages
 ~~~~~~~~~~~~~~~~~~~
