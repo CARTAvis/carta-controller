@@ -195,7 +195,7 @@ We recommend installing the `latest LTS version <https://github.com/nodejs/relea
 
         .. note::
 
-            Node.js and NPM can also be installed from the AlmaLinux AppStream repository on AlmaLinux 8 and 9. This version of ``npm`` installs executables into ``/usr/local/bin``. If you use it, be sure to update the kill script path in the sudoers and controller configuration.
+            Node.js and NPM can also be installed from the AlmaLinux AppStream repository on AlmaLinux 8 and 9. This version of ``npm`` installs executables into ``/usr/local/bin``. If you use it, be sure to update the kill script path in the sudoers file and controller configuration.
 
             .. code-block:: shell
 
