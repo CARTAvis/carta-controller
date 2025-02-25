@@ -41,10 +41,10 @@ You can install debugging symbols for our Ubuntu packages with ``apt`` if you en
     .. code-block:: shell
 
         dnf debuginfo-install carta-backend
-    
+
 Rebuilding packages
 ~~~~~~~~~~~~~~~~~~~
-    
+
 Our Ubuntu package source is available in `a collection of public repositories <https://github.com/search?q=org%3Aidia-astro+-deb&type=repositories>`_. Please refer to the ``debian`` subdirectories in these repositories if you would like to build your own Debian packages, or to check what build options we use.
 
 You can also obtain the Ubuntu package source with ``apt-src`` (after enabling source packages for our PPA).
@@ -55,7 +55,7 @@ You can also obtain the Ubuntu package source with ``apt-src`` (after enabling s
     sudo apt-get update
     sudo apt-get install apt-src
     apt-src install carta-backend
-    
+
 You can obtain the RPM package source with ``dnf``.
 
 .. code-block:: shell
@@ -102,7 +102,7 @@ Once all dependencies have been installed, check out the backend repository with
     mkdir build
     cd build
     cmake ..
-    
+
     # Build
     make -j8
 
@@ -120,7 +120,7 @@ Installing the frontend
 If you install the controller package from NPM, the corresponding packaged version of the frontend will be installed automatically as a dependency. However, you may wish to install a custom version of the frontend if you are installing the controller from source, or if you would like to test an updated frontend version.
 
 .. note::
-    
+
     Ensure that a custom ``frontendPath`` is set in the controller configuration.
 
 NPM package
@@ -139,11 +139,11 @@ Installing from source
 Development versions of the frontend can be installed from the `frontend repository <https://github.com/CARTAvis/carta-frontend/>`_ on GitHub. Node.js and NPM are required for the build. We recommend performing the WebAssembly compilation in a container. The example below requires Docker to be installed. Please refer to the repository documentation for more compilation options.
 
 .. code-block:: shell
-    
+
     # Clone the frontend repository
     git clone --recurse-submodules https://github.com/CARTAvis/carta-frontend.git
     cd carta-frontend
-    
+
     # Build the frontend (using Docker for WebAssembly compilation)
     npm install
     npm run prepack
@@ -170,7 +170,7 @@ You can install the latest stable version of the CARTA controller from NPM by ru
 .. note::
 
     If you would like to install the latest **beta** release of CARTA, please install ``carta-controller@beta`` instead.
-    
+
     If you would like to install the package in a local directory, omit the ``-g`` flag.
 
 Installing from source
@@ -183,7 +183,7 @@ Development versions of the controller can be installed from the `controller rep
     # Clone the controller repository
     git clone https://github.com/CARTAvis/carta-controller.git
     cd carta-controller
-    
+
     # Install the controller
     npm install
 

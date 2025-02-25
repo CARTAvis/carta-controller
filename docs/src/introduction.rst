@@ -12,7 +12,7 @@ Dependencies
 
 To allow the controller to serve CARTA sessions, you must give it access to an executable CARTA backend, which can be either a compiled executable or a container. If you want to use a non-standard version of the CARTA frontend, you must also build it, and adjust the controller configuration to point to it.
 
-By default, the controller runs on port 8000. It should be run behind a proxy, so that it can be accessed via HTTP and HTTPS. 
+By default, the controller runs on port 8000. It should be run behind a proxy, so that it can be accessed via HTTP and HTTPS.
 
 MongoDB is required for storing user preferences, layouts, workspaces, and (in the near future) controller metrics.
 

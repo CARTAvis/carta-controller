@@ -20,7 +20,7 @@ Step-by-step instructions for a complete deployment
     .. tab:: AlmaLinux
 
         .. note::
-            
+
             CARTA versions 4.x and 5.x are both supported on AlmaLinux 8 and 9. The AlmaLinux instructions should also work on other equivalent RPM-based distributions.
 
             We also support legacy installations of CARTA 4.x on RHEL 7 and CentOS 7, but as both of these releases have reached end of life and are widely unsupported, we do not recommend using them for new installations. Adapting these instructions to these releases requires multiple workarounds, which are outside the scope of this document.
@@ -151,9 +151,9 @@ Install CARTA backend and other required packages
             sudo dnf install python3 make gcc-c++ pam-devel
 
         .. note::
-        
+
             A minimum Python version of 3.8 is required to build the controller. On AlmaLinux 8, install the ``python38`` or ``python39`` package instead.
-        
+
         .. note::
 
             The ``carta-backend`` package is updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please install ``carta-backend-beta`` instead:
@@ -301,16 +301,16 @@ The CARTA controller requires a webserver. We provide instructions for `Nginx <h
 .. tabs::
 
     .. tab:: Ubuntu
-    
+
         .. code-block:: shell
-        
+
             # Install Nginx
             sudo apt-get install nginx
 
     .. tab:: AlmaLinux
-    
+
         .. code-block:: shell
-        
+
             # Install Nginx
             sudo dnf install nginx
 

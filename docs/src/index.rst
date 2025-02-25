@@ -17,7 +17,7 @@ We officially support Ubuntu 20.04 (v4.x only), 22.04, and 24.04, and AlmaLinux 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   
+
    introduction
    installation
    configuration
