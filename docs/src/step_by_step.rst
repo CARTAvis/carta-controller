@@ -3,6 +3,11 @@
 Step-by-step instructions for a complete deployment
 ===================================================
 
+.. _sbs_overview:
+
+Overview
+--------
+
 .. note::
 
     These instructions aim to be a complete guide for installing CARTA for multiple users on a dedicated server, with authentication of local users via PAM, and other simple suggested defaults. If you are integrating CARTA into an existing system, you may need to adjust some of these steps. Please refer to the more detailed :ref:`installation` and :ref:`configuration` instructions for more options.
@@ -25,8 +30,10 @@ Step-by-step instructions for a complete deployment
 
             We also support legacy installations of CARTA 4.x on RHEL 7 and CentOS 7, but as both of these releases have reached end of life and are widely unsupported, we do not recommend using them for new installations. Adapting these instructions to these releases requires multiple workarounds, which are outside the scope of this document.
 
+.. _sbs_prerequisites:
+
 Prerequisites
--------------
+~~~~~~~~~~~~~
 
 These instructions assume that you are logged in as an ordinary user with passwordless ``sudo`` access. Ubuntu server images have a default ``ubuntu`` user configured with these privileges. On AlmaLinux this user is called ``almalinux``.
 
@@ -34,8 +41,15 @@ We assume that ``curl`` and ``vim`` are already installed, and that your shell i
 
 We include instructions for configuring SSL in your webserver. This requires either a domain name and certificates provided by your organisation, or a domain from a provider compatible with Let's Encrypt (or your preferred certificate authority). Domain name setup is outside the scope of this document.
 
+.. _sbs_dependencies:
+
+Install dependencies
+--------------------
+
+.. _sbs_mongo:
+
 Install MongoDB
----------------
+~~~~~~~~~~~~~~~
 
 .. tabs::
 
@@ -95,8 +109,10 @@ Install MongoDB
 
 Please refer to the `detailed MongoDB installation instructions <https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/>`_ for more information.
 
+.. _sbs_packages:
+
 Install CARTA backend and other required packages
--------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. tabs::
 
@@ -166,8 +182,10 @@ Install CARTA backend and other required packages
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
 
+.. _sbs_node:
+
 Install Node.js
----------------
+~~~~~~~~~~~~~~~
 
 We recommend installing the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_ of Node.js (currently v22) from the `NodeSource repository <https://github.com/nodesource/distributions>`_. The minimum version required for CARTA 5.x is v20. The oldest version known to work with CARTA 4.x is v16.
 
@@ -203,6 +221,8 @@ We recommend installing the `latest LTS version <https://github.com/nodejs/relea
                 sudo dnf module enable nodejs:22
                 sudo dnf install nodejs npm
 
+.. _sbs_install_controller:
+
 Install CARTA controller
 ------------------------
 
@@ -223,8 +243,15 @@ Install CARTA controller
 
     Do not pass the ``--unsafe-perm`` flag to ``npm`` if using a custom installation of Node.js in a local directory.
 
+.. _sbs_system_config:
+
+System configuration
+--------------------
+
+.. _sbs_users_dirs:
+
 Set up users and directories
-----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 All users who should have access to CARTA must belong to a group that identifies them (assumed here to be called ``carta-users``).
 
@@ -246,8 +273,10 @@ For security reasons, we do not recommend running the CARTA controller as the ro
     sudo mkdir -p /etc/carta
     sudo chown carta: /etc/carta
 
+.. _sbs_perms:
+
 Set up permissions
-------------------
+~~~~~~~~~~~~~~~~~~
 
 .. warning::
 
@@ -293,8 +322,15 @@ The ``carta`` user must be given permission to execute the CARTA backend and the
 
 An :ref:`example sudoers configuration<example_sudoers>` is provided in the configuration section. Make sure that the paths to the two executables in the file match their install locations on your system.
 
-Install and configure Nginx and SSL certificates
-------------------------------------------------
+.. _sbs_webserver:
+
+Configure webserver
+-------------------
+
+.. _sbs_nginx:
+
+Install and configure Nginx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The CARTA controller requires a webserver. We provide instructions for `Nginx <https://www.nginx.com/>`_.
 
@@ -327,7 +363,12 @@ The CARTA controller requires a webserver. We provide instructions for `Nginx <h
 
     If you have also installed a firewall on your server, ensure that it allows both HTTP and HTTPS traffic.
 
-For security reasons, we strongly recommend configuring HTTPS on your server and redirecting all HTTP traffic to HTTPS. We provide instructions for obtaining certificates from `Let's Encrypt <https://letsencrypt.org>`_ using the `Certbot <https://certbot.eff.org/>`_ tool. Certbot will automatically renew your certificates for you. If your organisation can provide you with certificates for your domain, you can skip this step.
+.. _sbs_ssl:
+
+Configure SSL
+~~~~~~~~~~~~~
+
+For security reasons, we strongly recommend configuring SSL on your server and redirecting all HTTP traffic to HTTPS. We provide instructions for obtaining certificates from `Let's Encrypt <https://letsencrypt.org>`_ using the `Certbot <https://certbot.eff.org/>`_ tool. Certbot will automatically renew your certificates for you. If your organisation can provide you with certificates for your domain, you can skip this step.
 
 .. note::
 
@@ -375,10 +416,15 @@ Once you have obtained the certificates, edit the Nginx configuration. A :ref:`s
     # Restart Nginx
     sudo systemctl restart nginx
 
-.. _config-controller_rpm:
+.. _sbs_config_controller:
 
 Configure CARTA controller
 --------------------------
+
+.. _sbs_config_basic:
+
+Basic configuration
+~~~~~~~~~~~~~~~~~~~
 
 These configuration steps should be performed as the ``carta`` user. This user should own all the files in the ``/etc/carta`` directory.
 
@@ -407,10 +453,12 @@ Edit ``/etc/carta/config.json`` to customise the appearance of the dashboard and
 
     If you use ``/etc/carta/backend.json``, please ensure that it is readable by all users in the ``carta-users`` group, *and* that ``/etc/carta/`` is readable and executable by these users.
 
-Test CARTA controller
----------------------
+.. _sbs_config_test:
 
-To test that the controller is functioning correctly, use the built-in test feature. You will need at least one user in the ``carta-users`` group.
+Test CARTA controller
+~~~~~~~~~~~~~~~~~~~~~
+
+To test that the controller is configured correctly, use the built-in test feature. You will need at least one user in the ``carta-users`` group.
 
 .. code-block:: shell
 
@@ -429,8 +477,10 @@ To test that the controller is functioning correctly, use the built-in test feat
 
 Please refer to the detailed configuration instructions for more information about the :ref:`test feature<test-config>`.
 
+.. _sbs_config_start:
+
 Start CARTA controller
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: shell
 
@@ -456,10 +506,12 @@ You should now be able to navigate to your domain, log into CARTA with your test
 
     A known issue in the CARTA v5 beta release prevents the packaged test image from rendering correctly. Please use a different image to test this version of CARTA. Example FITS images can be downloaded from various astronomical `institutions <https://fits.gsfc.nasa.gov/fits_samples.html>`_ and `software projects <https://www.astropy.org/astropy-data/>`_.
 
-Install and configure PM2
--------------------------
+.. _sbs_config_autostart:
 
-This service will start the controller automatically after a reboot.
+Configure autostart
+~~~~~~~~~~~~~~~~~~~
+
+The PM2 service will start the controller automatically after a reboot.
 
 .. code-block:: shell
 
@@ -491,8 +543,10 @@ This service will start the controller automatically after a reboot.
 
 Please refer to the `PM2 documentation <https://pm2.keymetrics.io/docs/usage/startup/>`_ for more detailed instructions.
 
+.. _sbs_config_cleanup:
+
 Clean up
---------
+~~~~~~~~
 
 Once you have finished testing the controller, remove the test user.
 
