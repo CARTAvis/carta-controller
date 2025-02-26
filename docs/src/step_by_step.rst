@@ -55,7 +55,7 @@ Install MongoDB
 
     .. tab:: Ubuntu
 
-        We recommend installing the `Community Edition package of MongoDB <https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/>`_ on all supported Ubuntu versions.
+        We recommend installing the `Community Edition Debian package of MongoDB <https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/>`_ on all supported Ubuntu versions.
 
         .. note::
 
@@ -82,7 +82,7 @@ Install MongoDB
 
     .. tab:: AlmaLinux
 
-        We recommend installing the [Community Edition package of MongoDB](https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-red-hat/) on all supported RPM-based distributions. These are instructions for installing version 8.0, which is available on AlmaLinux 8 and 9.
+        We recommend installing the `Community Edition RPM package of MongoDB <https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-red-hat/>`_ on all supported RPM-based distributions. These are instructions for installing version 8.0, which is available on AlmaLinux 8 and 9.
 
         .. code-block:: shell
 
