@@ -37,7 +37,21 @@ Prerequisites
 
 These instructions assume that you are logged in as an ordinary user with passwordless ``sudo`` access. Ubuntu server images have a default ``ubuntu`` user configured with these privileges. On AlmaLinux this user is called ``almalinux``.
 
-We assume that ``curl`` and ``vim`` are already installed, and that your shell is ``bash``.
+We assume that your shell is ``bash``. ``curl`` and ``vim`` must be installed.
+
+.. tabs::
+
+    .. tab:: Ubuntu
+
+        .. code-block:: shell
+
+            sudo apt-get install vim curl
+
+    .. tab:: AlmaLinux
+
+        .. code-block:: shell
+
+            sudo dnf install vim curl
 
 We include instructions for configuring SSL in your webserver. This requires either a domain name and certificates provided by your organisation, or a domain from a provider compatible with Let's Encrypt (or your preferred certificate authority). Domain name setup is outside the scope of this document.
 
