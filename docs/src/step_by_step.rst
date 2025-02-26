@@ -199,7 +199,7 @@ Install CARTA backend and other required packages
 
                 sudo dnf install carta-backend-beta
 
-            We currently install the beta version of ``carta_backend`` in a non-standard location, ``/opt/carta-beta/``. This makes it possible to install the stable and beta packages simultaneously. To use the beta backend, specify the full path to the executable in the controller configuration.
+            We currently install the beta version of the backend package in a non-standard location, ``/opt/carta-beta``. This makes it possible to install the stable and beta packages simultaneously. When you use this package, remember to change the path to the backend executable to ``/opt/carta-beta/bin/carta_backend`` in both the sudoers file and the controller configuration.
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
 
