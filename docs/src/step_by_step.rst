@@ -184,6 +184,10 @@ Install CARTA backend and other required packages
 
             A minimum Python version of 3.8 is required to build the controller. On AlmaLinux 8, install the ``python38`` or ``python39`` package instead.
 
+            .. code-block:: shell
+
+                sudo dnf install python38 make gcc-c++ pam-devel
+
         .. note::
 
             The ``carta-backend`` package is updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please install ``carta-backend-beta`` instead:
