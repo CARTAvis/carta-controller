@@ -24,6 +24,8 @@ To provide the ``carta`` user with these privileges, you must make modifications
    :language: cfg
    :name: example_sudoers
 
+Please ensure that the paths to the executables in this file match their install locations on your system (especially if you have installed multiple different versions of the backend or the controller).
+
 .. warning::
     Please only edit your sudoers configuration with ``visudo`` or equivalent.
 
@@ -55,7 +57,7 @@ PAM may be configured to use the host's local UNIX user authentication, or to co
 
 Nginx
 ~~~~~
-    
+
 We strongly suggest serving over HTTPS and redirecting HTTP traffic to HTTPS, especially if handling authentication internally. If you use `nginx <https://www.nginx.com/>`_ as a proxy, you can use `this configuration example <_static/config/example_nginx.conf.stub>`_ as a starting point to redirect incoming traffic from port 443 to port 8000:
 
 .. literalinclude:: _static/config/example_nginx.conf.stub
@@ -89,7 +91,7 @@ By default, the controller assumes the config file is located at ``/etc/carta/co
 
 Configuration may also be added in separate files in a ``config.d`` directory in the same parent directory as the specified config file. Each file in this directory must be a valid configuration file. Any files found will be processed in alphabetical order, after the main configuration file.
 
-The controller automatically executes the backend with the ``--no_http`` flag, to suppress the backend's built-in HTTP server. If the ``logFileTemplate`` configuration option is set, ``--no_log`` is also used to suppress user-level logs. ``--port`` is used to override the default port. ``--top_level_folder`` and a positional argument are used to set the top-level and starting data directories for the user, as specified in the ``rootFolderTemplate`` and ``baseFolderTemplate`` options, respectively. 
+The controller automatically executes the backend with the ``--no_http`` flag, to suppress the backend's built-in HTTP server. If the ``logFileTemplate`` configuration option is set, ``--no_log`` is also used to suppress user-level logs. ``--port`` is used to override the default port. ``--top_level_folder`` and a positional argument are used to set the top-level and starting data directories for the user, as specified in the ``rootFolderTemplate`` and ``baseFolderTemplate`` options, respectively.
 
 To specify additional backend flags, we recommend editing a :ref:`global backend preferences<config-backend>` file. Most commandline arguments to the backend are also recognised as configuration options. The ``additionalArgs`` field in the controller configuration file can be used for any debug options which are not, and to disable the local or global configuration files.
 
@@ -123,8 +125,12 @@ The backend configuration file must adhere to the :ref:`CARTA backend configurat
 .. literalinclude:: _static/config/example_backend.json
    :language: json
    :name: example_backend
-   
+
 .. _test-config:
+
+.. note::
+
+    If you use the global configuration file, please ensure that it is readable by all users in the ``carta-users`` group, *and* that the parent ``/etc/carta/`` directory is readable and executable by all users in the ``carta-users`` group, otherwise the starting backend processes will not be able to access it.
 
 Testing the configuration
 -------------------------
@@ -137,7 +143,7 @@ To test the configuration of the controller, you can use the built-in test featu
     Adding additional config file config.d/pam.json
     No top-level folder was specified. Reverting to default location
     Testing configuration with user alice
-    Password for user alice: 
+    Password for user alice:
     ✔ Checked PAM connection for user alice
     ✔ Verified uid (1000) for user alice
     ✔ Generated access token for user alice
@@ -158,4 +164,4 @@ To test the configuration of the controller, you can use the built-in test featu
     Controller tests with user alice succeeded
 
 .. note::
-    If you run the controller from a source directory using ``npm``, use ``--`` to ensure that any commandline parameters are passed to the controller and not to ``npm``. For example: ``npm run start -- --verbose --test alice``.
+    If you run the controller from a source directory using ``npm``, use ``--`` to ensure that any commandline parameters are passed to the controller and not to ``npm``. For example: ``npm start -- --verbose --test alice``.
