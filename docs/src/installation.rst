@@ -110,7 +110,7 @@ The backend executable will be located in the ``build`` directory.
 
 .. note::
 
-    Ensure that a custom ``processCommand`` is set in the controller configuration and that the backend path is updated in the sudoers file.
+    If you install a custom backend, ensure that a custom ``processCommand`` is set in the controller configuration and that the backend path is updated in the sudoers file.
 
 .. _install_frontend:
 
@@ -121,7 +121,7 @@ If you install the controller package from NPM, the corresponding packaged versi
 
 .. note::
 
-    Ensure that a custom ``frontendPath`` is set in the controller configuration.
+    If you install a custom frontend, ensure that a custom ``frontendPath`` is set in the controller configuration.
 
 NPM package
 ~~~~~~~~~~~
