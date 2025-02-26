@@ -1,9 +1,9 @@
 server {
     listen 443 ssl;
     ssl on;
-    server_name my-carta-server.com;
-    ssl_certificate /etc/nginx/ssl/cert.pem; 
-    ssl_certificate_key /etc/nginx/ssl/key.pem;
+    server_name carta.example.com;
+    ssl_certificate /etc/letsencrypt/live/carta.example.com/fullchain.pem; 
+    ssl_certificate_key /etc/letsencrypt/live/carta.example.com/privkey.pem;
     location / {
         proxy_set_header   X-Forwarded-For $remote_addr;
         proxy_pass http://localhost:8000/;
@@ -16,11 +16,8 @@ server {
 }
 
 server {
-    server_name my-carta-server.com;    
-    if ($host = my-carta-server.com) {
-        return 301 https://$host$request_uri;
-    }
+    server_name carta.example.com;    
     listen 80 ;
     listen [::]:80 ;
-    return 404;
+    return 301 https://$host$request_uri;
 }

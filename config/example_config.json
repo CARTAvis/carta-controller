@@ -4,7 +4,7 @@
         "pam": {
             "publicKeyLocation": "/etc/carta/carta_public.pem",
             "privateKeyLocation": "/etc/carta/carta_private.pem",
-            "issuer": "my-carta-server.com"
+            "issuer": "carta.example.com"
         }
     },
     "database": {
@@ -14,15 +14,15 @@
     "serverPort": 8000,
     "serverInterface": "localhost",
     "processCommand": "/usr/bin/carta_backend",
-    "killCommand": "/usr/local/bin/carta-kill-script",
+    "killCommand": "/usr/bin/carta-kill-script",
     "rootFolderTemplate": "/home/{username}",
     "baseFolderTemplate": "/home/{username}",
     "dashboard": {
         "bannerColor": "#d2dce5",
         "backgroundColor": "#f6f8fa",
-        "bannerImage": "/path/to/my/image.svg",
+        "bannerImage": "/usr/lib/node_modules/carta-controller/public/images/carta_logo.svg",
         "infoText": "Welcome to the CARTA server.",
         "loginText": "<span>Please enter your login credentials:</span>",
-        "footerText": "<span>If you have any problems, comments or suggestions, please <a href='mailto:test@test.com'>contact us.</a></span>"
+        "footerText": "<span>If you have any problems, comments or suggestions, please <a href='mailto:admin@carta.example.com'>contact us.</a></span>"
     }
 }

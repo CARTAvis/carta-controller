@@ -33,6 +33,7 @@ release = '4.1.0'
 extensions = [
     'sphinx_rtd_theme',
     'sphinx-jsonschema',
+    'sphinx_tabs.tabs',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

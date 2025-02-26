@@ -8,20 +8,20 @@ CARTA Controller
 
 |backend-github| |npm-package| |last-commit| |commit-activity|
 
-CARTA is the Cube Analysis and Rendering Tool for Astronomy. This document describes the installation and configuration process for the controller component.
+CARTA is the Cube Analysis and Rendering Tool for Astronomy. This document describes the installation and configuration process for a site deployment of CARTA, including the controller and its dependencies. We recommend this deployment option for organisations providing CARTA to multiple users.
 
-Detailed step-by-step instructions are provided for :ref:`Ubuntu 20.04 (Focal Fossa)<focal_instructions>` and :ref:`AlmaLinux 8<almalinux8_instructions>`. 
-We officially support Ubuntu 18.04 and 20.04, and RHEL 7 and 8 (and their freely distributed binary-compatible alternatives, such as CentOS or AlmaLinux), with all available standard updates applied.
+Detailed :ref:`step-by-step instructions <step_by_step>` are provided for a standalone CARTA deployment on a dedicated server. Please use these instructions as a starting point, and make adjustments as required to integrate CARTA into your organisation's existing systems. More detailed information about customisation can be found in the :ref:`installation` and :ref:`configuration` sections.
+
+We officially support Ubuntu 20.04 (v4.x only), 22.04, and 24.04, and AlmaLinux 8 and 9 (and equivalent RPM-based distributions), with all available standard updates applied. We provide legacy support only for existing 4.x installations on RHEL 7 and equivalents.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   
+
    introduction
    installation
    configuration
-   ubuntu_focal_instructions
-   almalinux8_instructions   
+   step_by_step
    schema
    schema_backend
 
@@ -29,9 +29,9 @@ We officially support Ubuntu 18.04 and 20.04, and RHEL 7 and 8 (and their freely
         :alt: View this backend version on GitHub
         :target: https://github.com/CARTAvis/carta-backend/releases/tag/v4.1.0
 
-.. |npm-package| image:: https://img.shields.io/npm/v/carta-controller?style=flat
+.. |npm-package| image:: https://img.shields.io/npm/v/carta-controller/latest?style=flat
         :alt: View this project on npm
-        :target: https://npmjs.org/package/carta-controller
+        :target: https://www.npmjs.com/package/carta-controller/v/4.1.1
 
 .. |last-commit| image:: https://img.shields.io/github/last-commit/CARTAvis/carta-controller
         :alt: Last commit
