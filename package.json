@@ -24,7 +24,7 @@
         "ajv-formats": "^3.0.1",
         "axios": "^0.28.0",
         "body-parser": "^1.19.0",
-        "carta-frontend": "^5.0.0-beta.1b",
+        "carta-frontend": "^5.0.0-beta.1c",
         "chalk": "^4.1.2",
         "compression": "^1.8.0",
         "cookie-parser": "^1.4.7",
