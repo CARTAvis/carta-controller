@@ -82,6 +82,8 @@ An example script for fetching the data manually (you can configure ``cron`` to 
 
     rm -f /tmp/WSRT_Measures.ztar
     wget ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar -P /tmp -q
+
+    mkdir -p /var/lib/casacore/data
     tar zxf /tmp/WSRT_Measures.ztar -C /var/lib/casacore/data
     chmod -R 755 /var/lib/casacore/data
 
