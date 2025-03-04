@@ -12,7 +12,7 @@ CARTA is the Cube Analysis and Rendering Tool for Astronomy. This document descr
 
 Detailed :ref:`step-by-step instructions <step_by_step>` are provided for a standalone CARTA deployment on a dedicated server. Please use these instructions as a starting point, and make adjustments as required to integrate CARTA into your organisation's existing systems. More detailed information about customisation can be found in the :ref:`installation` and :ref:`configuration` sections.
 
-We officially support Ubuntu 20.04 (v4.x only), 22.04, and 24.04, and AlmaLinux 8 and 9 (and equivalent RPM-based distributions), with all available standard updates applied. We provide legacy support only for existing 4.x installations on RHEL 7 and equivalents.
+We officially support Ubuntu 20.04 (v4.x only), 22.04, and 24.04 (v5.x only), and AlmaLinux 8 and 9 (and equivalent RPM-based distributions), with all available standard updates applied. We provide legacy support only for existing 4.x installations on RHEL 7 and equivalents.
 
 .. toctree::
    :maxdepth: 2
