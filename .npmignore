@@ -5,3 +5,4 @@ src/*
 dist/*.js.map
 tsconfig.json
 carta-controller-*.tgz
+docs
