@@ -1,5 +1,6 @@
 {
-    "$schema": "./config_schema.json",
+    "$schema": "https://cartavis.org/schemas/controller_config_schema_2.json",
+    "controllerConfigVersion": "2.0",
     "authProviders": {
         "pam": {
             "publicKeyLocation": "/etc/carta/carta_public.pem",
