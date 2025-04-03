@@ -13,7 +13,7 @@ const SNIPPET_SCHEMA_VERSION = 1;
 const WORKSPACE_SCHEMA_VERSION = 0;
 const preferenceSchema = require("../schemas/preferences_schema_2.json");
 const layoutSchema = require("../schemas/layout_schema_2.json");
-const snippetSchema = require("../schemas/snippet_schema.json");
+const snippetSchema = require("../schemas/snippet_schema_1.json");
 const workspaceSchema = require("../schemas/workspace_schema_1.json");
 const ajv = new Ajv({useDefaults: true, strictTypes: false});
 addFormats(ajv);
