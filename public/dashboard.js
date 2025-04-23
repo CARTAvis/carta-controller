@@ -22,7 +22,6 @@ let notyf;
 
 let apiBase;
 getApiBase = async () => {
-    console.log("Called getApiBase")
     if (apiBase)
         return apiBase;
     else {
