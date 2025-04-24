@@ -23,6 +23,12 @@ export function verboseLog(...args: any[]) {
     }
 }
 
+export function verboseWarn(...args: any[]) {
+    if (verboseOutput) {
+        console.warn(args);
+    }
+}
+
 export function verboseError(...args: any[]) {
     if (verboseOutput) {
         console.error(args);
