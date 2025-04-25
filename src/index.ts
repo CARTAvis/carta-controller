@@ -38,9 +38,9 @@ if (testUser) {
     app.use(compression());
     app.set("view engine", "pug");
     app.set("views", path.join(__dirname, "../views"));
-    app.use(`${RuntimeConfig.apiAddress}/auth`, bodyParser.json(), authRouter);
-    app.use(`${RuntimeConfig.apiAddress}/server`, bodyParser.json(), serverRouter);
-    app.use(`${RuntimeConfig.apiAddress}/database`, bodyParser.json(), databaseRouter);
+    app.use("/api/auth", bodyParser.json(), authRouter);
+    app.use("/api/server", bodyParser.json(), serverRouter);
+    app.use("/api/database", bodyParser.json(), databaseRouter);
 
     app.use("/config", (req: Request, res: Response) => {
         return res.json(RuntimeConfig);
@@ -104,7 +104,7 @@ if (testUser) {
 
     // Scripting proxy
     const backendProxy = httpProxy.createServer({ws: true});
-    app.post(`${RuntimeConfig.apiAddress}/scripting/*`, authGuard, createScriptingProxyHandler(backendProxy));
+    app.post("/api/scripting/*", authGuard, createScriptingProxyHandler(backendProxy));
 
     // Simplified error handling
     app.use((err: any, req: Request, res: Response, next: NextFunction) => {
