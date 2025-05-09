@@ -9,23 +9,22 @@ import cors from "cors";
 import * as fs from "fs";
 import * as path from "path";
 import compression from "compression";
-import chalk from "chalk";
+import {RuntimeConfig, ServerConfig, testUser} from "./config";
 import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./serverHandlers";
 import {authGuard, authRouter} from "./auth";
 import {databaseRouter, initDB} from "./database";
-import {RuntimeConfig, ServerConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
-import * as logSymbols from "log-symbols";
+import {logger} from "./util";
 
 if (testUser) {
     runTests(testUser).then(
         () => {
-            console.log(chalk.green.bold(`Controller tests with user ${testUser} succeeded`));
+            logger.info(`Controller tests with user ${testUser} succeeded`)
             process.exit(0);
         },
         err => {
-            console.error(logSymbols.error, chalk.red.bold(err));
-            console.log(chalk.red.bold(`Controller tests with user ${testUser} failed`));
+            logger.error(err)
+            logger.info(`Controller tests with user ${testUser} failed`);
             process.exit(1);
         }
     );
@@ -54,12 +53,12 @@ if (testUser) {
     };
 
     if (ServerConfig.frontendPath) {
-        console.log(chalk.green.bold(`Serving CARTA frontend from ${ServerConfig.frontendPath}`));
+        logger.info(`Serving CARTA frontend from ${ServerConfig.frontendPath}`)
         app.use("/", express.static(ServerConfig.frontendPath, {setHeaders: staticHeaderHandler}));
     } else {
         const frontendPackage = require("../node_modules/carta-frontend/package.json");
         const frontendVersion = frontendPackage?.version;
-        console.log(chalk.green.bold(`Serving packaged CARTA frontend (Version ${frontendVersion})`));
+        logger.info(`Serving packaged CARTA frontend (Version ${frontendVersion})`);
         app.use("/", express.static(path.join(__dirname, "../node_modules/carta-frontend/build"), {setHeaders: staticHeaderHandler}));
     }
 
@@ -127,15 +126,14 @@ if (testUser) {
         if (err?.code === "ECONNRESET") {
             return;
         } else {
-            console.log("Proxy error:");
-            console.log(err);
+            logger.error(`Proxy error:\t${err}`)
         }
     });
 
     async function init() {
         await initDB();
         const onListenStart = () => {
-            console.log(`Started listening for login requests on port ${ServerConfig.serverPort}`);
+            logger.info(`Started listening for login requests on port ${ServerConfig.serverPort}`);
         };
 
         // NodeJS Server constructor supports either a port (and optional interface) OR a path
@@ -146,5 +144,5 @@ if (testUser) {
         }
     }
 
-    init().then(() => console.log(chalk.green.bold(`Server initialised successfully at ${ServerConfig.serverAddress ?? "localhost"}`)));
+    init().then(() => logger.info(`Server initialised successfully at ${ServerConfig.serverAddress ?? "localhost"}`));
 }

@@ -1,7 +1,14 @@
 import express, {NextFunction, Request, Response} from "express";
 import {spawnSync} from "child_process";
+import { createWriteStream, existsSync } from "fs";
 
-import {verboseOutput} from "./config";
+import {ServerConfig, consoleLogLevelOverride} from "./config";
+import { Logger as TSLogger, ILogObj } from "tslog";
+import { LogLevel } from "./types";
+
+export const logger: TSLogger<ILogObj> = new TSLogger({
+    prettyLogTemplate: "{{yyyy}}.{{mm}}.{{dd}} {{hh}}:{{MM}}:{{ss}}:{{ms}}\t{{logLevelName}}\t"
+ });
 
 // Delay for the specified number of milliseconds
 export async function delay(delay: number) {
@@ -17,15 +24,53 @@ export function noCache(req: Request, res: Response, next: NextFunction) {
     next();
 }
 
-export function verboseLog(...args: any[]) {
-    if (verboseOutput) {
-        console.log(args);
+export function initLogger() {
+   if (consoleLogLevelOverride) {
+    if (consoleLogLevelOverride !== "none") {
+        const consoleLogger = logger.getSubLogger({ minLevel: LogLevel[consoleLogLevelOverride] });
     }
+   }
+   else if (ServerConfig.logLevelConsole !== LogLevel.none || !ServerConfig.logFile) {
+     const consoleLogger = logger.getSubLogger({ minLevel: ServerConfig.logLevelConsole })
+     //consoleLogger.attachTransport(msg => console.log(msg + "\n"))
+   }
+
+   if (ServerConfig.logFile && ServerConfig.logLevelFile !== LogLevel.none && existsSync(ServerConfig.logFile)) {
+     const logFileStream = createWriteStream("ServerConfig.logFile", { flags: "a" });
+     const fileLogger = logger.getSubLogger({ minLevel: ServerConfig.logLevelFile });
+     fileLogger.attachTransport(msg => logFileStream.write(msg + "\n"));
+     //console.log(`File log level: ${ServerConfig.logLevelFile}`)
+   }
+
 }
 
-export function verboseError(...args: any[]) {
-    if (verboseOutput) {
-        console.error(args);
+export function log(level: LogLevel, arg) {
+    if (!logger)
+        initLogger();
+
+    switch (level) {
+        case LogLevel.trace:
+            logger.trace(arg)
+            break;
+        case LogLevel.debug:
+            logger.debug(arg)
+            break;
+        case LogLevel.info:
+            logger.info(arg)
+            break;
+        case LogLevel.warn:
+            logger.warn(arg)
+            break;
+        case LogLevel.error:
+            logger.error(arg)
+            break;
+        case LogLevel.fatal:
+            logger.fatal(arg)
+            break;
+        default:
+        case LogLevel.none:
+            logger.warn("Logger received message with invalid log level")
+            logger.warn(arg)
     }
 }
 

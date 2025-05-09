@@ -2,6 +2,16 @@ import express, {NextFunction, Request, Response} from "express";
 import LdapAuth from "ldapauth-fork";
 import {Algorithm} from "jsonwebtoken";
 
+export enum LogLevel {
+    none = -1,
+    trace = 1,
+    debug = 2,
+    info = 3,
+    warn = 4,
+    error = 5,
+    fatal = 6
+}  
+
 export interface CartaLocalAuthConfig {
     publicKeyLocation: string;
     privateKeyLocation: string;
@@ -125,6 +135,12 @@ export interface CartaServerConfig {
     // {datetime} will be replaced by date and time formatted as "YYYYMMDD.h_mm_ss"
     // Note: if you use /var/log/carta for log files, make sure the user running the server has the appropriate permissions
     logFileTemplate: string;
+    // Console logging
+    logLevelConsole: LogLevel;
+    // File logging
+    logFile: string;
+    logLevelFile: LogLevel;
+    // If logLevelFile
     // Additional arguments to be passed to the backend process, defined as an array of strings
     additionalArgs: string[];
     killCommand: string;
@@ -153,7 +169,7 @@ export interface CartaCommandLineOptions {
     [x: string]: unknown;
     config: string;
     test: string;
-    verbose: boolean;
+    logLevel: undefined | "none" | "trace" | "debug" | "info" | "warn" | "error" | "fatal";
 }
 
 export interface CartaRuntimeConfig {

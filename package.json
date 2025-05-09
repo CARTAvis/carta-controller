@@ -25,7 +25,6 @@
         "axios": "^1.8.2",
         "body-parser": "^1.19.0",
         "carta-frontend": "^5.0.0-beta.1c",
-        "chalk": "^4.1.2",
         "compression": "^1.8.0",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
@@ -48,6 +47,7 @@
         "pug": "^3.0.0",
         "read": "^2.0.0",
         "tcp-port-used": "^1.0.2",
+        "tslog": "^4.9.3",
         "uuid": "^9.0.0",
         "websocket": "^1.0.34",
         "yargs": "^17.0.1"

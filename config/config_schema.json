@@ -723,6 +723,23 @@
                 "/home/{username}/CARTA/log/{datatime}_{pid}.log"
             ]
         },
+        "logLevelConsole": {
+            "description": "Level of messages to log to console.",
+            "type": "string",
+            "enum": ["trace", "debug", "info", "warn", "error", "none"],
+            "default": "info"
+        },
+        "logLevelFile": {
+            "description": "Level of messages to log to file.",
+            "type": "string",
+            "enum": ["trace", "debug", "info", "warn", "error", "none"],
+            "default": "info"
+        },
+        "logFile": {
+            "description": "Name of file to send log messages to.",
+            "type": "string",
+            "examples": ["/var/log/carta-controller.log", "/var/spool/carta/controller.log"]
+        },
         "additionalArgs": {
             "description": "Additional arguments to be passed to the backend process, defined as an array of strings. See backend documentation for details.",
             "type": "array",

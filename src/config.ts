@@ -7,6 +7,7 @@ import _ from "lodash";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
+import { logger } from "./util";
 
 const defaultConfigPath = "/etc/carta/config.json";
 const argv = yargs
@@ -26,15 +27,17 @@ const argv = yargs
             requiresArg: true,
             description: "Test configuration with the provided user"
         },
-        verbose: {
-            type: "boolean",
-            alias: "v"
+        logLevel: {
+            type: "string",
+            choices: ["none", "trace", "debug", "info", "warn", "error", "fatal"],
+            describe: "", 
+            alias: "l"
         }
     }).argv as CartaCommandLineOptions;
 
 const usingCustomConfig = argv.config !== defaultConfigPath;
 const testUser = argv.test;
-const verboseOutput = argv.verbose;
+const consoleLogLevelOverride = argv.logLevel;
 const configSchema = require("../config/config_schema.json");
 const ajv = new Ajv({useDefaults: false, allowUnionTypes: true});
 const ajvWithDefaults = new Ajv({useDefaults: true, allowUnionTypes: true});
@@ -46,16 +49,16 @@ const validateAndAddDefaults = ajvWithDefaults.compile(configSchema);
 let serverConfig: CartaServerConfig;
 
 try {
-    console.log(`Checking config file ${argv.config}`);
+    logger.info(`Checking config file ${argv.config}`);
     if (fs.existsSync(argv.config)) {
         const jsonString = fs.readFileSync(argv.config).toString();
         serverConfig = JSONC.parse(jsonString);
     } else {
         if (!usingCustomConfig) {
             serverConfig = {} as CartaServerConfig;
-            console.log(`Skipping missing config file ${defaultConfigPath}`);
+            logger.info(`Skipping missing config file ${defaultConfigPath}`);
         } else {
-            console.log(new Error(`Unable to find config file ${argv.config}`));
+            logger.fatal(`Unable to find config file ${argv.config}`);
             process.exit(1);
         }
     }
@@ -73,10 +76,10 @@ try {
             const isPartialConfigValid = validateConfig(additionalConfig);
             if (isPartialConfigValid) {
                 serverConfig = _.merge(serverConfig, additionalConfig);
-                console.log(`Adding additional config file config.d/${file}`);
+                logger.info(`Adding additional config file config.d/${file}`);
             } else {
-                console.log(`Skipping invalid configuration file ${file}`);
-                console.error(validateConfig.errors);
+                logger.error(`Skipping invalid configuration file ${file}`);
+                logger.error(validateConfig.errors);
             }
         }
     }
@@ -127,4 +130,4 @@ if (runtimeConfig.tokenRefreshAddress) {
     runtimeConfig.authPath = authUrl.pathname ?? "";
 }
 
-export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser, verboseOutput};
+export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser, consoleLogLevelOverride};

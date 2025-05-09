@@ -3,7 +3,7 @@ import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import {Collection, Db, MongoClient, ObjectId} from "mongodb";
 import {authGuard} from "./auth";
-import {noCache, verboseError} from "./util";
+import {noCache, logger} from "./util";
 import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
 
@@ -65,7 +65,7 @@ export async function initDB() {
 
             console.log(`Connected to ${client.options.dbName} on ${client.options.hosts} (Authenticated: ${client.options.credentials ? 'Yes': 'No'})`);
         } catch (err) {
-            verboseError(err);
+            logger.debug(err);
             console.error("Error connecting to database");
             process.exit(1);
         }
@@ -92,7 +92,7 @@ async function handleGetPreferences(req: AuthenticatedRequest, res: Response, ne
             return next({statusCode: 500, message: "Problem retrieving preferences"});
         }
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: "Problem retrieving preferences"});
     }
 }
@@ -128,7 +128,7 @@ async function handleSetPreferences(req: AuthenticatedRequest, res: Response, ne
             return next({statusCode: 500, message: "Problem updating preferences"});
         }
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: err.errmsg});
     }
 }
@@ -161,7 +161,7 @@ async function handleClearPreferences(req: AuthenticatedRequest, res: Response, 
             return next({statusCode: 500, message: "Problem clearing preferences"});
         }
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: "Problem clearing preferences"});
     }
 }
@@ -185,7 +185,7 @@ async function handleGetLayouts(req: AuthenticatedRequest, res: Response, next: 
         }
         res.json({success: true, layouts});
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: "Problem retrieving layouts"});
     }
 }
@@ -220,7 +220,7 @@ async function handleSetLayout(req: AuthenticatedRequest, res: Response, next: N
             return next({statusCode: 500, message: "Problem updating layout"});
         }
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: err.errmsg});
     }
 }
@@ -267,7 +267,7 @@ async function handleGetSnippets(req: AuthenticatedRequest, res: Response, next:
         }
         res.json({success: true, snippets});
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: "Problem retrieving snippets"});
     }
 }
@@ -302,7 +302,7 @@ async function handleSetSnippet(req: AuthenticatedRequest, res: Response, next: 
             return next({statusCode: 500, message: "Problem updating snippet"});
         }
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: err.errmsg});
     }
 }
@@ -371,7 +371,7 @@ async function handleGetWorkspaceList(req: AuthenticatedRequest, res: Response, 
         const workspaces = workspaceList?.map(w => ({...w, id: w._id, date: w.workspace?.date})) ?? [];
         res.json({success: true, workspaces});
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: "Problem retrieving workspaces"});
     }
 }
@@ -397,7 +397,7 @@ async function handleGetWorkspaceByName(req: AuthenticatedRequest, res: Response
             res.json({success: true, workspace: {id: queryResult._id, name: queryResult.name, editable: true, ...queryResult.workspace}});
         }
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: "Problem retrieving workspace"});
     }
 }
@@ -427,7 +427,7 @@ async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: Response,
             res.json({success: true, workspace: {id: queryResult._id, name: queryResult.name, editable: queryResult.username === req.username, ...queryResult.workspace}});
         }
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: "Problem retrieving workspace"});
     }
 }
@@ -471,7 +471,7 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: Response, next
             return next({statusCode: 500, message: "Problem updating workspace"});
         }
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: err.errmsg});
     }
 }
@@ -500,7 +500,7 @@ async function handleShareWorkspace(req: AuthenticatedRequest, res: Response, ne
             return next({statusCode: 500, message: "Problem sharing workspace"});
         }
     } catch (err) {
-        verboseError(err);
+        logger.debug(err);
         return next({statusCode: 500, message: err.errmsg});
     }
 }

@@ -2,6 +2,7 @@ import * as fs from "fs";
 import {CartaExternalAuthConfig, UserMap, Verifier} from "../types";
 import jwt = require("jsonwebtoken");
 import {VerifyOptions} from "jsonwebtoken";
+import { logger } from "../util";
 
 function populateUserMap(userMaps: Map<string, UserMap>, issuer: string | string[], filename: string) {
     const userMap = new Map<string, string>();
@@ -19,14 +20,14 @@ function populateUserMap(userMaps: Map<string, UserMap>, issuer: string | string
             // Ensure line is in format <username1> <username2>
             const entries = line.split(" ");
             if (entries.length !== 2) {
-                console.log(`Ignoring malformed usermap line: ${line}`);
+                logger.warn(`Ignoring malformed usermap line: ${line}`);
                 continue;
             }
             userMap.set(entries[0], entries[1]);
         }
-        console.log(`Updated usermap with ${userMap.size} entries`);
+        logger.info(`Updated usermap with ${userMap.size} entries`);
     } catch (e) {
-        console.log(`Error reading user table`);
+        logger.error(`Error reading user table`);
     }
 
     if (Array.isArray(issuer)) {
