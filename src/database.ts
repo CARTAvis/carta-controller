@@ -32,7 +32,7 @@ async function updateUsernameIndex(collection: Collection, unique: boolean) {
     const hasIndex = await collection.indexExists("username");
     if (!hasIndex) {
         await collection.createIndex({username: 1}, {name: "username", unique});
-        console.log(`Created username index for collection ${collection.collectionName}`);
+        logger.info(`Created username index for collection ${collection.collectionName}`);
     }
 }
 
@@ -41,7 +41,7 @@ async function createOrGetCollection(db: Db, collectionName: string) {
     if (collectionExists) {
         return db.collection(collectionName);
     } else {
-        console.log(`Creating collection ${collectionName}`);
+        logger.info(`Creating collection ${collectionName}`);
         return db.createCollection(collectionName);
     }
 }
@@ -63,14 +63,14 @@ export async function initDB() {
             await updateUsernameIndex(workspacesCollection, false);
             await updateUsernameIndex(preferenceCollection, true);
 
-            console.log(`Connected to ${client.options.dbName} on ${client.options.hosts} (Authenticated: ${client.options.credentials ? 'Yes': 'No'})`);
+            logger.info(`Connected to ${client.options.dbName} on ${client.options.hosts} (Authenticated: ${client.options.credentials ? 'Yes': 'No'})`);
         } catch (err) {
             logger.debug(err);
-            console.error("Error connecting to database");
+            logger.fatal("Error connecting to database");
             process.exit(1);
         }
     } else {
-        console.error("Database configuration not found");
+        logger.fatal("Database configuration not found");
         process.exit(1);
     }
 }
@@ -116,7 +116,7 @@ async function handleSetPreferences(req: AuthenticatedRequest, res: Response, ne
 
     const validUpdate = validatePreferences(update);
     if (!validUpdate) {
-        console.log(validatePreferences.errors);
+        logger.warn(validatePreferences.errors);
         return next({statusCode: 400, message: "Malformed preference update"});
     }
 
@@ -208,7 +208,7 @@ async function handleSetLayout(req: AuthenticatedRequest, res: Response, next: N
 
     const validUpdate = validateLayout(layout);
     if (!validUpdate) {
-        console.log(validateLayout.errors);
+        logger.warn(validateLayout.errors);
         return next({statusCode: 400, message: "Malformed layout update"});
     }
 
@@ -243,7 +243,7 @@ async function handleClearLayout(req: AuthenticatedRequest, res: Response, next:
             return next({statusCode: 500, message: "Problem clearing layout"});
         }
     } catch (err) {
-        console.log(err);
+        logger.error(err);
         return next({statusCode: 500, message: "Problem clearing layout"});
     }
 }
@@ -290,7 +290,7 @@ async function handleSetSnippet(req: AuthenticatedRequest, res: Response, next: 
 
     const validUpdate = validateSnippet(snippet);
     if (!validUpdate) {
-        console.log(validateSnippet.errors);
+        logger.error(validateSnippet.errors);
         return next({statusCode: 400, message: "Malformed snippet update"});
     }
 
@@ -325,7 +325,7 @@ async function handleClearSnippet(req: AuthenticatedRequest, res: Response, next
             return next({statusCode: 500, message: "Problem clearing snippet"});
         }
     } catch (err) {
-        console.log(err);
+        logger.error(err);
         return next({statusCode: 500, message: "Problem clearing snippet"});
     }
 }
@@ -352,7 +352,7 @@ async function handleClearWorkspace(req: AuthenticatedRequest, res: Response, ne
             return next({statusCode: 500, message: "Problem clearing workspace"});
         }
     } catch (err) {
-        console.log(err);
+        logger.error(err);
         return next({statusCode: 500, message: "Problem clearing workspace"});
     }
 }
@@ -451,7 +451,7 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: Response, next
 
     const validUpdate = validateWorkspace(workspace);
     if (!validUpdate) {
-        console.log(validateWorkspace.errors);
+        logger.error(validateWorkspace.errors);
         return next({statusCode: 400, message: "Malformed workspace update"});
     }
 
