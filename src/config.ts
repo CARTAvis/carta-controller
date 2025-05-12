@@ -6,7 +6,7 @@ import * as JSONC from "jsonc-parser";
 import _ from "lodash";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
+import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig, LogLevel} from "./types";
 import { logger } from "./util";
 
 const defaultConfigPath = "/etc/carta/config.json";
@@ -48,6 +48,37 @@ const validateAndAddDefaults = ajvWithDefaults.compile(configSchema);
 
 let serverConfig: CartaServerConfig;
 
+//const consoleLogger = logger.getSubLogger({ minLevel: LogLevel.info })
+//consoleLogger.attachTransport(msg => console.log(`foo: ${msg}\n`))
+
+//logger.attachTransport((logObj) => {
+//    console.log(logObj.toString())
+//})
+
+/*
+function initLogger() {
+   if (consoleLogLevelOverride) {
+    if (consoleLogLevelOverride !== "none") {
+        const consoleLogger = logger.getSubLogger({ minLevel: LogLevel[consoleLogLevelOverride] });
+    }
+   }
+   else if (ServerConfig.logLevelConsole !== LogLevel.none || !ServerConfig.logFile) {
+     const consoleLogger = logger.getSubLogger({ minLevel: ServerConfig.logLevelConsole })
+     //consoleLogger.attachTransport(msg => console.log(msg + "\n"))
+   }
+
+   if (ServerConfig.logFile && ServerConfig.logLevelFile !== LogLevel.none && fs.existsSync(ServerConfig.logFile)) {
+     const logFileStream = fs.createWriteStream("ServerConfig.logFile", { flags: "a" });
+     const fileLogger = logger.getSubLogger({ minLevel: ServerConfig.logLevelFile });
+     fileLogger.attachTransport(msg => logFileStream.write(msg + "\n"));
+     //console.log(`File log level: ${ServerConfig.logLevelFile}`)
+   }
+
+}
+*/
+
+// hideLogPositionForProduction
+
 try {
     logger.info(`Checking config file ${argv.config}`);
     if (fs.existsSync(argv.config)) {
@@ -56,7 +87,7 @@ try {
     } else {
         if (!usingCustomConfig) {
             serverConfig = {} as CartaServerConfig;
-            logger.info(`Skipping missing config file ${defaultConfigPath}`);
+            logger.warn(`Skipping missing config file ${defaultConfigPath}`);
         } else {
             logger.fatal(`Unable to find config file ${argv.config}`);
             process.exit(1);
@@ -68,7 +99,7 @@ try {
         const files = fs.readdirSync(configDir)?.sort();
         for (const file of files) {
             if (!file.match(/.*\.json$/)) {
-                console.log(`Skipping ${file}`);
+                console.warn(`Skipping ${file}`);
                 continue;
             }
             const jsonString = fs.readFileSync(path.join(configDir, file)).toString();
@@ -90,7 +121,7 @@ try {
         process.exit(1);
     }
 } catch (err) {
-    console.log(err);
+    logger.fatal(err);
     process.exit(1);
 }
 
