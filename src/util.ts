@@ -17,22 +17,7 @@ export const logJsonFormat = winston.format.combine(
 
 export const logger = winston.createLogger({
     // Detailed setup is completed in config.ts
-
     levels: winston.config.syslog.levels,
-    /*
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-    ),
-    */
-   /*
-    transports: [
-        new winston.transports.Console({
-            format: logTextFormat,
-            level: "info"
-        }),
-    ],
-    */
 });
 
 // Delay for the specified number of milliseconds
