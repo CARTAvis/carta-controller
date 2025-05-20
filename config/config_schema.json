@@ -714,8 +714,8 @@
                 "/"
             ]
         },
-        "logFileTemplate": {
-            "description": "Location of log file. The `{username}`, `{pid}` and `{datetime}` placeholders will be replaced with the username, process ID. and dat/time formatted as `YYYYMMDD.h_mm_ss` respectively",
+        "backendLogFileTemplate": {
+            "description": "Location of log file for backends. The `{username}`, `{pid}` and `{datetime}` placeholders will be replaced with the username, process ID. and dat/time formatted as `YYYYMMDD.h_mm_ss` respectively",
             "type": "string",
             "default": "/var/log/carta/{username}_{datetime}_{pid}.log",
             "examples": [
@@ -726,14 +726,26 @@
         "logLevelConsole": {
             "description": "Level of messages to log to console.",
             "type": "string",
-            "enum": ["trace", "debug", "info", "warn", "error", "none"],
+            "enum": ["none", "emerg", "alert", "crit", "error", "warning", "notice", "info", "debug"],
             "default": "info"
+        },
+        "logTypeConsole": {
+            "description": "Output format to console",
+            "type": "string",
+            "enum": ["text", "json"],
+            "default": "text"
         },
         "logLevelFile": {
             "description": "Level of messages to log to file.",
             "type": "string",
-            "enum": ["trace", "debug", "info", "warn", "error", "none"],
+            "enum": ["none", "emerg", "alert", "crit", "error", "warning", "notice", "info", "debug"],
             "default": "info"
+        },
+        "logTypeFile": {
+            "description": "Output format to console",
+            "type": "string",
+            "enum": ["text", "json"],
+            "default": "json"
         },
         "logFile": {
             "description": "Name of file to send log messages to.",

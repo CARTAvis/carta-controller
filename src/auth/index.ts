@@ -68,7 +68,7 @@ if (ServerConfig.authProviders.pam) {
 
 // Check for empty token verifies
 if (!tokenVerifiers.size) {
-    logger.fatal("No valid token verifiers specified");
+    logger.emerg("No valid token verifiers specified");
     process.exit(1);
 }
 

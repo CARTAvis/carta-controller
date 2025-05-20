@@ -198,7 +198,7 @@ async function startServer(username: string) {
             "--controller_deployment"
         ]);
 
-        if (ServerConfig.logFileTemplate) {
+        if (ServerConfig.backendLogFileTemplate) {
             args.push("--no_log");
         }
 
@@ -218,8 +218,8 @@ async function startServer(username: string) {
 
         let logLocation;
 
-        if (ServerConfig.logFileTemplate) {
-            logLocation = ServerConfig.logFileTemplate.replace("{username}", username).replace("{pid}", child.pid.toString()).replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
+        if (ServerConfig.backendLogFileTemplate) {
+            logLocation = ServerConfig.backendLogFileTemplate.replace("{username}", username).replace("{pid}", child.pid.toString()).replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
 
             try {
                 logStream = fs.createWriteStream(logLocation, {flags: "a"});

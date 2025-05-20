@@ -25,7 +25,7 @@ export async function runTests(username: string) {
         testToken(ServerConfig.authProviders.pam, username);
     }
     await testDatabase();
-    if (ServerConfig.logFileTemplate) {
+    if (ServerConfig.backendLogFileTemplate) {
         await testLog(username);
     }
     testFrontend();
@@ -34,7 +34,7 @@ export async function runTests(username: string) {
 }
 
 async function testLog(username: string) {
-    const logLocation = ServerConfig.logFileTemplate.replace("{username}", username).replace("{pid}", "9999").replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
+    const logLocation = ServerConfig.backendLogFileTemplate.replace("{username}", username).replace("{pid}", "9999").replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
 
     try {
         const logStream = fs.createWriteStream(logLocation, {flags: "a"});
@@ -45,7 +45,7 @@ async function testLog(username: string) {
         logger.info(logSymbols.success, `Checked log writing for user ${username}`);
     } catch (err) {
         logger.debug(err);
-        throw new Error(`Could not create log file at ${logLocation} for user ${username}. Please check your config file's logFileTemplate option`);
+        throw new Error(`Could not create log file at ${logLocation} for user ${username}. Please check your config file's backendLogFileTemplate option`);
     }
 }
 
@@ -180,7 +180,7 @@ async function testBackendStartup(username: string) {
         "--controller_deployment"
     ]);
 
-    if (ServerConfig.logFileTemplate) {
+    if (ServerConfig.backendLogFileTemplate) {
         args.push("--no_log");
     }
 

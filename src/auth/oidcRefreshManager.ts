@@ -62,8 +62,8 @@ export async function initRefreshManager() {
         }
 
     } catch (err) {
-      logger.fatal("Error with database connection");
-      logger.fatal(err);
+      logger.emerg("Error with database connection");
+      logger.debug(err);
       process.exit(1);
     }
 }

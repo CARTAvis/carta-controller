@@ -66,11 +66,11 @@ export async function initDB() {
             logger.info(`Connected to ${client.options.dbName} on ${client.options.hosts} (Authenticated: ${client.options.credentials ? 'Yes': 'No'})`);
         } catch (err) {
             logger.debug(err);
-            logger.fatal("Error connecting to database");
+            logger.emerg("Error connecting to database");
             process.exit(1);
         }
     } else {
-        logger.fatal("Database configuration not found");
+        logger.emerg("Database configuration not found");
         process.exit(1);
     }
 }

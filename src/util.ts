@@ -1,12 +1,38 @@
 import {NextFunction, Request, Response} from "express";
 import {spawnSync} from "child_process";
 
-import { Logger as TSLogger, ILogObj } from "tslog";
+import winston from "winston";
 
-export const logger: TSLogger<ILogObj> = new TSLogger({
-//    type: "hidden",
-    hideLogPositionForProduction: true, // for performance - override in startup if debug (or higher) loglevel
-    //overwrite: { transportFormatted: (logMetaMarkup: string, logArgs: unknown[], logErrors: string[], settings: unknown) => {} }
+export const logTextFormat = winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ level, message, timestamp }) => {
+        const colorizer = winston.format.colorize();
+        return `${timestamp} [${colorizer.colorize(level, level.toUpperCase())}]: ${message}`;
+    })
+);
+export const logJsonFormat = winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json(),
+);
+
+export const logger = winston.createLogger({
+    // Detailed setup is completed in config.ts
+
+    levels: winston.config.syslog.levels,
+    /*
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json(),
+    ),
+    */
+   /*
+    transports: [
+        new winston.transports.Console({
+            format: logTextFormat,
+            level: "info"
+        }),
+    ],
+    */
 });
 
 // Delay for the specified number of milliseconds

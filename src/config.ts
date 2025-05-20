@@ -7,7 +7,9 @@ import _ from "lodash";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig, LogLevel} from "./types";
-import { logger } from "./util";
+import { logger, logJsonFormat, logTextFormat } from "./util";
+import winston from "winston";
+import { Collection } from "mongodb";
 
 const defaultConfigPath = "/etc/carta/config.json";
 const argv = yargs
@@ -29,15 +31,20 @@ const argv = yargs
         },
         logLevel: {
             type: "string",
-            choices: ["none", "trace", "debug", "info", "warn", "error", "fatal"],
-            describe: "", 
+            choices: ["none", "emerg", "alert", "crit", "error", "warning", "notice", "info", "debug"],
+            describe: "Log level to print to console",
             alias: "l"
+        },
+        logFormat: {
+            type: "string",
+            choices: ["text", "json"],
+            describe: "Log type to print to console",
+            alias: "f"
         }
     }).argv as CartaCommandLineOptions;
 
 const usingCustomConfig = argv.config !== defaultConfigPath;
 const testUser = argv.test;
-const consoleLogLevelOverride = argv.logLevel;
 const configSchema = require("../config/config_schema.json");
 const ajv = new Ajv({useDefaults: false, allowUnionTypes: true});
 const ajvWithDefaults = new Ajv({useDefaults: true, allowUnionTypes: true});
@@ -48,40 +55,17 @@ const validateAndAddDefaults = ajvWithDefaults.compile(configSchema);
 
 let serverConfig: CartaServerConfig;
 
-//const consoleLogger = logger.getSubLogger({ minLevel: LogLevel.info })
-//consoleLogger.attachTransport(msg => console.log(`foo: ${msg}\n`))
-
-//logger.attachTransport((logObj) => {
-//    console.log(logObj.toString())
-//})
-
-/*
-function initLogger() {
-   if (consoleLogLevelOverride) {
-    if (consoleLogLevelOverride !== "none") {
-        const consoleLogger = logger.getSubLogger({ minLevel: LogLevel[consoleLogLevelOverride] });
-    }
-   }
-   else if (ServerConfig.logLevelConsole !== LogLevel.none || !ServerConfig.logFile) {
-     const consoleLogger = logger.getSubLogger({ minLevel: ServerConfig.logLevelConsole })
-     //consoleLogger.attachTransport(msg => console.log(msg + "\n"))
-   }
-
-   if (ServerConfig.logFile && ServerConfig.logLevelFile !== LogLevel.none && fs.existsSync(ServerConfig.logFile)) {
-     const logFileStream = fs.createWriteStream("ServerConfig.logFile", { flags: "a" });
-     const fileLogger = logger.getSubLogger({ minLevel: ServerConfig.logLevelFile });
-     fileLogger.attachTransport(msg => logFileStream.write(msg + "\n"));
-     //console.log(`File log level: ${ServerConfig.logLevelFile}`)
-   }
-
-}
-*/
-
-// hideLogPositionForProduction
+const consoleTransport = new winston.transports.Console({
+            format: argv.logFormat === "json" ?  logJsonFormat : logTextFormat,
+            level: argv.logLevel ? argv.logLevel : "info", // default to info until having parsed the config
+            silent: argv.logLevel === "none"
+        });
+logger.add(consoleTransport);
 
 try {
-    logger.info(`Checking config file ${argv.config}`);
+    let configFiles: string[] = [];
     if (fs.existsSync(argv.config)) {
+        configFiles.push(argv.config)
         const jsonString = fs.readFileSync(argv.config).toString();
         serverConfig = JSONC.parse(jsonString);
     } else {
@@ -89,7 +73,7 @@ try {
             serverConfig = {} as CartaServerConfig;
             logger.warn(`Skipping missing config file ${defaultConfigPath}`);
         } else {
-            logger.fatal(`Unable to find config file ${argv.config}`);
+            logger.crit(`Unable to find config file ${argv.config}`);
             process.exit(1);
         }
     }
@@ -107,7 +91,7 @@ try {
             const isPartialConfigValid = validateConfig(additionalConfig);
             if (isPartialConfigValid) {
                 serverConfig = _.merge(serverConfig, additionalConfig);
-                logger.info(`Adding additional config file config.d/${file}`);
+                configFiles.push(file);
             } else {
                 logger.error(`Skipping invalid configuration file ${file}`);
                 logger.error(validateConfig.errors);
@@ -120,8 +104,40 @@ try {
         console.error(validateAndAddDefaults.errors);
         process.exit(1);
     }
+
+    // Reconfigure log transports
+    if (argv.logLevel ) {
+        serverConfig.logLevelConsole = argv.logLevel;
+    }
+    if (argv.logFormat) {
+        serverConfig.logTypeConsole = argv.logFormat;
+    }
+    consoleTransport.level = serverConfig.logLevelConsole;
+    consoleTransport.format = serverConfig.logTypeConsole === "json" ?  logJsonFormat : logTextFormat;
+    consoleTransport.silent = serverConfig.logLevelConsole === "none";
+
+    if (serverConfig.logFile && serverConfig.logFile !== "") {
+        if (serverConfig.logLevelFile === "none") {
+            logger.error(`Log file "${serverConfig.logFile}" specified but with a log level of "none"`);
+        } else {
+            try {
+                logger.add(new winston.transports.File({
+                    level: serverConfig.logLevelFile,
+                    filename: serverConfig.logFile,
+                    format: serverConfig.logTypeFile === "json" ?  logJsonFormat : logTextFormat,
+                }))
+                logger.info(`Started logging to ${serverConfig.logFile}`)
+            } catch (err) {
+                logger.debug(err)
+                logger.error(`Error initializing logging to ${serverConfig.logFile}`)
+                // Server currently continues to run
+            }
+        }
+    }
+
+    logger.info(`Loaded config from ${configFiles.join(", ")}`)
 } catch (err) {
-    logger.fatal(err);
+    logger.emerg(err);
     process.exit(1);
 }
 
@@ -161,4 +177,4 @@ if (runtimeConfig.tokenRefreshAddress) {
     runtimeConfig.authPath = authUrl.pathname ?? "";
 }
 
-export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser, consoleLogLevelOverride};
+export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser};
