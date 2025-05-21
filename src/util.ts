@@ -3,18 +3,6 @@ import {spawnSync} from "child_process";
 
 import winston from "winston";
 
-export const logTextFormat = winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(({ level, message, timestamp }) => {
-        const colorizer = winston.format.colorize();
-        return `${timestamp} [${colorizer.colorize(level, level.toUpperCase())}]: ${message}`;
-    })
-);
-export const logJsonFormat = winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json(),
-);
-
 export const logger = winston.createLogger({
     // Detailed setup is completed in config.ts
     levels: winston.config.syslog.levels,

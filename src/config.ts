@@ -6,10 +6,29 @@ import * as JSONC from "jsonc-parser";
 import _ from "lodash";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig, LogLevel} from "./types";
-import { logger, logJsonFormat, logTextFormat } from "./util";
+import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
+import { logger } from "./util";
 import winston from "winston";
 import { Collection } from "mongodb";
+
+// Different log formats
+const logTextFormat = winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ level, message, timestamp }) => {
+        return `${timestamp} [${level.toUpperCase()}]: ${message}`;
+    })
+);
+const logColorTextFormat = winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ level, message, timestamp }) => {
+        const colorizer = winston.format.colorize();
+        return `${timestamp} [${colorizer.colorize(level, level.toUpperCase())}]: ${message}`;
+    })
+);
+const logJsonFormat = winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json(),
+);
 
 const defaultConfigPath = "/etc/carta/config.json";
 const argv = yargs
@@ -56,7 +75,7 @@ const validateAndAddDefaults = ajvWithDefaults.compile(configSchema);
 let serverConfig: CartaServerConfig;
 
 const consoleTransport = new winston.transports.Console({
-            format: argv.logFormat === "json" ?  logJsonFormat : logTextFormat,
+            format: argv.logFormat === "json" ?  logJsonFormat : logColorTextFormat,
             level: argv.logLevel ? argv.logLevel : "info", // default to info until having parsed the config
             silent: argv.logLevel === "none"
         });
@@ -113,7 +132,7 @@ try {
         serverConfig.logTypeConsole = argv.logFormat;
     }
     consoleTransport.level = serverConfig.logLevelConsole;
-    consoleTransport.format = serverConfig.logTypeConsole === "json" ?  logJsonFormat : logTextFormat;
+    consoleTransport.format = serverConfig.logTypeConsole === "json" ?  logJsonFormat : logColorTextFormat;
     consoleTransport.silent = serverConfig.logLevelConsole === "none";
 
     if (serverConfig.logFile && serverConfig.logFile !== "") {
