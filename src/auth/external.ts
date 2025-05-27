@@ -6,18 +6,18 @@ import {VerifyOptions} from "jsonwebtoken";
 function populateUserMap(userMaps: Map<string, UserMap>, issuer: string | string[], filename: string) {
     const userMap = new Map<string, string>();
 
-    const commentRegex = new RegExp(/#.*$/);
+    const commentRegex = new RegExp(/\s*#.*$/);
     const fieldRegex = new RegExp(/^(.*?)\s+(\S+)$/);
 
     try {
         const contents = fs.readFileSync(filename).toString();
         const lines = contents.split("\n");
         for (let line of lines) {
-            // Strip comments
-            line = line.replace(commentRegex, "");
-
             // Trim leading and trailing whitespace
             line = line.trim();
+
+            // Strip comments
+            line = line.replace(commentRegex, "");
 
             // Skip empty lines
             if (!line) {
