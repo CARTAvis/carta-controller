@@ -3,7 +3,7 @@ import {CartaExternalAuthConfig, UserMap, Verifier} from "../types";
 import jwt = require("jsonwebtoken");
 import {VerifyOptions} from "jsonwebtoken";
 
-function populateUserMap(userMaps: Map<string, UserMap>, issuer: string | string[], filename: string) {
+export function populateUserMap(userMaps: Map<string, UserMap>, issuer: string | string[], filename: string) {
     const userMap = new Map<string, string>();
 
     const commentRegex = new RegExp(/\s*#.*$/);
