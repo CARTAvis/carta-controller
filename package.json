@@ -15,7 +15,7 @@
         "reformat": "npx prettier --write ./src",
         "checkformat": "npx prettier --check ./src",
         "prepare": "npx tsc",
-        "unit-test": "jest"
+        "unit-test": "tsc; jest"
     },
     "author": "",
     "license": "ISC",
