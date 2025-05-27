@@ -10,7 +10,7 @@ import * as fs from "fs";
 import * as path from "path";
 import compression from "compression";
 import chalk from "chalk";
-import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./serverHandlers";
+import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./podHandlers";
 import {authGuard, authRouter} from "./auth";
 import {databaseRouter, initDB} from "./database";
 import {RuntimeConfig, ServerConfig, testUser} from "./config";

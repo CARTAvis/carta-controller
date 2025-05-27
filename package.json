@@ -19,6 +19,7 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
+        "@kubernetes/client-node": "^0.22.3",
         "@pm2/io": "^6.1.0",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",
