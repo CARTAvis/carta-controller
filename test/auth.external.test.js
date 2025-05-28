@@ -1,5 +1,6 @@
-const external = require('../dist/auth/external');
-const fs = require('fs')
+import * as fs from "fs";
+import {expect, test, vi} from 'vitest';
+import {populateUserMap} from "../src/auth/external";
 
 const userMapString = `
    # foo
@@ -14,13 +15,13 @@ badline
 
 `
 
-jest.mock('fs', () => ({
-    readFileSync: jest.fn((file_name) => {
+vi.mock('fs', () => ({
+    readFileSync: vi.fn((file_name) => {
         return userMapString;
     })
 }))
 
-const log = jest.spyOn(console, "log").mockImplementation(() => {});
+const log = vi.spyOn(console, "log").mockImplementation(() => {});
 
 test('Parse user mapping table file', () => {
     const userMaps = new Map();
@@ -35,7 +36,7 @@ test('Parse user mapping table file', () => {
         ])]
     ]);
 
-    external.populateUserMap(userMaps, "test_issuer", "dummy path");
+    populateUserMap(userMaps, "test_issuer", "dummy path");
     
     expect(userMaps).toStrictEqual(expectedMaps);
     expect(log).toHaveBeenNthCalledWith(1, "Ignoring malformed usermap line: badline");

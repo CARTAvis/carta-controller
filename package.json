@@ -15,7 +15,7 @@
         "reformat": "npx prettier --write ./src",
         "checkformat": "npx prettier --check ./src",
         "prepare": "npx tsc",
-        "unit-test": "tsc; jest"
+        "unit-test": "vitest run"
     },
     "author": "",
     "license": "ISC",
@@ -67,11 +67,11 @@
         "@types/uuid": "^9.0.0",
         "@types/websocket": "^1.0.2",
         "@types/yargs": "^17.0.22",
-        "jest": "^27.5.1",
         "patch-package": "^7.0.0",
         "prettier": "2.8.4",
         "ts-node": "^10.9.1",
-        "typescript": "^5.5.4"
+        "typescript": "^5.5.4",
+        "vitest": "^3.1.4"
     },
     "engines": {
         "node": ">=20"
