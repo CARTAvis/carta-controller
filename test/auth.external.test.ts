@@ -12,6 +12,7 @@ emma emmauser\r
 Rosalind Franklin   rfranklin
 jane  janeuser # comment about Jane
 badline
+badlinewithcomment # comment
 
 `
 
@@ -40,6 +41,7 @@ test('Parse user mapping table file', () => {
     
     expect(userMaps).toStrictEqual(expectedMaps);
     expect(log).toHaveBeenNthCalledWith(1, "Ignoring malformed usermap line: badline");
-    expect(log).toHaveBeenNthCalledWith(2, "Updated usermap with 6 entries");
+    expect(log).toHaveBeenNthCalledWith(2, "Ignoring malformed usermap line: badlinewithcomment");
+    expect(log).toHaveBeenNthCalledWith(3, "Updated usermap with 6 entries");
     log.mockReset();
 });
