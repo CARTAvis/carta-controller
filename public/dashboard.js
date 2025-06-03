@@ -1,5 +1,4 @@
 const strippedPath = window.location.href.replace(window.location.search, "").replace("/dashboard", "/");
-const apiBase = `${strippedPath}api`;
 const urlParams = new URLSearchParams(window.location.search);
 let redirectUrl;
 let autoRedirect = false;
@@ -20,6 +19,23 @@ let tokenLifetime = -1;
 let tokenExpiryTime = -1;
 let serverRunning = false;
 let notyf;
+
+let apiBase;
+getApiBase = async () => {
+    if (apiBase)
+        return apiBase;
+    else {
+        try {
+            const configData = await fetch(`${strippedPath}config`);
+            const configJson = await configData.json();
+            apiBase = configJson.apiAddress;
+            return apiBase;
+        } catch (e) {
+            console.log(e);
+            return "/api"; // use default
+        }
+    }
+}
 
 apiCall = async (callName, jsonBody, method, authRequired) => {
     const options = {
@@ -45,7 +61,7 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
             console.log(e);
         }
     }
-    return fetch(`${apiBase}/${callName}`, options);
+    return fetch(`${await getApiBase()}/${callName}`, options);
 }
 
 function setToken(tokenString, expiresIn) {
@@ -193,7 +209,7 @@ handleLogout = async () => {
     if (serverRunning) {
         await handleServerStop();
     }
-    window.open(`${apiBase}/auth/logout`, "_self");
+    window.open(`${await getApiBase()}/auth/logout`, "_self");
 }
 
 handleOpenCarta = () => {
@@ -359,7 +375,7 @@ window.onload = async () => {
 
     const oidcLoginButton = document.getElementById("oidcLogin");
     if (oidcLoginButton) {
-        oidcLoginButton.onclick = () => { window.location.href = `${apiBase}/auth/login${window.location.search}` };
+        oidcLoginButton.onclick = async () => { window.location.href = `${await getApiBase()}/auth/login${window.location.search}` };
     }
 
     document.getElementById("stop").onclick = handleServerStop;

@@ -3,26 +3,39 @@ import {CartaExternalAuthConfig, UserMap, Verifier} from "../types";
 import jwt = require("jsonwebtoken");
 import {VerifyOptions} from "jsonwebtoken";
 
-function populateUserMap(userMaps: Map<string, UserMap>, issuer: string | string[], filename: string) {
+export function populateUserMap(userMaps: Map<string, UserMap>, issuer: string | string[], filename: string) {
     const userMap = new Map<string, string>();
+
+    const commentRegex = new RegExp(/\s*#.*$/);
+    const fieldRegex = new RegExp(/^(.*?)\s+(\S+)$/);
+
     try {
         const contents = fs.readFileSync(filename).toString();
         const lines = contents.split("\n");
         for (let line of lines) {
+            // Trim leading and trailing whitespace
             line = line.trim();
 
-            // Skip comments and empty lines
-            if (line.startsWith("#") || !/\S/.test(line)) {
+            // Strip comments
+            line = line.replace(commentRegex, "");
+
+            // Skip empty lines
+            if (!line) {
                 continue;
             }
 
-            // Ensure line is in format <username1> <username2>
-            const entries = line.split(" ");
-            if (entries.length !== 2) {
+            // Valid entry format: <username1> <username2>
+            // <username1> can be an arbitrary JSON string.
+            // <username2> is a POSIX username which definitely contains no spaces.
+            // The field separator can be any amount of whitespace.
+            const entry = line.match(fieldRegex);
+            if (!entry) {
                 console.log(`Ignoring malformed usermap line: ${line}`);
                 continue;
             }
-            userMap.set(entries[0], entries[1]);
+
+            // Captured groups are 1-indexed (0 is the whole match)
+            userMap.set(entry[1], entry[2]);
         }
         console.log(`Updated usermap with ${userMap.size} entries`);
     } catch (e) {

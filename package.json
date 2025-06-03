@@ -14,7 +14,8 @@
         "test": "npx ts-node src/index.ts --test",
         "reformat": "npx prettier --write ./src",
         "checkformat": "npx prettier --check ./src",
-        "prepare": "npx tsc"
+        "prepare": "npx tsc",
+        "unit-test": "vitest run"
     },
     "author": "",
     "license": "ISC",
@@ -22,7 +23,7 @@
         "@pm2/io": "^6.1.0",
         "ajv": "^8.17.1",
         "ajv-formats": "^3.0.1",
-        "axios": "^0.28.0",
+        "axios": "^1.8.2",
         "body-parser": "^1.19.0",
         "carta-frontend": "^5.0.0-beta.1c",
         "chalk": "^4.1.2",
@@ -69,7 +70,8 @@
         "patch-package": "^7.0.0",
         "prettier": "2.8.4",
         "ts-node": "^10.9.1",
-        "typescript": "^5.5.4"
+        "typescript": "^5.5.4",
+        "vitest": "^3.1.4"
     },
     "engines": {
         "node": ">=20"
