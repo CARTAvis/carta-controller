@@ -28,7 +28,6 @@ with open('../../package.json') as f:
 
 release = j['version']
 
-
 # -- General configuration ---------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be
