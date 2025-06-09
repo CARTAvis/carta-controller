@@ -42,7 +42,7 @@ async function testLog(username: string) {
         await new Promise(res => logStream.write("test", res));
         await new Promise(res => logStream.end(res));
         fs.unlinkSync(logLocation);
-        logger.info(logSymbols.success, `Checked log writing for user ${username}`);
+        logger.info(`${logSymbols.success} Checked log writing for user ${username}`);
     } catch (err) {
         logger.debug(err);
         throw new Error(`Could not create log file at ${logLocation} for user ${username}. Please check your config file's backendLogFileTemplate option`);
@@ -62,9 +62,9 @@ function testLdap(authConf: CartaLdapAuthConfig, username: string) {
                                 logger.debug(error);
                                 reject(new Error(`Could not authenticate as user ${username}. Please check your config file's ldapOptions section!`));
                             } else {
-                                logger.info(logSymbols.success, `Checked LDAP connection for user ${username}`);
+                                logger.info(`${logSymbols.success} Checked LDAP connection for user ${username}`);
                                 if (user?.uid !== username) {
-                                    logger.warn(logSymbols.warning, `Returned user "uid ${user?.uid}" does not match username "${username}"`);
+                                    logger.warn(`${logSymbols.warning} Returned user "uid ${user?.uid}" does not match username "${username}"`);
                                     logger.debug(user);
                                 }
                                 resolve();
@@ -91,7 +91,7 @@ function testPam(authConf: CartaLocalAuthConfig, username: string) {
                         logger.debug(err);
                         reject(new Error(`Could not authenticate as user ${username}. Error code ${code}`));
                     } else {
-                       logger.info(logSymbols.success, `Checked PAM connection for user ${username}`);
+                       logger.info(`${logSymbols.success} Checked PAM connection for user ${username}`);
                         resolve();
                     }
                 });
@@ -109,7 +109,7 @@ async function testDatabase() {
         logger.debug(e);
         throw new Error("Cannot connect to MongoDB. Please check your config file's database section!");
     }
-    logger.info(logSymbols.success, "Checked database connection");
+    logger.info(`${logSymbols.success} Checked database connection`);
 }
 
 function testUid(username: string) {
@@ -120,7 +120,7 @@ function testUid(username: string) {
         logger.debug(e);
         throw new Error(`Cannot verify uid of user ${username}`);
     }
-    logger.info(logSymbols.success, `Verified uid (${uid}) for user ${username}`);
+    logger.info(`${logSymbols.success} Verified uid (${uid}) for user ${username}`);
 }
 
 function testToken(authConf: CartaLocalAuthConfig, username: string) {
@@ -134,7 +134,7 @@ function testToken(authConf: CartaLocalAuthConfig, username: string) {
     if (!token) {
         throw new Error("Invalid access token. Please check your config file's auth section!");
     }
-    logger.info(logSymbols.success, `Generated access token for user ${username}`);
+    logger.info(`${logSymbols.success} Generated access token for user ${username}`);
 }
 
 function testFrontend() {
@@ -153,7 +153,7 @@ function testFrontend() {
     if (!indexContents) {
         throw new Error(`Invalid frontend at ${ServerConfig.frontendPath}`);
     } else {
-        logger.info(logSymbols.success, `Read frontend index.html from ${ServerConfig.frontendPath}`);
+        logger.info(`${logSymbols.success} Read frontend index.html from ${ServerConfig.frontendPath}`);
     }
 }
 
@@ -199,7 +199,7 @@ async function testBackendStartup(username: string) {
     if (backendProcess.signalCode) {
         throw new Error(`Backend process terminated with code ${backendProcess.signalCode}. Please check your sudoers config, processCommand option and additionalArgs section`);
     } else {
-        logger.info(logSymbols.success, "Backend process started successfully");
+        logger.info(`${logSymbols.success} Backend process started successfully`);
     }
 
     const wsClient = new client();
@@ -214,7 +214,7 @@ async function testBackendStartup(username: string) {
     wsClient.connect(`ws://localhost:${port}`);
     await delay(1000);
     if (wsConnected) {
-        logger.info(logSymbols.success, "Backend process accepted connection");
+        logger.info(`${logSymbols.success} Backend process accepted connection`);
     } else {
         throw new Error("Cannot connect to backend process. Please check your additionalArgs section. If sudo is prompting you for a password, please check your sudoers config");
     }
@@ -240,7 +240,7 @@ async function testKillScript(username: string, existingProcess: ChildProcess) {
     // Delay to allow the parent process to exit
     await delay(1000);
     if (existingProcess.signalCode === "SIGKILL") {
-        logger.info(logSymbols.success, "Backend process killed correctly");
+        logger.info(`${logSymbols.success} Backend process killed correctly`);
     } else {
         throw new Error("Failed to kill process. Please check your killCommand option. If sudo is prompting you for a password, please check your sudoers config");
     }
