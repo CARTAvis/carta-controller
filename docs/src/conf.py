@@ -4,16 +4,17 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
+import json
+import os
+import sys
+
 # -- Path setup --------------------------------------------------------------
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-import os
-import sys
-sys.path.insert(0, os.path.abspath('.'))
 
+sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 
@@ -22,8 +23,10 @@ copyright = '2021, Angus Comrie, Adrianna Pińska, David Aikema and Robert Simmo
 author = 'Angus Comrie, Adrianna Pińska, David Aikema and Robert Simmonds'
 
 # The full version, including alpha/beta/rc tags
-release = '4.1.0'
+with open('../../package.json') as f:
+    j = json.load(f)
 
+release = j['version']
 
 # -- General configuration ---------------------------------------------------
 
