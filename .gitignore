@@ -5,3 +5,5 @@ dist/**/*.js
 dist/**/*.js.map
 carta-controller-*.tgz
 docs/_build
+__pycache__/
+*.pyc

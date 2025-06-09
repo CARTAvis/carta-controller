@@ -137,31 +137,9 @@ Testing the configuration
 
 To test the configuration of the controller, you can use the built-in test feature. Run ``carta-controller --verbose --test <username>`` as the ``carta`` user (or whichever user has the :ref:`added sudoers permissions<config-backend-permissions>`). ``<username>`` should be a user in the ``carta-users`` group. The expected output looks like this:
 
-.. code-block::
-
-    Checking config file /etc/carta/config.json
-    Adding additional config file config.d/pam.json
-    No top-level folder was specified. Reverting to default location
-    Testing configuration with user alice
-    Password for user alice:
-    ✔ Checked PAM connection for user alice
-    ✔ Verified uid (1000) for user alice
-    ✔ Generated access token for user alice
-    ✔ Checked database connection
-    ✔ Checked log writing for user alice
-    ✔ Read frontend index.html from /custom/frontend/path/build
-    [
-    'running sudo --preserve-env=CARTA_AUTH_TOKEN -n -u alice /usr/bin/carta_backend --no_http --debug_no_auth --port 3499 --top_level_folder /usr/share/carta --no_log /usr/share/carta'
-    ]
-    [2024-01-19 08:30:05.888Z] [CARTA] [info] /usr/bin/carta_backend: Version 4.1.0
-    [2024-01-19 08:30:05.888Z] [CARTA] [info] Listening on port 3499 with top level folder /usr/share/carta, starting folder /usr/share/carta, and 8 OpenMP worker threads
-    ✔ Backend process started successfully
-    [2024-01-19 08:30:07.850Z] [CARTA] [info] 0x561f1a635180 ::Session (1235524527:1)
-    [2024-01-19 08:30:07.850Z] [CARTA] [info] Session 1235524527 [127.0.0.1] Connected. Num sessions: 1
-    ✔ Backend process accepted connection
-    [ 'running sudo -u alice ./scripts/carta_kill_script.sh 54275' ]
-    ✔ Backend process killed correctly
-    Controller tests with user alice succeeded
+.. literalinclude:: _static/output/alicetest.txt
+   :language: ansi-color
+   :name: controller_test_output
 
 .. note::
     If you run the controller from a source directory using ``npm``, use ``--`` to ensure that any commandline parameters are passed to the controller and not to ``npm``. For example: ``npm start -- --verbose --test alice``.
