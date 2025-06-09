@@ -1,6 +1,8 @@
 import * as fs from "fs";
 import {expect, test, vi} from 'vitest';
 import {populateUserMap} from "../src/auth/external";
+import { logger } from '../src/util';
+import winston from 'winston';
 
 const userMapString = `
    # foo
@@ -22,7 +24,16 @@ vi.mock('fs', () => ({
     })
 }))
 
-const log = vi.spyOn(console, "log").mockImplementation(() => {});
+if (logger.transports.length == 0)
+    logger.add(new winston.transports.Console({silent: true}))
+if (!logger.warn) {
+    logger.warn = vi.fn();
+}
+if (!logger.info) {
+    logger.info = vi.fn();
+}
+const logWarn = vi.spyOn(logger, "warn");
+const logInfo = vi.spyOn(logger, "info");
 
 test('Parse user mapping table file', () => {
     const userMaps = new Map();
@@ -40,8 +51,9 @@ test('Parse user mapping table file', () => {
     populateUserMap(userMaps, "test_issuer", "dummy path");
     
     expect(userMaps).toStrictEqual(expectedMaps);
-    expect(log).toHaveBeenNthCalledWith(1, "Ignoring malformed usermap line: badline");
-    expect(log).toHaveBeenNthCalledWith(2, "Ignoring malformed usermap line: badlinewithcomment");
-    expect(log).toHaveBeenNthCalledWith(3, "Updated usermap with 6 entries");
-    log.mockReset();
+    expect(logWarn).toHaveBeenNthCalledWith(1, "Ignoring malformed usermap line: badline");
+    expect(logWarn).toHaveBeenNthCalledWith(2, "Ignoring malformed usermap line: badlinewithcomment");
+    expect(logInfo).toHaveBeenNthCalledWith(1, "Updated usermap with 6 entries");
+    logWarn.mockReset();
+    logInfo.mockReset();
 });
