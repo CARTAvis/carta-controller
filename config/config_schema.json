@@ -753,7 +753,7 @@
             "examples": ["/var/log/carta-controller.log", "/var/spool/carta/controller.log"]
         },
         "timezone": {
-            "description": "Timezone to use in logs. If not specified, the local timezone is used",
+            "description": "Timezone to use in logs. If not specified, the local timezone is used.",
             "type": "string",
             "examples": [
                 "Africa/Johannesburg",
