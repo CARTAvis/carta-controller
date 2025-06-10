@@ -134,6 +134,7 @@ export interface CartaServerConfig {
     logFile: string;
     logLevelFile: LogLevel;
     logTypeFile: string;
+    timezone: string;
     // If logLevelFile
     // Additional arguments to be passed to the backend process, defined as an array of strings
     additionalArgs: string[];

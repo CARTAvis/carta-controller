@@ -752,6 +752,16 @@
             "type": "string",
             "examples": ["/var/log/carta-controller.log", "/var/spool/carta/controller.log"]
         },
+        "timezone": {
+            "description": "Timezone to use in logs. If not specified, the local timezone is used",
+            "type": "string",
+            "examples": [
+                "Africa/Johannesburg",
+                "America/New_York",
+                "Asia/Tokyo",
+                "Europe/London"
+            ]
+        },
         "additionalArgs": {
             "description": "Additional arguments to be passed to the backend process, defined as an array of strings. See backend documentation for details.",
             "type": "array",

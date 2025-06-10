@@ -9,24 +9,33 @@ import addFormats from "ajv-formats";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
 import { logger } from "./util";
 import winston from "winston";
-import { Collection } from "mongodb";
+import moment from 'moment-timezone';
+
+let timeZone : string | undefined;
+const customTimestamp = () => {
+    if (timeZone)
+        return moment().tz(timeZone).format('YYYY-MM-DD HH:mm:ss');
+    else
+        return moment().format('YYYY-MM-DD HH:mm:ss');
+}
+
 
 // Different log formats
 const logTextFormat = winston.format.combine(
-    winston.format.timestamp(),
+    winston.format.timestamp({ format: customTimestamp }),
     winston.format.printf(({ level, message, timestamp }) => {
         return `${timestamp} [${level.toUpperCase()}]: ${message}`;
     })
 );
 const logColorTextFormat = winston.format.combine(
-    winston.format.timestamp(),
+    winston.format.timestamp({ format: customTimestamp }),
     winston.format.printf(({ level, message, timestamp }) => {
         const colorizer = winston.format.colorize();
         return `${timestamp} [${colorizer.colorize(level, level.toUpperCase())}]: ${message}`;
     })
 );
 const logJsonFormat = winston.format.combine(
-        winston.format.timestamp(),
+        winston.format.timestamp({ format: customTimestamp }),
         winston.format.json(),
 );
 
@@ -122,6 +131,16 @@ try {
     if (!isValid) {
         console.error(validateAndAddDefaults.errors);
         process.exit(1);
+    }
+
+    // Validate timezone setting
+    if (serverConfig.timezone) {
+        try {
+            new Intl.DateTimeFormat('en-US', { timeZone: serverConfig.timezone });
+            timeZone = serverConfig.timezone;
+        } catch (err) {
+            logger.error(`Ignoring invalid timezone "${serverConfig.timezone}" in config file`);
+        }
     }
 
     // Reconfigure log transports
