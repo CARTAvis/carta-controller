@@ -135,7 +135,7 @@ The backend configuration file must adhere to the :ref:`CARTA backend configurat
 Testing the configuration
 -------------------------
 
-To test the configuration of the controller, you can use the built-in test feature. Run ``carta-controller --verbose --test <username>`` as the ``carta`` user (or whichever user has the :ref:`added sudoers permissions<config-backend-permissions>`). ``<username>`` should be a user in the ``carta-users`` group. The expected output looks like this:
+To test the configuration of the controller, you can use the built-in test feature. Run ``carta-controller --logLevel debug --test <username>`` as the ``carta`` user (or whichever user has the :ref:`added sudoers permissions<config-backend-permissions>`). ``<username>`` should be a user in the ``carta-users`` group. The expected output looks like this:
 
 .. literalinclude:: _static/output/alicetest.txt
    :language: ansi-color
