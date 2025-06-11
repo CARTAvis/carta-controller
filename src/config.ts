@@ -19,7 +19,6 @@ const customTimestamp = () => {
         return moment().format('YYYY-MM-DD HH:mm:ss');
 }
 
-
 // Different log formats
 const logTextFormat = winston.format.combine(
     winston.format.timestamp({ format: customTimestamp }),
