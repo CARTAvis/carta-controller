@@ -89,6 +89,7 @@ const consoleTransport = new winston.transports.Console({
         });
 logger.add(consoleTransport);
 
+
 try {
     let configFiles: string[] = [];
     if (fs.existsSync(argv.config)) {
@@ -124,6 +125,17 @@ try {
                 logger.error(validateConfig.errors);
             }
         }
+    }
+
+    // Check for use of deprecated logFileTemplate
+    if ("logFileTemplate" in serverConfig) {
+        logger.warning("The 'logFileTemplate' option is deprecated and renamed to 'backendLogFileTemplate'. Please update your config file.");
+        if (!serverConfig.backendLogFileTemplate || serverConfig.backendLogFileTemplate === "") {
+            serverConfig.backendLogFileTemplate = String(serverConfig.logFileTemplate);
+        } else if (serverConfig.backendLogFileTemplate !== serverConfig.logFileTemplate) {
+            logger.error("Both 'logFileTemplate' and 'backendLogFileTemplate' are set to different values. Ignoring 'logFileTemplate'.");
+        }
+        delete serverConfig.logFileTemplate;
     }
 
     const isValid = validateAndAddDefaults(serverConfig);

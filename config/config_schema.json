@@ -714,6 +714,10 @@
                 "/"
             ]
         },
+        "logFileTemplate": {
+            "description": "(Deprecated) Location of log file for backends. This has been renamed to `backendLogFileTemplate` and will be removed in a future version. The `{username}`, `{pid}` and `{datetime}` placeholders will be replaced with the username, process ID. and dat/time formatted as `YYYYMMDD.h_mm_ss` respectively",
+            "type": "string"
+        },
         "backendLogFileTemplate": {
             "description": "Location of log file for backends. The `{username}`, `{pid}` and `{datetime}` placeholders will be replaced with the username, process ID. and dat/time formatted as `YYYYMMDD.h_mm_ss` respectively",
             "type": "string",
