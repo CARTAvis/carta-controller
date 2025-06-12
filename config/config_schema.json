@@ -742,7 +742,7 @@
             "default": "info"
         },
         "logTypeFile": {
-            "description": "Output format to console",
+            "description": "Output format to file",
             "type": "string",
             "enum": ["text", "json"],
             "default": "json"

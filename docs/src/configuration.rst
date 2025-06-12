@@ -113,7 +113,7 @@ The controller assumes it is running at the root directory of your subdomain by 
         "dashboardAddress": "/carta/version/v3-beta/dashboard"
     }
 
-The example controller configuration file enables logging to ``/var/log/carta/controller.log``, though the ``logFile`` field is optional and by default the controller will log only to the console. For logging to the example logfile location to work, you must ensure that the ``/var/log/carta`` directory exists and that the user account which is used to run the server has write permission to the log file.  It is also recommended to set up log rotation for this file, to prevent it from growing indefinitely. An example logrotate configuration is provided, which you can place in ``/etc/logrotate.d/carta-controller``:
+The example controller configuration file enables logging to ``/var/log/carta/controller.log``, but the ``logFile`` field is optional and by default the controller will log only to the console. For logging to the example logfile location to work, you must ensure that the ``/var/log/carta`` directory exists and that the user account which is used to run the server has write permission to the log file.  It is also recommended to set up log rotation for this file, to prevent it from growing indefinitely. An example logrotate configuration is provided, which you can place in ``/etc/logrotate.d/carta-controller``:
 
 .. literalinclude:: _static/config/example_logrotate
    :language: ini
