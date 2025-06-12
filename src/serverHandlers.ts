@@ -317,19 +317,19 @@ export const createUpgradeHandler = (server: Server) => async (req: IncomingMess
         }
         let parsedUrl = url.parse(req.url);
         if (!parsedUrl?.query) {
-            logger.warn(`Incoming Websocket upgrade request could not be parsed: ${req.url}`);
+            logger.warning(`Incoming Websocket upgrade request could not be parsed: ${req.url}`);
             return socket.end();
         }
         let queryParameters = querystring.parse(parsedUrl.query);
         const tokenString = queryParameters?.token;
         if (!tokenString || Array.isArray(tokenString)) {
-            logger.warn(`Incoming Websocket upgrade request is missing an authentication token`);
+            logger.warning(`Incoming Websocket upgrade request is missing an authentication token`);
             return socket.end();
         }
 
         const token = await verifyToken(tokenString);
         if (!token || !token.username) {
-            logger.warn(`Incoming Websocket upgrade request has an invalid token`);
+            logger.warning(`Incoming Websocket upgrade request has an invalid token`);
             return socket.end();
         }
 

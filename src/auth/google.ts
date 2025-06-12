@@ -23,13 +23,13 @@ export async function googleCallbackHandler (req: Request, res: Response, authCo
 
         // check that username exists and email is verified
         if (!username || !payload?.email_verified) {
-            logger.warn("Google auth rejected due to lack of unique ID or email verification");
+            logger.warning("Google auth rejected due to lack of unique ID or email verification");
             return res.status(500).json({"error": "An error occured processing your login"});
         }
         
         // check that domain is valid
         if (authConf.validDomain && authConf.validDomain !== payload.hd) {
-            logger.warn(`Google auth rejected due to incorrect domain: ${payload.hd}`);
+            logger.warning(`Google auth rejected due to incorrect domain: ${payload.hd}`);
             return res.status(500).json({"error": "An error occured processing your login"});
         }
 

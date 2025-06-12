@@ -190,7 +190,7 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: Request, res: Re
         }
 
     } catch(err) {
-        logger.warn(err);
+        logger.warning(err);
         return returnErrorMsg(req, res, 500, "Error requesting tokens from identity provider");
     }
 }

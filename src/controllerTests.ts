@@ -64,7 +64,7 @@ function testLdap(authConf: CartaLdapAuthConfig, username: string) {
                             } else {
                                 logger.info(`${logSymbols.success} Checked LDAP connection for user ${username}`);
                                 if (user?.uid !== username) {
-                                    logger.warn(`${logSymbols.warning} Returned user "uid ${user?.uid}" does not match username "${username}"`);
+                                    logger.warning(`${logSymbols.warning} Returned user "uid ${user?.uid}" does not match username "${username}"`);
                                     logger.debug(user);
                                 }
                                 resolve();

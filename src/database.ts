@@ -11,10 +11,10 @@ const PREFERENCE_SCHEMA_VERSION = 2;
 const LAYOUT_SCHEMA_VERSION = 2;
 const SNIPPET_SCHEMA_VERSION = 1;
 const WORKSPACE_SCHEMA_VERSION = 0;
-const preferenceSchema = require("../config/preference_schema_2.json");
-const layoutSchema = require("../config/layout_schema_2.json");
-const snippetSchema = require("../config/snippet_schema.json");
-const workspaceSchema = require("../config/workspace_schema_1.json");
+const preferenceSchema = require("../schemas/preferences_schema_2.json");
+const layoutSchema = require("../schemas/layout_schema_2.json");
+const snippetSchema = require("../schemas/snippet_schema_1.json");
+const workspaceSchema = require("../schemas/workspace_schema_1.json");
 const ajv = new Ajv({useDefaults: true, strictTypes: false});
 addFormats(ajv);
 const validatePreferences = ajv.compile(preferenceSchema);
@@ -87,6 +87,10 @@ async function handleGetPreferences(req: AuthenticatedRequest, res: Response, ne
     try {
         const doc = await preferenceCollection.findOne({username: req.username}, {projection: {_id: 0, username: 0}});
         if (doc) {
+            const isValid = validatePreferences(doc);
+            if (!isValid) {
+                logger.warning(`Returning invalid preferences:\n${validatePreferences.errors}`);
+            }
             res.json({success: true, preferences: doc});
         } else {
             return next({statusCode: 500, message: "Problem retrieving preferences"});
@@ -116,8 +120,8 @@ async function handleSetPreferences(req: AuthenticatedRequest, res: Response, ne
 
     const validUpdate = validatePreferences(update);
     if (!validUpdate) {
-        logger.warn(validatePreferences.errors);
-        return next({statusCode: 400, message: "Malformed preference update"});
+        logger.warning(`Rejecting invalid preference update:\n${validatePreferences.errors}`);
+        return next({statusCode: 400, message: "Invalid preference update"});
     }
 
     try {
@@ -180,6 +184,10 @@ async function handleGetLayouts(req: AuthenticatedRequest, res: Response, next: 
         const layouts = {} as any;
         for (const entry of layoutList) {
             if (entry.name && entry.layout) {
+                const isValid = validateLayout(entry.layout);
+                if (!isValid) {
+                    logger.warning(`Returning invalid layout '${entry.name}':\n${validateLayout.errors}`);
+                }
                 layouts[entry.name] = entry.layout;
             }
         }
@@ -208,8 +216,8 @@ async function handleSetLayout(req: AuthenticatedRequest, res: Response, next: N
 
     const validUpdate = validateLayout(layout);
     if (!validUpdate) {
-        logger.warn(validateLayout.errors);
-        return next({statusCode: 400, message: "Malformed layout update"});
+        logger.warning(`Rejecting invalid layout update:\n${validateLayout.errors}`);
+        return next({statusCode: 400, message: "Invalid layout update"});
     }
 
     try {
@@ -262,6 +270,10 @@ async function handleGetSnippets(req: AuthenticatedRequest, res: Response, next:
         const snippets = {} as any;
         for (const entry of snippetList) {
             if (entry.name && entry.snippet) {
+                const isValid = validateSnippet(entry.snippet);
+                if (!isValid) {
+                    logger.warning(`Returning invalid snippet '${entry.name}':\n${validateSnippet.errors}`);
+                }
                 snippets[entry.name] = entry.snippet;
             }
         }
@@ -290,8 +302,8 @@ async function handleSetSnippet(req: AuthenticatedRequest, res: Response, next: 
 
     const validUpdate = validateSnippet(snippet);
     if (!validUpdate) {
-        logger.error(validateSnippet.errors);
-        return next({statusCode: 400, message: "Malformed snippet update"});
+        logger.error(`Rejecting invalid snippet update:\n${validateSnippet.errors}`);
+        return next({statusCode: 400, message: "Invalid snippet update"});
     }
 
     try {
@@ -394,7 +406,12 @@ async function handleGetWorkspaceByName(req: AuthenticatedRequest, res: Response
         if (!queryResult?.workspace) {
             return next({statusCode: 404, message: "Workspace not found"});
         } else {
-            res.json({success: true, workspace: {id: queryResult._id, name: queryResult.name, editable: true, ...queryResult.workspace}});
+            const workspace = {id: queryResult._id, name: queryResult.name, editable: true, ...queryResult.workspace};
+            const isValid = validateWorkspace(workspace);
+            if (!isValid) {
+                logger.warning(`Returning invalid workspace '${workspace.name}':\n${validateWorkspace.errors}`);
+            }
+            res.json({success: true, workspace: workspace});
         }
     } catch (err) {
         logger.debug(err);
@@ -424,7 +441,12 @@ async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: Response,
         } else if (queryResult.username !== req.username && !queryResult.shared) {
             return next({statusCode: 403, message: "Workspace not accessible"});
         } else {
-            res.json({success: true, workspace: {id: queryResult._id, name: queryResult.name, editable: queryResult.username === req.username, ...queryResult.workspace}});
+            const workspace = {id: queryResult._id, name: queryResult.name, editable: queryResult.username === req.username, ...queryResult.workspace};
+            const isValid = validateWorkspace(workspace);
+            if (!isValid) {
+                logger.warning(`Returning invalid workspace '${workspace.name}':\n${validateWorkspace.errors}`);
+            }
+            res.json({success: true, workspace: workspace});
         }
     } catch (err) {
         logger.debug(err);
@@ -451,8 +473,8 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: Response, next
 
     const validUpdate = validateWorkspace(workspace);
     if (!validUpdate) {
-        logger.error(validateWorkspace.errors);
-        return next({statusCode: 400, message: "Malformed workspace update"});
+        logger.error(`Rejecting invalid workspace update:\n${validateWorkspace.errors}`);
+        return next({statusCode: 400, message: "Invalid workspace update"});
     }
 
     try {

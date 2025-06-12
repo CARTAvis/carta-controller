@@ -31,7 +31,7 @@ export function populateUserMap(userMaps: Map<string, UserMap>, issuer: string |
             // The field separator can be any amount of whitespace.
             const entry = line.match(fieldRegex);
             if (!entry) {
-                logger.warn(`Ignoring malformed usermap line: ${line}`);
+                logger.warning(`Ignoring malformed usermap line: ${line}`);
                 continue;
             }
 

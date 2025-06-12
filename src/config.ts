@@ -72,9 +72,9 @@ const argv = yargs
 
 const usingCustomConfig = argv.config !== defaultConfigPath;
 const testUser = argv.test;
-const configSchema = require("../config/config_schema.json");
-const ajv = new Ajv({useDefaults: false, allowUnionTypes: true});
-const ajvWithDefaults = new Ajv({useDefaults: true, allowUnionTypes: true});
+const configSchema = require("../schemas/controller_config_schema_2.json");
+const ajv = new Ajv({useDefaults: false});
+const ajvWithDefaults = new Ajv({useDefaults: true});
 addFormats(ajv);
 addFormats(ajvWithDefaults);
 const validateConfig = ajv.compile(configSchema);
@@ -99,7 +99,7 @@ try {
     } else {
         if (!usingCustomConfig) {
             serverConfig = {} as CartaServerConfig;
-            logger.warn(`Skipping missing config file ${defaultConfigPath}`);
+            logger.warning(`Skipping missing config file ${defaultConfigPath}`);
         } else {
             logger.crit(`Unable to find config file ${argv.config}`);
             process.exit(1);

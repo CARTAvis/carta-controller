@@ -32,7 +32,7 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
                 return res.status(403).json({statusCode: 403, message: "Invalid username/password combo"});
             }
             if (user?.uid !== username) {
-                logger.warn(`Returned user "uid ${user?.uid}" does not match username "${username}"`);
+                logger.warning(`Returned user "uid ${user?.uid}" does not match username "${username}"`);
                 logger.debug(user);
             }
             try {
@@ -49,7 +49,7 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
             const errorObj = error as Error;
             // Need to reconnect to LDAP when we get a TLS error
             if (errorObj?.name?.includes("ConfidentialityRequiredError")) {
-                logger.warn(`TLS error encountered. Reconnecting to the LDAP server!`);
+                logger.warning(`TLS error encountered. Reconnecting to the LDAP server!`);
                 ldap.close();
                 ldap = new LdapAuth(authConf.ldapOptions);
                 ldap.on("error", err => logger.error("LdapAuth: ", err));

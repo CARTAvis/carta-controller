@@ -94,7 +94,7 @@ export async function acquireRefreshLock(sessionid, expiresIn,
       } catch (e) {
         if (e.code !== 11000) {
           // Not a duplicate key error (which would indicate a failure to acquire the lock)
-          logger.warn(e);
+          logger.warning(e);
         }
       }
       // Wait the specified amount of time before trying again
@@ -113,7 +113,7 @@ export async function releaseRefreshLock(sessionid) {
     const deleteResult = await lockCollection.deleteOne({sessionid});
     return deleteResult.acknowledged;
   } catch (e) {
-    logger.warn(e);
+    logger.warning(e);
     return false;
   }
 }
