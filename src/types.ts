@@ -126,7 +126,7 @@ export interface CartaServerConfig {
     // {pid} will be replaced by the started process ID
     // {datetime} will be replaced by date and time formatted as "YYYYMMDD.h_mm_ss"
     // Note: if you use /var/log/carta for log files, make sure the user running the server has the appropriate permissions
-    logFileTemplate: string;
+    backendLogFileTemplate: string;
     // Console logging
     logLevelConsole: LogLevel;
     logTypeConsole: string;

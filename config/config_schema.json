@@ -714,7 +714,7 @@
                 "/"
             ]
         },
-        "logFileTemplate": {
+        "backendLogFileTemplate": {
             "description": "Location of log file for backends. The `{username}`, `{pid}` and `{datetime}` placeholders will be replaced with the username, process ID. and dat/time formatted as `YYYYMMDD.h_mm_ss` respectively",
             "type": "string",
             "default": "/var/log/carta/{username}_{datetime}_{pid}.log",
