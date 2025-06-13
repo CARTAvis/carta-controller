@@ -133,7 +133,7 @@ try {
         if (!serverConfig.backendLogFileTemplate || serverConfig.backendLogFileTemplate === "") {
             serverConfig.backendLogFileTemplate = String(serverConfig.logFileTemplate);
         } else if (serverConfig.backendLogFileTemplate !== serverConfig.logFileTemplate) {
-            logger.error("Both 'logFileTemplate' and 'backendLogFileTemplate' are set to different values. Ignoring 'logFileTemplate'.");
+            logger.error("'logFileTemplate' and 'backendLogFileTemplate' are both set, and have conflicting values. Ignoring 'logFileTemplate'.");
         }
         delete serverConfig.logFileTemplate;
     }
