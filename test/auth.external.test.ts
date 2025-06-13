@@ -24,16 +24,8 @@ vi.mock('fs', () => ({
     })
 }))
 
-if (logger.transports.length == 0)
-    logger.add(new winston.transports.Console({silent: true}))
-if (!logger.warn) {
-    logger.warn = vi.fn();
-}
-if (!logger.info) {
-    logger.info = vi.fn();
-}
-const logWarn = vi.spyOn(logger, "warn");
-const logInfo = vi.spyOn(logger, "info");
+const logWarn = vi.spyOn(logger, "warning").mockImplementation(vi.fn());
+const logInfo = vi.spyOn(logger, "info").mockImplementation(vi.fn());
 
 test('Parse user mapping table file', () => {
     const userMaps = new Map();
