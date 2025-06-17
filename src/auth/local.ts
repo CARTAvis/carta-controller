@@ -1,4 +1,4 @@
-import {AuthenticatedRequest, CartaLocalAuthConfig, ScriptingAccess, Verifier} from "../types";
+import {CartaLocalAuthConfig, ScriptingAccess, Verifier} from "../types";
 import * as fs from "fs";
 import jwt = require("jsonwebtoken");
 import {VerifyOptions} from "jsonwebtoken";
@@ -7,6 +7,7 @@ import {verifyToken} from "./index";
 import {RuntimeConfig, ServerConfig} from "../config";
 import ms from "ms";
 import {getUserId} from "../util";
+import { logger } from "../util";
 
 let privateKey: Buffer;
 
@@ -90,7 +91,7 @@ export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
                 } else {
                     const uid = getUserId(refreshToken.username);
                     const access_token = generateToken(authConf, refreshToken.username, scriptingToken ? TokenType.Scripting : TokenType.Access);
-                    console.log(`Refreshed ${scriptingToken ? "scripting" : "access"} token for user ${refreshToken.username} with uid ${uid}`);
+                    logger.info(`Refreshed ${scriptingToken ? "scripting" : "access"} token for user ${refreshToken.username} with uid ${uid}`);
                     res.json({
                         access_token,
                         token_type: "bearer",

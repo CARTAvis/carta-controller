@@ -1,5 +1,6 @@
 {
-    "$schema": "./config_schema.json",
+    "$schema": "https://cartavis.org/schemas/controller_config_schema_2.json",
+    "controllerConfigVersion": "2.0",
     "authProviders": {
         "pam": {
             "publicKeyLocation": "/etc/carta/carta_public.pem",
@@ -17,6 +18,7 @@
     "killCommand": "/usr/bin/carta-kill-script",
     "rootFolderTemplate": "/home/{username}",
     "baseFolderTemplate": "/home/{username}",
+    "logFile":"/var/log/carta/controller.log",
     "dashboard": {
         "bannerColor": "#d2dce5",
         "backgroundColor": "#f6f8fa",

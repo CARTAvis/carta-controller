@@ -1,0 +1,18 @@
+2025-06-10 16:01:33 [[32mINFO[39m]: Loaded config from /etc/carta/config.json
+2025-06-10 16:01:34 [[32mINFO[39m]: Testing configuration with user alice
+[1G[0JPassword for user alice: [27G2025-06-10 16:01:37 [[32mINFO[39m]: [32m✔[39m Checked PAM connection for user alice
+2025-06-10 16:01:37 [[32mINFO[39m]: [32m✔[39m Verified uid (1000) for user alice
+2025-06-10 16:01:37 [[32mINFO[39m]: [32m✔[39m Generated access token for user alice
+2025-06-10 16:01:37 [[32mINFO[39m]: [32m✔[39m Checked database connection
+2025-06-10 16:01:37 [[32mINFO[39m]: [32m✔[39m Checked log writing for user alice
+2025-06-10 16:01:37 [[32mINFO[39m]: [32m✔[39m Read frontend index.html from /usr/lib/node_modules/carta-controller/dist/../node_modules/carta-frontend/build
+2025-06-10 16:01:37 [[34mDEBUG[39m]: running sudo --preserve-env=CARTA_AUTH_TOKEN -n -u alice /usr/bin/carta_backend --no_frontend --no_database --debug_no_auth --port 3499 --top_level_folder /home/alice --controller_deployment --no_log /home/alice
+[2025-06-10 14:01:37.719Z] [CARTA] [[32minfo[m] /usr/bin/carta_backend: Version 5.0.0-beta.1
+[2025-06-10 14:01:37.720Z] [CARTA] [[32minfo[m] Listening on port 3499 with top level folder /home/alice, starting folder /home/alice, and 8 OpenMP worker threads
+2025-06-10 16:01:39 [[32mINFO[39m]: [32m✔[39m Backend process started successfully
+[2025-06-10 14:01:39.634Z] [CARTA] [[32minfo[m] 0x558329a2dd10 ::Session (581674157:1)
+[2025-06-10 14:01:39.634Z] [CARTA] [[32minfo[m] Session 581674157 [127.0.0.1] Connected. Num sessions: 1
+2025-06-10 16:01:40 [[32mINFO[39m]: [32m✔[39m Backend process accepted connection
+2025-06-10 16:01:40 [[34mDEBUG[39m]: running sudo -u alice /usr/bin/carta-kill-script 707247
+2025-06-10 16:01:41 [[32mINFO[39m]: [32m✔[39m Backend process killed correctly
+2025-06-10 16:01:41 [[32mINFO[39m]: Controller tests with user alice succeeded

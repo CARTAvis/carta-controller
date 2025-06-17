@@ -3,11 +3,10 @@ import * as fs from "fs";
 import {MongoClient} from "mongodb";
 import LdapAuth from "ldapauth-fork";
 import * as logSymbols from "log-symbols";
-import chalk from "chalk";
 import moment from "moment";
 import {ServerConfig, testUser} from "./config";
 import {ChildProcess, spawn, spawnSync} from "child_process";
-import {delay, getUserId, verboseError, verboseLog} from "./util";
+import {delay, getUserId, logger} from "./util";
 import {client} from "websocket";
 import {CartaLdapAuthConfig, CartaLocalAuthConfig} from "./types";
 import {generateToken, TokenType} from "./auth/local";
@@ -15,7 +14,7 @@ import {generateToken, TokenType} from "./auth/local";
 import read = require("read");
 
 export async function runTests(username: string) {
-    console.log(`Testing configuration with user ${chalk.bold(testUser)}`);
+    logger.info(`Testing configuration with user ${testUser}`);
     if (ServerConfig.authProviders?.ldap) {
         await testLdap(ServerConfig.authProviders.ldap, username);
         testUid(username);
@@ -26,7 +25,7 @@ export async function runTests(username: string) {
         testToken(ServerConfig.authProviders.pam, username);
     }
     await testDatabase();
-    if (ServerConfig.logFileTemplate) {
+    if (ServerConfig.backendLogFileTemplate) {
         await testLog(username);
     }
     testFrontend();
@@ -35,7 +34,7 @@ export async function runTests(username: string) {
 }
 
 async function testLog(username: string) {
-    const logLocation = ServerConfig.logFileTemplate.replace("{username}", username).replace("{pid}", "9999").replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
+    const logLocation = ServerConfig.backendLogFileTemplate.replace("{username}", username).replace("{pid}", "9999").replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
 
     try {
         const logStream = fs.createWriteStream(logLocation, {flags: "a"});
@@ -43,10 +42,10 @@ async function testLog(username: string) {
         await new Promise(res => logStream.write("test", res));
         await new Promise(res => logStream.end(res));
         fs.unlinkSync(logLocation);
-        console.log(logSymbols.success, `Checked log writing for user ${username}`);
+        logger.info(`${logSymbols.success} Checked log writing for user ${username}`);
     } catch (err) {
-        verboseError(err);
-        throw new Error(`Could not create log file at ${logLocation} for user ${username}. Please check your config file's logFileTemplate option`);
+        logger.debug(err);
+        throw new Error(`Could not create log file at ${logLocation} for user ${username}. Please check your config file's backendLogFileTemplate option`);
     }
 }
 
@@ -60,13 +59,13 @@ function testLdap(authConf: CartaLdapAuthConfig, username: string) {
                     read({prompt: `Password for user ${username}:`, silent: true}).then(password => {
                         ldap.authenticate(username, password, (error, user) => {
                             if (error) {
-                                verboseError(error);
+                                logger.debug(error);
                                 reject(new Error(`Could not authenticate as user ${username}. Please check your config file's ldapOptions section!`));
                             } else {
-                                console.log(logSymbols.success, `Checked LDAP connection for user ${username}`);
+                                logger.info(`${logSymbols.success} Checked LDAP connection for user ${username}`);
                                 if (user?.uid !== username) {
-                                    console.warn(logSymbols.warning, `Returned user "uid ${user?.uid}" does not match username "${username}"`);
-                                    verboseLog(user);
+                                    logger.warning(`${logSymbols.warning} Returned user "uid ${user?.uid}" does not match username "${username}"`);
+                                    logger.debug(user);
                                 }
                                 resolve();
                             }
@@ -74,7 +73,7 @@ function testLdap(authConf: CartaLdapAuthConfig, username: string) {
                     });
                 }, 5000);
             } catch (e) {
-                verboseError(e);
+                logger.debug(e);
                 reject(new Error("Cannot create LDAP object. Please check your config file's ldapOptions section!"));
             }
         }
@@ -89,10 +88,10 @@ function testPam(authConf: CartaLocalAuthConfig, username: string) {
             read({prompt: `Password for user ${username}:`, silent: true}).then(password => {
                 pamAuthenticate({username, password}, (err: Error | string, code: number) => {
                     if (err) {
-                        verboseError(err);
+                        logger.debug(err);
                         reject(new Error(`Could not authenticate as user ${username}. Error code ${code}`));
                     } else {
-                        console.log(logSymbols.success, `Checked PAM connection for user ${username}`);
+                       logger.info(`${logSymbols.success} Checked PAM connection for user ${username}`);
                         resolve();
                     }
                 });
@@ -107,10 +106,10 @@ async function testDatabase() {
         const db = await client.db(ServerConfig.database.databaseName);
         await db.listCollections({}, {nameOnly: true}).hasNext();
     } catch (e) {
-        verboseError(e);
+        logger.debug(e);
         throw new Error("Cannot connect to MongoDB. Please check your config file's database section!");
     }
-    console.log(logSymbols.success, "Checked database connection");
+    logger.info(`${logSymbols.success} Checked database connection`);
 }
 
 function testUid(username: string) {
@@ -118,10 +117,10 @@ function testUid(username: string) {
     try {
         uid = getUserId(username);
     } catch (e) {
-        verboseError(e);
+        logger.debug(e);
         throw new Error(`Cannot verify uid of user ${username}`);
     }
-    console.log(logSymbols.success, `Verified uid (${uid}) for user ${username}`);
+    logger.info(`${logSymbols.success} Verified uid (${uid}) for user ${username}`);
 }
 
 function testToken(authConf: CartaLocalAuthConfig, username: string) {
@@ -129,13 +128,13 @@ function testToken(authConf: CartaLocalAuthConfig, username: string) {
     try {
         token = generateToken(authConf, username, TokenType.Access);
     } catch (e) {
-        verboseError(e);
+        logger.debug(e);
         throw new Error("Cannot generate access token. Please check your config file's auth section!");
     }
     if (!token) {
         throw new Error("Invalid access token. Please check your config file's auth section!");
     }
-    console.log(logSymbols.success, `Generated access token for user ${username}`);
+    logger.info(`${logSymbols.success} Generated access token for user ${username}`);
 }
 
 function testFrontend() {
@@ -147,14 +146,14 @@ function testFrontend() {
     try {
         indexContents = fs.readFileSync(ServerConfig.frontendPath + "/index.html").toString();
     } catch (e) {
-        verboseError(e);
+        logger.debug(e);
         throw new Error(`Cannot access frontend at ${ServerConfig.frontendPath}`);
     }
 
     if (!indexContents) {
         throw new Error(`Invalid frontend at ${ServerConfig.frontendPath}`);
     } else {
-        console.log(logSymbols.success, `Read frontend index.html from ${ServerConfig.frontendPath}`);
+        logger.info(`${logSymbols.success} Read frontend index.html from ${ServerConfig.frontendPath}`);
     }
 }
 
@@ -181,7 +180,7 @@ async function testBackendStartup(username: string) {
         "--controller_deployment"
     ]);
 
-    if (ServerConfig.logFileTemplate) {
+    if (ServerConfig.backendLogFileTemplate) {
         args.push("--no_log");
     }
 
@@ -192,7 +191,7 @@ async function testBackendStartup(username: string) {
     // Finally, add the positional argument for the base folder
     args.push(ServerConfig.baseFolderTemplate.replace("{username}", username));
 
-    verboseLog(`running sudo ${args.join(" ")}`);
+    logger.debug(`running sudo ${args.join(" ")}`);
 
     // Use same stdout and stderr stream for the backend process
     const backendProcess = spawn("sudo", args, {stdio: "inherit"});
@@ -200,7 +199,7 @@ async function testBackendStartup(username: string) {
     if (backendProcess.signalCode) {
         throw new Error(`Backend process terminated with code ${backendProcess.signalCode}. Please check your sudoers config, processCommand option and additionalArgs section`);
     } else {
-        console.log(logSymbols.success, "Backend process started successfully");
+        logger.info(`${logSymbols.success} Backend process started successfully`);
     }
 
     const wsClient = new client();
@@ -209,13 +208,13 @@ async function testBackendStartup(username: string) {
         wsConnected = true;
     });
     wsClient.on("connectFailed", (e) => {
-        verboseError(e);
+        logger.debug(e);
     });
 
     wsClient.connect(`ws://localhost:${port}`);
     await delay(1000);
     if (wsConnected) {
-        console.log(logSymbols.success, "Backend process accepted connection");
+        logger.info(`${logSymbols.success} Backend process accepted connection`);
     } else {
         throw new Error("Cannot connect to backend process. Please check your additionalArgs section. If sudo is prompting you for a password, please check your sudoers config");
     }
@@ -228,12 +227,12 @@ async function testKillScript(username: string, existingProcess: ChildProcess) {
         throw new Error(`Backend process already killed, signal code ${existingProcess.signalCode}`);
     }
     const args = ["-u", `${username}`, ServerConfig.killCommand, `${existingProcess.pid}`];
-    verboseLog(`running sudo ${args.join(" ")}`);
+    logger.debug(`running sudo ${args.join(" ")}`);
     const res = spawnSync("sudo", args, { encoding : 'utf8' });
     if (res.error) {
-        verboseError(res.error);
-        verboseError(`stdout:\t${res.stdout}`)
-        verboseError(`stderr:\t${res.stderr}`)
+        logger.debug(res.error);
+        logger.debug(`stdout:\t${res.stdout}`)
+        logger.debug(`stderr:\t${res.stderr}`)
     }
     if (res.status) {
         throw new Error(`Cannot execute kill script (error status ${res.status}. Please check your killCommand option`);
@@ -241,7 +240,7 @@ async function testKillScript(username: string, existingProcess: ChildProcess) {
     // Delay to allow the parent process to exit
     await delay(1000);
     if (existingProcess.signalCode === "SIGKILL") {
-        console.log(logSymbols.success, "Backend process killed correctly");
+        logger.info(`${logSymbols.success} Backend process killed correctly`);
     } else {
         throw new Error("Failed to kill process. Please check your killCommand option. If sudo is prompting you for a password, please check your sudoers config");
     }
