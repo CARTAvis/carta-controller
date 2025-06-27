@@ -7,6 +7,36 @@ import _ from "lodash";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
 import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
+import { logger } from "./util";
+import winston from "winston";
+import moment from 'moment-timezone';
+
+let timeZone : string | undefined;
+const customTimestamp = () => {
+    if (timeZone)
+        return moment().tz(timeZone).format('YYYY-MM-DD HH:mm:ss');
+    else
+        return moment().format('YYYY-MM-DD HH:mm:ss');
+}
+
+// Different log formats
+const logTextFormat = winston.format.combine(
+    winston.format.timestamp({ format: customTimestamp }),
+    winston.format.printf(({ level, message, timestamp }) => {
+        return `${timestamp} [${level.toUpperCase()}]: ${message}`;
+    })
+);
+const logColorTextFormat = winston.format.combine(
+    winston.format.timestamp({ format: customTimestamp }),
+    winston.format.printf(({ level, message, timestamp }) => {
+        const colorizer = winston.format.colorize();
+        return `${timestamp} [${colorizer.colorize(level, level.toUpperCase())}]: ${message}`;
+    })
+);
+const logJsonFormat = winston.format.combine(
+        winston.format.timestamp({ format: customTimestamp }),
+        winston.format.json(),
+);
 
 const defaultConfigPath = "/etc/carta/config.json";
 const argv = yargs
@@ -26,18 +56,25 @@ const argv = yargs
             requiresArg: true,
             description: "Test configuration with the provided user"
         },
-        verbose: {
-            type: "boolean",
-            alias: "v"
+        logLevel: {
+            type: "string",
+            choices: ["none", "emerg", "alert", "crit", "error", "warning", "notice", "info", "debug"],
+            describe: "Log level to print to console",
+            alias: "l"
+        },
+        logFormat: {
+            type: "string",
+            choices: ["text", "json"],
+            describe: "Log type to print to console",
+            alias: "f"
         }
     }).argv as CartaCommandLineOptions;
 
 const usingCustomConfig = argv.config !== defaultConfigPath;
 const testUser = argv.test;
-const verboseOutput = argv.verbose;
-const configSchema = require("../config/config_schema.json");
-const ajv = new Ajv({useDefaults: false, allowUnionTypes: true});
-const ajvWithDefaults = new Ajv({useDefaults: true, allowUnionTypes: true});
+const configSchema = require("../schemas/controller_config_schema_2.json");
+const ajv = new Ajv({useDefaults: false});
+const ajvWithDefaults = new Ajv({useDefaults: true});
 addFormats(ajv);
 addFormats(ajvWithDefaults);
 const validateConfig = ajv.compile(configSchema);
@@ -45,17 +82,26 @@ const validateAndAddDefaults = ajvWithDefaults.compile(configSchema);
 
 let serverConfig: CartaServerConfig;
 
+const consoleTransport = new winston.transports.Console({
+            format: argv.logFormat === "json" ?  logJsonFormat : logColorTextFormat,
+            level: argv.logLevel ? argv.logLevel : "info", // default to info until having parsed the config
+            silent: argv.logLevel === "none"
+        });
+logger.add(consoleTransport);
+
+
 try {
-    console.log(`Checking config file ${argv.config}`);
+    let configFiles: string[] = [];
     if (fs.existsSync(argv.config)) {
+        configFiles.push(argv.config)
         const jsonString = fs.readFileSync(argv.config).toString();
         serverConfig = JSONC.parse(jsonString);
     } else {
         if (!usingCustomConfig) {
             serverConfig = {} as CartaServerConfig;
-            console.log(`Skipping missing config file ${defaultConfigPath}`);
+            logger.warning(`Skipping missing config file ${defaultConfigPath}`);
         } else {
-            console.log(new Error(`Unable to find config file ${argv.config}`));
+            logger.crit(`Unable to find config file ${argv.config}`);
             process.exit(1);
         }
     }
@@ -65,7 +111,7 @@ try {
         const files = fs.readdirSync(configDir)?.sort();
         for (const file of files) {
             if (!file.match(/.*\.json$/)) {
-                console.log(`Skipping ${file}`);
+                console.warn(`Skipping ${file}`);
                 continue;
             }
             const jsonString = fs.readFileSync(path.join(configDir, file)).toString();
@@ -73,12 +119,23 @@ try {
             const isPartialConfigValid = validateConfig(additionalConfig);
             if (isPartialConfigValid) {
                 serverConfig = _.merge(serverConfig, additionalConfig);
-                console.log(`Adding additional config file config.d/${file}`);
+                configFiles.push(file);
             } else {
-                console.log(`Skipping invalid configuration file ${file}`);
-                console.error(validateConfig.errors);
+                logger.error(`Skipping invalid configuration file ${file}`);
+                logger.error(validateConfig.errors);
             }
         }
+    }
+
+    // Check for use of deprecated logFileTemplate
+    if ("logFileTemplate" in serverConfig) {
+        logger.warning("The 'logFileTemplate' option is deprecated and renamed to 'backendLogFileTemplate'. Please update your config file.");
+        if (!serverConfig.backendLogFileTemplate || serverConfig.backendLogFileTemplate === "") {
+            serverConfig.backendLogFileTemplate = String(serverConfig.logFileTemplate);
+        } else if (serverConfig.backendLogFileTemplate !== serverConfig.logFileTemplate) {
+            logger.error("'logFileTemplate' and 'backendLogFileTemplate' are both set, and have conflicting values. Ignoring 'logFileTemplate'.");
+        }
+        delete serverConfig.logFileTemplate;
     }
 
     const isValid = validateAndAddDefaults(serverConfig);
@@ -86,8 +143,50 @@ try {
         console.error(validateAndAddDefaults.errors);
         process.exit(1);
     }
+
+    // Validate timezone setting
+    if (serverConfig.timezone) {
+        try {
+            new Intl.DateTimeFormat('en-US', { timeZone: serverConfig.timezone });
+            timeZone = serverConfig.timezone;
+        } catch (err) {
+            logger.error(`Ignoring invalid timezone "${serverConfig.timezone}" in config file`);
+        }
+    }
+
+    // Reconfigure log transports
+    if (argv.logLevel ) {
+        serverConfig.logLevelConsole = argv.logLevel;
+    }
+    if (argv.logFormat) {
+        serverConfig.logTypeConsole = argv.logFormat;
+    }
+    consoleTransport.level = serverConfig.logLevelConsole;
+    consoleTransport.format = serverConfig.logTypeConsole === "json" ?  logJsonFormat : logColorTextFormat;
+    consoleTransport.silent = serverConfig.logLevelConsole === "none";
+
+    if (serverConfig.logFile && serverConfig.logFile !== "") {
+        if (serverConfig.logLevelFile === "none") {
+            logger.error(`Log file "${serverConfig.logFile}" specified but with a log level of "none"`);
+        } else {
+            try {
+                logger.add(new winston.transports.File({
+                    level: serverConfig.logLevelFile,
+                    filename: serverConfig.logFile,
+                    format: serverConfig.logTypeFile === "json" ?  logJsonFormat : logTextFormat,
+                }))
+                logger.info(`Started logging to ${serverConfig.logFile}`)
+            } catch (err) {
+                logger.debug(err)
+                logger.error(`Error initializing logging to ${serverConfig.logFile}`)
+                // Server currently continues to run
+            }
+        }
+    }
+
+    logger.info(`Loaded config from ${configFiles.join(", ")}`)
 } catch (err) {
-    console.log(err);
+    logger.emerg(err);
     process.exit(1);
 }
 
@@ -127,4 +226,4 @@ if (runtimeConfig.tokenRefreshAddress) {
     runtimeConfig.authPath = authUrl.pathname ?? "";
 }
 
-export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser, verboseOutput};
+export {serverConfig as ServerConfig, runtimeConfig as RuntimeConfig, testUser};

@@ -1,0 +1,9 @@
+/var/log/carta/controller.log {
+    su carta carta
+    daily
+    rotate 7
+    compress
+    missingok
+    notifempty
+    copytruncate
+}

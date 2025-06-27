@@ -1,7 +1,12 @@
-import express, {NextFunction, Request, Response} from "express";
+import {NextFunction, Request, Response} from "express";
 import {spawnSync} from "child_process";
 
-import {verboseOutput} from "./config";
+import winston from "winston";
+
+export const logger = winston.createLogger({
+    // Detailed setup is completed in config.ts
+    levels: winston.config.syslog.levels,
+});
 
 // Delay for the specified number of milliseconds
 export async function delay(delay: number) {
@@ -15,18 +20,6 @@ export function noCache(req: Request, res: Response, next: NextFunction) {
     res.header("Expires", "-1");
     res.header("Pragma", "no-cache");
     next();
-}
-
-export function verboseLog(...args: any[]) {
-    if (verboseOutput) {
-        console.log(args);
-    }
-}
-
-export function verboseError(...args: any[]) {
-    if (verboseOutput) {
-        console.error(args);
-    }
 }
 
 export function getUserId(username: string) {

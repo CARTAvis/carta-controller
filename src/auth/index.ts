@@ -1,6 +1,6 @@
 import jwt = require("jsonwebtoken");
 import express, {Response} from "express";
-import {noCache} from "../util";
+import {logger, noCache} from "../util";
 import {RequestHandler, AsyncRequestHandler, AuthenticatedRequest, Verifier, UserMap} from "../types";
 import {ServerConfig, RuntimeConfig} from "../config";
 import {generateExternalVerifiers, watchUserTable} from "./external";
@@ -61,14 +61,14 @@ if (ServerConfig.authProviders.pam) {
     callbackHandler = (req, res) => oidcCallbackHandler(req, res, authConf);
     initOidc(authConf);
     if (authConf.userLookupTable) {
-        console.log(`Using ${authConf.userLookupTable} for user mapping`);
+        logger.info(`Using ${authConf.userLookupTable} for user mapping`);
         watchUserTable(userMaps, authConf.issuer, authConf.userLookupTable);
     }
 }
 
 // Check for empty token verifies
 if (!tokenVerifiers.size) {
-    console.error("No valid token verifiers specified");
+    logger.emerg("No valid token verifiers specified");
     process.exit(1);
 }
 

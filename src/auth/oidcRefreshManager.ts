@@ -3,7 +3,7 @@ import { ceil, floor } from "lodash";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 
 import {ServerConfig} from "../config";
-import {verboseError} from "../util";
+import {logger} from "../util";
 
 let lockCollection: Collection;
 let refreshTokenCollection: Collection;
@@ -18,19 +18,19 @@ export async function initRefreshManager() {
 
         // Ensure that locks and refresh tokens tables are there with appropriate indices
         if (! await db.listCollections({name: "tokenLock"}, {nameOnly: true}).hasNext()) {
-          console.log("Creating token lock collection")
+          logger.info("Creating token lock collection")
           lockCollection = await db.createCollection("tokenLock");
         } else {
           lockCollection = await db.collection("tokenLock");
         }
         if (! await db.listCollections({name: "refreshTokens"}, {nameOnly: true}).hasNext()) {
-          console.log("Creating refresh tokens collection")
+          logger.info("Creating refresh tokens collection")
           refreshTokenCollection = await db.createCollection("refreshTokens");
         } else {
           refreshTokenCollection = await db.collection("refreshTokens")
         }
         if (! await db.listCollections({name: "accessTokenLifetimes"}, {nameOnly: true}).hasNext()) {
-          console.log("Creating access token's lifetimes collection")
+          logger.info("Creating access token's lifetimes collection")
           accessTokenLifeTimesCollection = await db.createCollection("accessTokenLifetimes");
         } else {
           accessTokenLifeTimesCollection = await db.collection("accessTokenLifetimes");
@@ -40,31 +40,30 @@ export async function initRefreshManager() {
         const hasLockSessionIndex = await lockCollection.indexExists("lockSession");
         if (!hasLockSessionIndex) {
           await lockCollection.createIndex({sessionid: 1}, {name: "lockSession", unique: true});
-          console.log("Created session index for lockSession collection");
+          logger.info("Created session index for lockSession collection");
         }
         const hasLockExpiryIndex = await lockCollection.indexExists("lockExpiry");
         if (!hasLockExpiryIndex) {
           await lockCollection.createIndex({ "expireAt": 1 }, {name: "lockExpiry", expireAfterSeconds: 0});
-          console.log("Created expiry index for lockSession collection");
+          logger.info("Created expiry index for lockSession collection");
         }        
         for (let coll of [refreshTokenCollection, accessTokenLifeTimesCollection]) {
           const hasUserSessionIndex = await coll.indexExists("userSession");
           if (!hasUserSessionIndex) {
             await coll.createIndex({username: 1, sessionid: 1 }, { name: "userSession", unique: true });
-            console.log(`Created username/session index for collection ${coll.collectionName}`);
+            logger.info(`Created username/session index for collection ${coll.collectionName}`);
           }
 
           const hasExpiryIndex = await coll.indexExists("expiryIndex");
           if (!hasExpiryIndex) {
             await coll.createIndex({ "expireAt": 1 }, { name: "expiryIndex", expireAfterSeconds: 0 });
-            console.log(`Created index adding TTL for collection ${coll.collectionName}`);
+            logger.info(`Created index adding TTL for collection ${coll.collectionName}`);
           }
         }
 
     } catch (err) {
-      console.error("Error with database connection");
-      console.error(err);
-      verboseError(err);
+      logger.emerg("Error with database connection");
+      logger.debug(err);
       process.exit(1);
     }
 }
@@ -94,8 +93,8 @@ export async function acquireRefreshLock(sessionid, expiresIn,
         return true;
       } catch (e) {
         if (e.code !== 11000) {
-          // Not a duplicate key error (which would indicated a failue to acquire the lock)
-          console.log(e);
+          // Not a duplicate key error (which would indicate a failure to acquire the lock)
+          logger.warning(e);
         }
       }
       // Wait the specified amount of time before trying again
@@ -114,7 +113,7 @@ export async function releaseRefreshLock(sessionid) {
     const deleteResult = await lockCollection.deleteOne({sessionid});
     return deleteResult.acknowledged;
   } catch (e) {
-    console.log(e);
+    logger.warning(e);
     return false;
   }
 }
@@ -136,7 +135,7 @@ export async function getRefreshToken (username, sessionid, symmKey) {
 
     return decrypted;
   } catch (e) {
-    console.log(e);
+    logger.error(e);
     return;
   }
 }
@@ -162,7 +161,7 @@ export async function setRefreshToken(username, sessionid, refreshToken, symmKey
     );
     return updateResult.acknowledged;
   } catch (e) {
-    console.log(e);
+    logger.error(e);
     return false;
   }
 }
@@ -177,7 +176,7 @@ export async function getAccessTokenExpiry(username, sessionid) {
       return remaining;
     }
   } catch (e) {
-    console.log(e);
+    logger.error(e);
     // Return 0 if record not found or an unexpected error occurs
     return 0;
   }
@@ -195,7 +194,7 @@ export async function setAccessTokenExpiry(username, sessionid, expiresIn) {
     );
     return updateResult.acknowledged;
   } catch (e) {
-    console.log(e);
+    logger.error(e);
     return false;
   }
 }
@@ -204,8 +203,8 @@ export async function setAccessTokenExpiry(username, sessionid, expiresIn) {
 export async function clearTokens(username, sessionid) {
   await Promise.all([
     accessTokenLifeTimesCollection.deleteOne({username, sessionid})
-      .catch (e => console.log(e)),
+      .catch (e => logger.error(e)),
     refreshTokenCollection.deleteOne({username, sessionid})
-      .catch (e => console.log(e))
+      .catch (e => logger.error(e))
   ])
 }
