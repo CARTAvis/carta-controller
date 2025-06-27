@@ -4,7 +4,8 @@ import {OAuth2Client} from "google-auth-library";
 import {generateToken, TokenType} from "./local";
 import {getUser, verifyToken} from "./index";
 import ms from "ms";
-import express, {NextFunction, Request, Response} from "express";
+import {NextFunction, Request, Response} from "express";
+import { logger } from "../util";
 
 export async function googleCallbackHandler (req: Request, res: Response, authConf: CartaGoogleAuthConfig) {
     // Check for g_csrf_token match between cookie and body
@@ -22,13 +23,13 @@ export async function googleCallbackHandler (req: Request, res: Response, authCo
 
         // check that username exists and email is verified
         if (!username || !payload?.email_verified) {
-            console.log("Google auth rejected due to lack of unique ID or email verification");
+            logger.warning("Google auth rejected due to lack of unique ID or email verification");
             return res.status(500).json({"error": "An error occured processing your login"});
         }
         
         // check that domain is valid
         if (authConf.validDomain && authConf.validDomain !== payload.hd) {
-            console.log(`Google auth rejected due to incorrect domain: ${payload.hd}`);
+            logger.warning(`Google auth rejected due to incorrect domain: ${payload.hd}`);
             return res.status(500).json({"error": "An error occured processing your login"});
         }
 
@@ -45,7 +46,7 @@ export async function googleCallbackHandler (req: Request, res: Response, authCo
         return res.redirect(`${RuntimeConfig.dashboardAddress}?googleuser=${username}`)
 
     } catch (e) {
-        console.debug(e)
+        logger.debug(e)
         return res.status(500).json({"error": "An error occured processing your login"})
     }
 }
@@ -64,7 +65,7 @@ export function generateGoogleRefreshHandler(authConf: CartaGoogleAuthConfig) {
                     next({statusCode: 500, message: "Scripting access not enabled for this server"});
                 } else {
                     const access_token = generateToken(authConf, refreshToken.username, scriptingToken ? TokenType.Scripting : TokenType.Access);
-                    console.log(`Refreshed ${scriptingToken ? "scripting" : "access"} token for user ${refreshToken.username}`);
+                    logger.info(`Refreshed ${scriptingToken ? "scripting" : "access"} token for user ${refreshToken.username}`);
                     res.json({
                         access_token,
                         token_type: "bearer",

@@ -2,19 +2,19 @@ import express from "express";
 import LdapAuth from "ldapauth-fork";
 import {CartaLdapAuthConfig} from "../types";
 import {addTokensToResponse} from "./local";
-import {getUserId, verboseError, verboseLog} from "../util";
+import {getUserId, logger} from "../util";
 
 let ldap: LdapAuth;
 
 export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
     ldap = new LdapAuth(authConf.ldapOptions);
-    ldap.on("error", err => console.error("LdapAuth: ", err));
+    ldap.on("error", err => logger.error("LdapAuth: ", err));
     setTimeout(() => {
         const ldapConnected = (ldap as any)?._userClient?.connected;
         if (ldapConnected) {
-            console.log("LDAP connected correctly");
+            logger.info("LDAP connected correctly");
         } else {
-            console.error("LDAP not connected!");
+            logger.error("LDAP not connected!");
         }
     }, 2000);
 
@@ -28,19 +28,19 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
 
         const handleAuth = (err: Error | string, user: any) => {
             if (err) {
-                console.error(err);
+                logger.error(err);
                 return res.status(403).json({statusCode: 403, message: "Invalid username/password combo"});
             }
             if (user?.uid !== username) {
-                console.warn(`Returned user "uid ${user?.uid}" does not match username "${username}"`);
-                verboseLog(user);
+                logger.warning(`Returned user "uid ${user?.uid}" does not match username "${username}"`);
+                logger.debug(user);
             }
             try {
                 const uid = getUserId(username);
-                console.log(`Authenticated as user ${username} with uid ${uid} using LDAP`);
+                logger.info(`Authenticated as user ${username} with uid ${uid} using LDAP`);
                 return addTokensToResponse(res, authConf, username);
             } catch (e) {
-                verboseError(e);
+                logger.debug(e);
                 return res.status(403).json({statusCode: 403, message: "User does not exist"});
             }
         };
@@ -49,10 +49,10 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
             const errorObj = error as Error;
             // Need to reconnect to LDAP when we get a TLS error
             if (errorObj?.name?.includes("ConfidentialityRequiredError")) {
-                console.log(`TLS error encountered. Reconnecting to the LDAP server!`);
+                logger.warning(`TLS error encountered. Reconnecting to the LDAP server!`);
                 ldap.close();
                 ldap = new LdapAuth(authConf.ldapOptions);
-                ldap.on("error", err => console.error("LdapAuth: ", err));
+                ldap.on("error", err => logger.error("LdapAuth: ", err));
                 // Wait for the connection to be re-established
                 setTimeout(() => {
                     ldap.authenticate(username, password, handleAuth);

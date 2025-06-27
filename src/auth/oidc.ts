@@ -1,14 +1,14 @@
 import axios from "axios";
-import express, {Request, Response} from "express";
+import {Request, Response} from "express";
 import * as fs from "fs";
 import * as jose from "jose";
 import type { GetKeyFunction } from "jose/dist/types/types"
 
+import { logger } from "../util";
 import {CartaOidcAuthConfig} from "../types";
 import {RuntimeConfig, ServerConfig} from "../config";
 import {Verifier} from "../types";
 import { createHash, createPrivateKey, createPublicKey, createSecretKey, KeyObject, randomBytes } from "crypto";
-import { ceil, floor } from "lodash";
 import {initRefreshManager, acquireRefreshLock, releaseRefreshLock, getAccessTokenExpiry, clearTokens, setAccessTokenExpiry, setRefreshToken, getRefreshToken} from "./oidcRefreshManager";
 
 let privateKey: KeyObject;
@@ -37,7 +37,7 @@ export async function initOidc(authConf: CartaOidcAuthConfig) {
     oidcTokenEndpoint = idpConfig.data['token_endpoint'];
 
     // Init JWKS key management
-    console.log(`Setting up JWKS management for ${idpConfig.data['jwks_uri']}`);
+    logger.info(`Setting up JWKS management for ${idpConfig.data['jwks_uri']}`);
     jwksManager = jose.createRemoteJWKSet(new URL(idpConfig.data['jwks_uri']));
 
     // Set logout redirect URL
@@ -91,7 +91,6 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: Request, res: Re
 
         // Create / retrieve session encryption key
         if (sessionEncKey === undefined) {
-            //console.log("No session key received. Assuming initial login")
             sessionEncKey = randomBytes(32);
         }
 
@@ -110,7 +109,6 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: Request, res: Re
         //refreshData['access_token_expiry'] =  floor(new Date().getTime() / 1000) + result.data['expires_in'];
         if (result.data['expires_in'] !== undefined) {
             setAccessTokenExpiry(username, sessionId, parseInt(result.data['expires_in']));
-            //console.log(`Access token expires in:\t${result.data['expires_in']}`)
         }
 
         // Check group membership
@@ -136,7 +134,6 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: Request, res: Re
             sessionId,
             sessionEncKey: sessionEncKey.toString('hex')
         };
-        //console.log(`Session key in refresh token:\t${refreshData['sessionEncKey']}`)
         const rt = await new jose.EncryptJWT(refreshData)
             .setProtectedHeader({ alg: 'dir', enc: authConf.symmetricKeyType })
             .setIssuedAt()
@@ -193,14 +190,13 @@ async function callIdpTokenEndpoint (usp: URLSearchParams, req: Request, res: Re
         }
 
     } catch(err) {
-        console.warn(err);
+        logger.warning(err);
         return returnErrorMsg(req, res, 500, "Error requesting tokens from identity provider");
     }
 }
 
 export function generateLocalOidcRefreshHandler (authConf: CartaOidcAuthConfig) {
     return async (req: Request, res: Response) => {
-        //console.debug("Running OIDC refresh handler")
         const refreshTokenCookie = req.cookies["Refresh-Token"];
         const scriptingToken = req.body?.scripting === true;
 
@@ -326,14 +322,13 @@ export async function oidcLoginStart (req: Request, res: Response, authConf: Car
         // Return redirect
         return res.redirect(`${oidcAuthEndpoint}?${usp.toString()}`);
     } catch (err) {
-        console.log(err);
+        logger.error(err);
         return returnErrorMsg(req, res, 500, err);
     }
 }
 
 export async function oidcCallbackHandler(req: Request, res: Response, authConf: CartaOidcAuthConfig) {
     try {
-        //console.debug("Running OIDC callback handler");
         const usp = new URLSearchParams();
 
         if (req.cookies['oidcVerifier'] === undefined) {
@@ -358,7 +353,7 @@ export async function oidcCallbackHandler(req: Request, res: Response, authConf:
 
         return await callIdpTokenEndpoint (usp, req, res, authConf, false, true, `${req.query.state}`, undefined);
     } catch (err) {
-        console.log(err);
+        logger.error(err);
         return returnErrorMsg(req, res, 500, err);
     }
 }
@@ -396,7 +391,7 @@ export async function oidcLogoutHandler(req: Request, res: Response) {
             return res.redirect(`${ServerConfig.serverAddress}`);
         }
     } catch (err) {
-        console.log(err);
+        logger.error(err);
         return returnErrorMsg(req, res, 500, err);       
     }
 }
