@@ -25,13 +25,13 @@ We officially support Ubuntu 20.04 (v4.x only), 22.04, and 24.04 (v5.x only), an
    schema
    schema_backend
 
-.. |backend-github| image:: https://img.shields.io/badge/CARTA%20Version-5.0.0--rc.0-brightgreen
+.. |backend-github| image:: https://img.shields.io/badge/CARTA%20Version-5.0.1-brightgreen
         :alt: View this backend version on GitHub
-        :target: https://github.com/CARTAvis/carta-backend/releases/tag/v5.0.0-rc.0
+        :target: https://github.com/CARTAvis/carta-backend/releases/tag/v5.0.1
 
 .. |npm-package| image:: https://img.shields.io/npm/v/carta-controller/beta?style=flat
         :alt: View this project on npm
-        :target: https://www.npmjs.com/package/carta-controller/v/5.0.0-rc.0
+        :target: https://www.npmjs.com/package/carta-controller/v/5.0.0
 
 .. |last-commit| image:: https://img.shields.io/github/last-commit/CARTAvis/carta-controller
         :alt: Last commit
