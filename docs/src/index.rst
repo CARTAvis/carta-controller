@@ -41,7 +41,7 @@ We officially support Ubuntu 22.04 and 24.04, and AlmaLinux 8 and 9 (and equival
 
 .. |npm-package| image:: https://img.shields.io/npm/v/carta-controller/latest?style=flat
         :alt: NPM package
-        :target: https://www.npmjs.com/package/carta-controller/v/5.0.0
+        :target: https://www.npmjs.com/package/carta-controller/v/latest
 
 .. |backend-github| image:: https://img.shields.io/badge/backend%20version-6.0.0--dev-brightgreen
         :alt: CARTA backend version
