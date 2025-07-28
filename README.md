@@ -1,7 +1,10 @@
 # CARTA Controller
-
-[![carta version](https://img.shields.io/badge/CARTA%20Version-4.1.0-brightgreen)](https://github.com/CARTAvis/carta-backend/releases/tag/v4.1.0)
-[![npm version](https://img.shields.io/npm/v/carta-controller?style=flat)](https://npmjs.org/package/carta-controller "View this project on npm")
+<!-- These badges should only be uncommented in release branches, and point to the appropriate tags: -->
+<!--[![CARTA version](https://img.shields.io/badge/CARTA%20release-RELEASE-brightgreen)](https://github.com/CARTAvis/carta/releases/tag/vRELEASE)-->
+<!--[![npm package](https://img.shields.io/npm/v/carta-controller?style=flat)](https://www.npmjs.com/package/carta-controller/v/RELEASE)-->
+<!-- These badges should only be uncommented in dev, and updated with the dev version: -->
+[![CARTA backend version](https://img.shields.io/badge/CARTA%20backend%20version-6.0.0--dev-brightgreen)](https://github.com/CARTAvis/carta-backend/)
+[![CARTA frontend version](https://img.shields.io/badge/CARTA%20frontend%20version-6.0.0--dev-brightgreen)](https://github.com/CARTAvis/carta-frontend/)
 ![last commit](https://img.shields.io/github/last-commit/CARTAvis/carta-controller)
 ![commit activity](https://img.shields.io/github/commit-activity/m/CARTAvis/carta-controller)
 
