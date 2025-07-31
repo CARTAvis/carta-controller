@@ -35,23 +35,23 @@ We officially support Ubuntu 22.04 and 24.04, and AlmaLinux 8 and 9 (and equival
    schema
    schema_backend
 
-.. |carta-release-github| image:: https://img.shields.io/badge/CARTA%20release-RELEASE-brightgreen
+.. |carta-release-github| image:: https://img.shields.io/github/v/release/CartaVis/carta?label=CARTA%20release
         :alt: CARTA version
-        :target: https://github.com/CARTAvis/carta/releases/tag/vRELEASE
+        :target: https://github.com/CARTAvis/carta/releases/latest
 
-.. |npm-package| image:: https://img.shields.io/npm/v/carta-controller?style=flat
+.. |npm-package| image:: https://img.shields.io/npm/v/carta-controller/latest?label=Controller%20release
         :alt: NPM package
-        :target: https://www.npmjs.com/package/carta-controller/v/RELEASE
+        :target: https://www.npmjs.com/package/carta-controller/v/latest
 
-.. |backend-github| image:: https://img.shields.io/badge/backend%20version-6.0.0--dev-brightgreen
+.. |backend-github| image:: https://img.shields.io/badge/backend%20branch-dev-brightgreen
         :alt: CARTA backend version
         :target: https://github.com/CARTAvis/carta-backend/
 
-.. |frontend-github| image:: https://img.shields.io/badge/frontend%20version-6.0.0--dev-brightgreen
+.. |frontend-github| image:: https://img.shields.io/badge/frontend%20branch-dev-brightgreen
         :alt: CARTA frontend version
         :target: https://github.com/CARTAvis/carta-frontend/
 
-.. |controller-github| image:: https://img.shields.io/badge/controller%20version-6.0.0--dev-brightgreen
+.. |controller-github| image:: https://img.shields.io/badge/controller%20branch-dev-brightgreen
         :alt: CARTA controller version
         :target: https://github.com/CARTAvis/carta-controller/
 
