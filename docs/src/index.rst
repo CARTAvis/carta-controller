@@ -35,9 +35,9 @@ We officially support Ubuntu 22.04 and 24.04, and AlmaLinux 8 and 9 (and equival
    schema
    schema_backend
 
-.. |carta-release-github| image:: https://img.shields.io/badge/CARTA%20release-5.0.0-brightgreen
+.. |carta-release-github| image:: https://img.shields.io/github/v/release/CartaVis/carta
         :alt: CARTA version
-        :target: https://github.com/CARTAvis/carta/releases/tag/v5.0.0
+        :target: https://github.com/CARTAvis/carta/releases/latest
 
 .. |npm-package| image:: https://img.shields.io/npm/v/carta-controller/latest?style=flat
         :alt: NPM package
