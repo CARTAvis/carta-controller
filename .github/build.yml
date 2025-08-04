@@ -2,8 +2,7 @@ name: Build Project
 
 on:
   push:
-    branches: [ "aikema/github_build" ]
-
+  
 jobs:
   build:
     name: Node ${{ matrix.node }} build
