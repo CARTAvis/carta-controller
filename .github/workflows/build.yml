@@ -2,7 +2,9 @@ name: Build Project
 
 on:
   push:
-  
+    branches:
+      - "**"
+
 jobs:
   build:
     name: Node ${{ matrix.node }} build
@@ -21,7 +23,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
-      - name: Install libfoo dependency
+      - name: Install pam libs
         run: |
           sudo apt-get update
           sudo apt-get install -y g++ make build-essential libpam0g-dev
