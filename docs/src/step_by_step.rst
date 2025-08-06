@@ -150,10 +150,6 @@ Install CARTA backend and other required packages
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
 
-        .. note::
-
-            Please note that Ubuntu packages for CARTA 5.x are only available for Jammy and Noble.
-
     .. tab:: AlmaLinux
 
         RPM packages of the CARTA backend are available from our `Copr repository <https://copr.fedorainfracloud.org/coprs/cartavis/carta/>`_.
@@ -514,10 +510,6 @@ You should now be able to navigate to your domain, log into CARTA with your test
 .. note::
 
     In the example above, the default test image packaged with the CARTA backend is copied into the test user's home directory -- if you configured a different user directory structure, or installed a custom backend, please adjust these paths.
-
-.. warning::
-
-    A known issue in the CARTA v5 beta release prevents the packaged test image from rendering correctly. Please use a different image to test this version of CARTA. Example FITS images can be downloaded from various astronomical `institutions <https://fits.gsfc.nasa.gov/fits_samples.html>`_ and `software projects <https://www.astropy.org/astropy-data/>`_.
 
 .. _sbs_config_autostart:
 
