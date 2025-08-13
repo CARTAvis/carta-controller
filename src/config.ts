@@ -6,7 +6,7 @@ import * as JSONC from "jsonc-parser";
 import _ from "lodash";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {
+import type {
 	CartaCommandLineOptions,
 	CartaRuntimeConfig,
 	CartaServerConfig,
@@ -102,7 +102,7 @@ const consoleTransport = new winston.transports.Console({
 logger.add(consoleTransport);
 
 try {
-	let configFiles: string[] = [];
+	const configFiles: string[] = [];
 	if (fs.existsSync(argv.config)) {
 		configFiles.push(argv.config);
 		const jsonString = fs.readFileSync(argv.config).toString();

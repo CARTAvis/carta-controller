@@ -1,6 +1,6 @@
-import express, { NextFunction, Request, Response } from "express";
-import LdapAuth from "ldapauth-fork";
-import { Algorithm } from "jsonwebtoken";
+import express, { type NextFunction, type Request, type Response } from "express";
+import type LdapAuth from "ldapauth-fork";
+import type { Algorithm } from "jsonwebtoken";
 
 export type LogLevel =
 	| "none"

@@ -1,4 +1,4 @@
-import { Binary, Collection, MongoClient } from "mongodb";
+import { Binary, type Collection, MongoClient } from "mongodb";
 import { ceil, floor } from "lodash";
 import { createCipheriv, createDecipheriv, randomBytes } from "crypto";
 
@@ -69,7 +69,7 @@ export async function initRefreshManager() {
 			);
 			logger.info("Created expiry index for lockSession collection");
 		}
-		for (let coll of [refreshTokenCollection, accessTokenLifeTimesCollection]) {
+		for (const coll of [refreshTokenCollection, accessTokenLifeTimesCollection]) {
 			const hasUserSessionIndex = await coll.indexExists("userSession");
 			if (!hasUserSessionIndex) {
 				await coll.createIndex(
@@ -156,14 +156,14 @@ export async function releaseRefreshLock(sessionid) {
 // only retained by the client
 export async function getRefreshToken(username, sessionid, symmKey) {
 	try {
-		let record = await refreshTokenCollection.findOne({ username, sessionid });
+		const record = await refreshTokenCollection.findOne({ username, sessionid });
 
 		if (record?.expireAt < Date.now()) {
 			// An already expired token that MongoDB hasn't clear out yet
 			return;
 		}
 
-		let decipher = createDecipheriv("aes-256-cbc", symmKey, record?.iv.buffer);
+		const decipher = createDecipheriv("aes-256-cbc", symmKey, record?.iv.buffer);
 		let decrypted = decipher.update(record?.refreshToken, "hex", "utf8");
 		decrypted += decipher.final("utf8");
 
@@ -212,7 +212,7 @@ export async function setRefreshToken(
 export async function getAccessTokenExpiry(username, sessionid) {
 	try {
 		// Lookup record in MongoDB using key
-		let record = await accessTokenLifeTimesCollection.findOne({
+		const record = await accessTokenLifeTimesCollection.findOne({
 			username,
 			sessionid,
 		});

@@ -1,19 +1,19 @@
-import express, { Request, Response, NextFunction } from "express";
-import Server from "http-proxy";
+import express, { Request, type Response, type NextFunction } from "express";
+import type Server from "http-proxy";
 import * as url from "url";
 import * as fs from "fs";
-import { WriteStream } from "fs";
+import type { WriteStream } from "fs";
 import moment from "moment";
 import * as querystring from "querystring";
 import { v4 } from "uuid";
 import io from "@pm2/io";
 import * as tcpPortUsed from "tcp-port-used";
-import { ChildProcess, spawn, spawnSync } from "child_process";
-import { IncomingMessage } from "http";
+import { type ChildProcess, spawn, spawnSync } from "child_process";
+import type { IncomingMessage } from "http";
 import { LinkedList } from "mnemonist";
 import { delay, logger, noCache } from "./util";
 import { authGuard, getUser, verifyToken } from "./auth";
-import { AuthenticatedRequest } from "./types";
+import type { AuthenticatedRequest } from "./types";
 import { ServerConfig } from "./config";
 
 type ProcessInfo = {
@@ -74,7 +74,7 @@ function deleteProcess(username: string) {
 
 async function nextAvailablePort() {
 	// Get a map of all the ports in the range currently in use
-	let existingPorts = new Map<number, boolean>();
+	const existingPorts = new Map<number, boolean>();
 	processMap.forEach((value) => {
 		existingPorts.set(value.port, true);
 	});
@@ -262,12 +262,12 @@ async function startServer(username: string) {
 				}
 				child.stdout.pipe(logStream);
 				child.stderr.pipe(logStream);
-				child.stdout.on("data", function (data) {
+				child.stdout.on("data", (data) => {
 					const line = data.toString() as string;
 					appendLog(username, line);
 				});
 
-				child.stderr.on("data", function (data) {
+				child.stderr.on("data", (data) => {
 					const line = data.toString() as string;
 					appendLog(username, line);
 				});
@@ -279,13 +279,13 @@ async function startServer(username: string) {
 			}
 		} else {
 			logLocation = "stdout";
-			child.stdout.on("data", function (data) {
+			child.stdout.on("data", (data) => {
 				const line = data.toString() as string;
 				appendLog(username, line);
 				logger.info(line);
 			});
 
-			child.stderr.on("data", function (data) {
+			child.stderr.on("data", (data) => {
 				const line = data.toString() as string;
 				appendLog(username, line);
 				logger.error(line);
@@ -381,14 +381,14 @@ export const createUpgradeHandler =
 			if (!req?.url) {
 				return socket.end();
 			}
-			let parsedUrl = url.parse(req.url);
+			const parsedUrl = url.parse(req.url);
 			if (!parsedUrl?.query) {
 				logger.warning(
 					`Incoming Websocket upgrade request could not be parsed: ${req.url}`,
 				);
 				return socket.end();
 			}
-			let queryParameters = querystring.parse(parsedUrl.query);
+			const queryParameters = querystring.parse(parsedUrl.query);
 			const tokenString = queryParameters?.token;
 			if (!tokenString || Array.isArray(tokenString)) {
 				logger.warning(

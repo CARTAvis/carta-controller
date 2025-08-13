@@ -1,10 +1,10 @@
-import express, { NextFunction, Response } from "express";
+import express, { type NextFunction, type Response } from "express";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import { Collection, Db, MongoClient, ObjectId } from "mongodb";
+import { type Collection, type Db, MongoClient, ObjectId } from "mongodb";
 import { authGuard } from "./auth";
 import { noCache, logger } from "./util";
-import { AuthenticatedRequest } from "./types";
+import type { AuthenticatedRequest } from "./types";
 import { ServerConfig } from "./config";
 
 const PREFERENCE_SCHEMA_VERSION = 2;

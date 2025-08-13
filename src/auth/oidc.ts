@@ -1,19 +1,19 @@
 import axios from "axios";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 import * as fs from "fs";
 import * as jose from "jose";
 import type { GetKeyFunction } from "jose/dist/types/types";
 
 import { logger } from "../util";
-import { CartaOidcAuthConfig } from "../types";
+import type { CartaOidcAuthConfig } from "../types";
 import { RuntimeConfig, ServerConfig } from "../config";
-import { Verifier } from "../types";
+import type { Verifier } from "../types";
 import {
 	createHash,
 	createPrivateKey,
 	createPublicKey,
 	createSecretKey,
-	KeyObject,
+	type KeyObject,
 	randomBytes,
 } from "crypto";
 import {
@@ -142,7 +142,7 @@ async function callIdpTokenEndpoint(
 			sessionEncKey = randomBytes(32);
 		}
 
-		let username = payload[authConf.uniqueField];
+		const username = payload[authConf.uniqueField];
 		if (username === undefined) {
 			return returnErrorMsg(req, res, 500, "Unable to match to a local user");
 		}
@@ -243,7 +243,7 @@ async function callIdpTokenEndpoint(
 				`${new URL(`${RuntimeConfig.dashboardAddress}`, ServerConfig.serverAddress).href}?${loginUsp.toString()}`,
 			);
 		} else {
-			let newAccessToken = { username };
+			const newAccessToken = { username };
 			if (scriptingToken) newAccessToken["scripting"] = true;
 			const newAccessTokenJWT = await new jose.SignJWT(newAccessToken)
 				.setProtectedHeader({ alg: authConf.keyAlgorithm })
@@ -305,7 +305,7 @@ export function generateLocalOidcRefreshHandler(authConf: CartaOidcAuthConfig) {
 						payload.sessionId,
 					);
 					if (remainingValidity > authConf.cacheAccessTokenMinValidity) {
-						let newAccessToken = {
+						const newAccessToken = {
 							username: payload.username,
 							expires_in: remainingValidity,
 						};
@@ -516,7 +516,7 @@ export async function oidcLogoutHandler(req: Request, res: Response) {
 
 		if (oidcLogoutEndpoint !== undefined) {
 			// Redirect to the IdP to perform the logout
-			let usp = new URLSearchParams();
+			const usp = new URLSearchParams();
 			if (req.cookies["Logout-Token"] !== undefined) {
 				usp.set("id_token_hint", req.cookies["Logout-Token"]);
 			}

@@ -1,10 +1,10 @@
 import { RuntimeConfig, ServerConfig } from "../config";
-import { CartaGoogleAuthConfig, ScriptingAccess, Verifier } from "../types";
+import { type CartaGoogleAuthConfig, ScriptingAccess, Verifier } from "../types";
 import { OAuth2Client } from "google-auth-library";
 import { generateToken, TokenType } from "./local";
 import { getUser, verifyToken } from "./index";
 import ms from "ms";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { logger } from "../util";
 
 export async function googleCallbackHandler(

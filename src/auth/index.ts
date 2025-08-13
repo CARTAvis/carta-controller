@@ -1,7 +1,7 @@
 import jwt = require("jsonwebtoken");
 import express, { Response } from "express";
 import { logger, noCache } from "../util";
-import {
+import type {
 	RequestHandler,
 	AsyncRequestHandler,
 	AuthenticatedRequest,

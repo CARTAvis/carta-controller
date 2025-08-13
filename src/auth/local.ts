@@ -1,8 +1,8 @@
-import { CartaLocalAuthConfig, ScriptingAccess, Verifier } from "../types";
+import { type CartaLocalAuthConfig, ScriptingAccess, type Verifier } from "../types";
 import * as fs from "fs";
 import jwt = require("jsonwebtoken");
-import { VerifyOptions } from "jsonwebtoken";
-import express from "express";
+import type { VerifyOptions } from "jsonwebtoken";
+import type express from "express";
 import { verifyToken } from "./index";
 import { RuntimeConfig, ServerConfig } from "../config";
 import ms from "ms";

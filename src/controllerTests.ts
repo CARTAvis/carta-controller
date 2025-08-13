@@ -5,10 +5,10 @@ import LdapAuth from "ldapauth-fork";
 import * as logSymbols from "log-symbols";
 import moment from "moment";
 import { ServerConfig, testUser } from "./config";
-import { ChildProcess, spawn, spawnSync } from "child_process";
+import { type ChildProcess, spawn, spawnSync } from "child_process";
 import { delay, getUserId, logger } from "./util";
 import { client } from "websocket";
-import { CartaLdapAuthConfig, CartaLocalAuthConfig } from "./types";
+import type { CartaLdapAuthConfig, CartaLocalAuthConfig } from "./types";
 import { generateToken, TokenType } from "./auth/local";
 
 import read = require("read");

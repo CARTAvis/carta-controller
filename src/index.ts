@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { type Request, type Response, type NextFunction } from "express";
 import * as bodyParser from "body-parser";
 import bearerToken from "express-bearer-token";
 import cookieParser from "cookie-parser";
@@ -33,7 +33,7 @@ if (testUser) {
 		},
 	);
 } else {
-	let app = express();
+	const app = express();
 	app.use(bodyParser.urlencoded({ extended: true }));
 	app.use(cookieParser());
 	app.use(bearerToken());

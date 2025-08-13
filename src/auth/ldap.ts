@@ -1,6 +1,6 @@
-import express from "express";
+import type express from "express";
 import LdapAuth from "ldapauth-fork";
-import { CartaLdapAuthConfig } from "../types";
+import type { CartaLdapAuthConfig } from "../types";
 import { addTokensToResponse } from "./local";
 import { getUserId, logger } from "../util";
 
@@ -19,7 +19,7 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
 	}, 2000);
 
 	return (req: express.Request, res: express.Response) => {
-		let username = req.body?.username;
+		const username = req.body?.username;
 		const password = req.body?.password;
 
 		if (!username || !password) {
