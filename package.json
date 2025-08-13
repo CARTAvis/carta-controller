@@ -15,8 +15,9 @@
         "reformat": "npx @biomejs/biome format --write ./src",
         "checkformat": "npx @biomejs/biome format ./src",
         "lint": "npx @biomejs/biome lint ./src",
+        "fixlint": "npx @biomejs/biome lint --write ./src",
         "checkformat-and-lint": "npx @biomejs/biome check ./src",
-        "reformat-and-lint": "npx @biomejs/biome check --write ./src",
+        "reformat-and-fixlint": "npx @biomejs/biome check --write ./src",
         "prepare": "npx tsc",
         "unit-test": "vitest run"
     },
