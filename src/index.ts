@@ -1,4 +1,8 @@
-import express, { type Request, type Response, type NextFunction } from "express";
+import express, {
+	type Request,
+	type Response,
+	type NextFunction,
+} from "express";
 import * as bodyParser from "body-parser";
 import bearerToken from "express-bearer-token";
 import cookieParser from "cookie-parser";

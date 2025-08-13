@@ -69,7 +69,10 @@ export async function initRefreshManager() {
 			);
 			logger.info("Created expiry index for lockSession collection");
 		}
-		for (const coll of [refreshTokenCollection, accessTokenLifeTimesCollection]) {
+		for (const coll of [
+			refreshTokenCollection,
+			accessTokenLifeTimesCollection,
+		]) {
 			const hasUserSessionIndex = await coll.indexExists("userSession");
 			if (!hasUserSessionIndex) {
 				await coll.createIndex(
@@ -156,14 +159,21 @@ export async function releaseRefreshLock(sessionid) {
 // only retained by the client
 export async function getRefreshToken(username, sessionid, symmKey) {
 	try {
-		const record = await refreshTokenCollection.findOne({ username, sessionid });
+		const record = await refreshTokenCollection.findOne({
+			username,
+			sessionid,
+		});
 
 		if (record?.expireAt < Date.now()) {
 			// An already expired token that MongoDB hasn't clear out yet
 			return;
 		}
 
-		const decipher = createDecipheriv("aes-256-cbc", symmKey, record?.iv.buffer);
+		const decipher = createDecipheriv(
+			"aes-256-cbc",
+			symmKey,
+			record?.iv.buffer,
+		);
 		let decrypted = decipher.update(record?.refreshToken, "hex", "utf8");
 		decrypted += decipher.final("utf8");
 

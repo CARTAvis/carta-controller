@@ -1,5 +1,9 @@
 import { RuntimeConfig, ServerConfig } from "../config";
-import { type CartaGoogleAuthConfig, ScriptingAccess, Verifier } from "../types";
+import {
+	type CartaGoogleAuthConfig,
+	ScriptingAccess,
+	Verifier,
+} from "../types";
 import { OAuth2Client } from "google-auth-library";
 import { generateToken, TokenType } from "./local";
 import { getUser, verifyToken } from "./index";

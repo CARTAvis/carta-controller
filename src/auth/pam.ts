@@ -21,12 +21,10 @@ export function getPamLoginHandler(authConf: CartaLocalAuthConfig) {
 			{ username, password },
 			(err: Error | string, code: number) => {
 				if (err) {
-					return res
-						.status(403)
-						.json({
-							statusCode: 403,
-							message: "Invalid username/password combo",
-						});
+					return res.status(403).json({
+						statusCode: 403,
+						message: "Invalid username/password combo",
+					});
 				} else {
 					try {
 						const uid = getUserId(username);

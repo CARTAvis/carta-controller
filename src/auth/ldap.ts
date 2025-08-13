@@ -31,12 +31,10 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
 		const handleAuth = (err: Error | string, user: any) => {
 			if (err) {
 				logger.error(err);
-				return res
-					.status(403)
-					.json({
-						statusCode: 403,
-						message: "Invalid username/password combo",
-					});
+				return res.status(403).json({
+					statusCode: 403,
+					message: "Invalid username/password combo",
+				});
 			}
 			if (user?.uid !== username) {
 				logger.warning(
