@@ -22,7 +22,7 @@
         "unit-test": "vitest run"
     },
     "author": "",
-    "license": "ISC",
+    "license": "GPLV3",
     "dependencies": {
         "@pm2/io": "^6.1.0",
         "ajv": "^8.17.1",
