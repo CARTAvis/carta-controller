@@ -18,7 +18,9 @@
       "!**/.vscode",
       "!**/.github",
       "!**/public/notyf.min*",
-      "!**/schemas"
+      "!**/schemas",
+      "!**/package.json",
+      "!**/package-lock.json"
     ]
   },
   "formatter": {
