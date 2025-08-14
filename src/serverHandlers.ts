@@ -1,26 +1,26 @@
-import express, { Request, type Response, type NextFunction } from "express";
-import type Server from "http-proxy";
-import * as url from "url";
-import * as fs from "fs";
+import io from "@pm2/io";
+import { type ChildProcess, spawn, spawnSync } from "child_process";
+import express, { type NextFunction, Request, type Response } from "express";
 import type { WriteStream } from "fs";
+import * as fs from "fs";
+import type { IncomingMessage } from "http";
+import type Server from "http-proxy";
+import { LinkedList } from "mnemonist";
 import moment from "moment";
 import * as querystring from "querystring";
-import { v4 } from "uuid";
-import io from "@pm2/io";
 import * as tcpPortUsed from "tcp-port-used";
-import { type ChildProcess, spawn, spawnSync } from "child_process";
-import type { IncomingMessage } from "http";
-import { LinkedList } from "mnemonist";
-import { delay, logger, noCache } from "./util";
+import * as url from "url";
+import { v4 } from "uuid";
 import { authGuard, getUser, verifyToken } from "./auth";
-import type { AuthenticatedRequest } from "./types";
 import { ServerConfig } from "./config";
+import type { AuthenticatedRequest } from "./types";
+import { delay, logger, noCache } from "./util";
 
 type ProcessInfo = {
-	process: ChildProcess;
-	port: number;
-	headerToken: string;
-	ready: boolean;
+  process: ChildProcess;
+  port: number;
+  headerToken: string;
+  ready: boolean;
 };
 
 const processMap = new Map<string, ProcessInfo>();
@@ -28,480 +28,424 @@ const logMap = new Map<string, LinkedList<string>>();
 const LOG_LIMIT = 1000;
 
 const userProcessesMetric = io.metric({
-	name: "Active Backend Processes",
-	id: "app/realtime/backend",
+  name: "Active Backend Processes",
+  id: "app/realtime/backend",
 });
 
 function appendLog(username: string, output: string) {
-	if (!username) {
-		return;
-	}
-	let list = logMap.get(username);
-	if (!list) {
-		list = new LinkedList<string>();
-		logMap.set(username, list);
-	}
+  if (!username) {
+    return;
+  }
+  let list = logMap.get(username);
+  if (!list) {
+    list = new LinkedList<string>();
+    logMap.set(username, list);
+  }
 
-	while (list.size >= LOG_LIMIT) {
-		list.shift();
-	}
-	list.push(output);
+  while (list.size >= LOG_LIMIT) {
+    list.shift();
+  }
+  list.push(output);
 }
 
-function setPendingProcess(
-	username: string,
-	port: number,
-	headerToken: string,
-	process: ChildProcess,
-) {
-	processMap.set(username, { port, process, headerToken, ready: false });
-	userProcessesMetric.set(processMap.size);
+function setPendingProcess(username: string, port: number, headerToken: string, process: ChildProcess) {
+  processMap.set(username, { port, process, headerToken, ready: false });
+  userProcessesMetric.set(processMap.size);
 }
 
 function setReadyProcess(username: string, pid: number) {
-	const processInfo = processMap.get(username);
-	if (processInfo?.process?.pid === pid) {
-		processInfo.ready = true;
-	} else {
-		logger.error(`Process ${pid} is missing`);
-	}
+  const processInfo = processMap.get(username);
+  if (processInfo?.process?.pid === pid) {
+    processInfo.ready = true;
+  } else {
+    logger.error(`Process ${pid} is missing`);
+  }
 }
 
 function deleteProcess(username: string) {
-	processMap.delete(username);
-	userProcessesMetric.set(processMap.size);
+  processMap.delete(username);
+  userProcessesMetric.set(processMap.size);
 }
 
 async function nextAvailablePort() {
-	// Get a map of all the ports in the range currently in use
-	const existingPorts = new Map<number, boolean>();
-	processMap.forEach((value) => {
-		existingPorts.set(value.port, true);
-	});
+  // Get a map of all the ports in the range currently in use
+  const existingPorts = new Map<number, boolean>();
+  processMap.forEach(value => {
+    existingPorts.set(value.port, true);
+  });
 
-	for (
-		let p = ServerConfig.backendPorts.min;
-		p < ServerConfig.backendPorts.max;
-		p++
-	) {
-		if (!existingPorts.has(p)) {
-			try {
-				const portUsed = await tcpPortUsed.check(p);
-				if (!portUsed) {
-					return p;
-				} else {
-					logger.error(`Skipping stale port ${p}`);
-				}
-			} catch (err) {
-				logger.debug(err);
-				logger.error(`Error checking status for port ${p}: ${err.message}`);
-			}
-		}
-	}
-	return -1;
+  for (let p = ServerConfig.backendPorts.min; p < ServerConfig.backendPorts.max; p++) {
+    if (!existingPorts.has(p)) {
+      try {
+        const portUsed = await tcpPortUsed.check(p);
+        if (!portUsed) {
+          return p;
+        } else {
+          logger.error(`Skipping stale port ${p}`);
+        }
+      } catch (err) {
+        logger.debug(err);
+        logger.error(`Error checking status for port ${p}: ${err.message}`);
+      }
+    }
+  }
+  return -1;
 }
 
 function handleCheckServer(req: AuthenticatedRequest, res: Response) {
-	if (!req.username) {
-		res.status(403).json({ success: false, message: "Invalid username" });
-		return;
-	}
+  if (!req.username) {
+    res.status(403).json({ success: false, message: "Invalid username" });
+    return;
+  }
 
-	const existingProcess = processMap.get(req.username);
-	if (existingProcess) {
-		res.json({
-			success: true,
-			running: true,
-		});
-	} else {
-		res.json({
-			success: true,
-			running: false,
-		});
-	}
+  const existingProcess = processMap.get(req.username);
+  if (existingProcess) {
+    res.json({
+      success: true,
+      running: true,
+    });
+  } else {
+    res.json({
+      success: true,
+      running: false,
+    });
+  }
 }
 
 function handleLog(req: AuthenticatedRequest, res: Response) {
-	if (!req.username) {
-		res.status(403).json({ success: false, message: "Invalid username" });
-		return;
-	}
+  if (!req.username) {
+    res.status(403).json({ success: false, message: "Invalid username" });
+    return;
+  }
 
-	const logList = logMap.get(req.username);
-	if (!logList?.size) {
-		res.json({ success: false });
-		return;
-	}
+  const logList = logMap.get(req.username);
+  if (!logList?.size) {
+    res.json({ success: false });
+    return;
+  }
 
-	res.json({
-		success: true,
-		log: logList.toArray()?.join(""),
-	});
+  res.json({
+    success: true,
+    log: logList.toArray()?.join(""),
+  });
 }
 
-async function handleStartServer(
-	req: AuthenticatedRequest,
-	res: Response,
-	next: NextFunction,
-) {
-	const username = req.username;
-	const forceRestart = req.body?.forceRestart;
-	if (!username) {
-		return next({ statusCode: 403, message: "Invalid username" });
-	}
+async function handleStartServer(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  const username = req.username;
+  const forceRestart = req.body?.forceRestart;
+  if (!username) {
+    return next({ statusCode: 403, message: "Invalid username" });
+  }
 
-	const existingProcess = processMap.get(username);
+  const existingProcess = processMap.get(username);
 
-	if (existingProcess) {
-		if (forceRestart) {
-			// Kill existing backend process for this
-			try {
-				const existingProcess = processMap.get(username);
-				if (existingProcess) {
-					// Kill the process via the kill script
-					spawnSync("sudo", [
-						"-u",
-						`${username}`,
-						ServerConfig.killCommand,
-						`${existingProcess.process.pid}`,
-					]);
-					// Delay to allow the parent process to exit
-					await delay(10);
-					deleteProcess(username);
-				}
-			} catch (e) {
-				logger.debug(e);
-				logger.error(
-					`Error killing existing process belonging to user ${username}`,
-				);
-				return next({
-					statusCode: 400,
-					message: "Problem killing existing process",
-				});
-			}
-		} else {
-			return res.json({ success: true, existing: true });
-		}
-	} else {
-		try {
-			await startServer(username);
-			return res.json({ success: true });
-		} catch (e) {
-			logger.debug(e);
-			return next(e);
-		}
-	}
+  if (existingProcess) {
+    if (forceRestart) {
+      // Kill existing backend process for this
+      try {
+        const existingProcess = processMap.get(username);
+        if (existingProcess) {
+          // Kill the process via the kill script
+          spawnSync("sudo", ["-u", `${username}`, ServerConfig.killCommand, `${existingProcess.process.pid}`]);
+          // Delay to allow the parent process to exit
+          await delay(10);
+          deleteProcess(username);
+        }
+      } catch (e) {
+        logger.debug(e);
+        logger.error(`Error killing existing process belonging to user ${username}`);
+        return next({
+          statusCode: 400,
+          message: "Problem killing existing process",
+        });
+      }
+    } else {
+      return res.json({ success: true, existing: true });
+    }
+  } else {
+    try {
+      await startServer(username);
+      return res.json({ success: true });
+    } catch (e) {
+      logger.debug(e);
+      return next(e);
+    }
+  }
 }
 
 async function startServer(username: string) {
-	let logStream: WriteStream | undefined;
+  let logStream: WriteStream | undefined;
 
-	try {
-		const port = await nextAvailablePort();
-		if (port < 0) {
-			throw {
-				statusCode: 500,
-				message: "No available ports for the backend process",
-			};
-		}
+  try {
+    const port = await nextAvailablePort();
+    if (port < 0) {
+      throw {
+        statusCode: 500,
+        message: "No available ports for the backend process",
+      };
+    }
 
-		let args: string[] = [];
-		if (ServerConfig.preserveEnv) {
-			args.push("--preserve-env=CARTA_AUTH_TOKEN");
-		}
+    let args: string[] = [];
+    if (ServerConfig.preserveEnv) {
+      args.push("--preserve-env=CARTA_AUTH_TOKEN");
+    }
 
-		args = args.concat([
-			"-n", // run non-interactively. If password is required, sudo will bail
-			"-u",
-			`${username}`,
-			ServerConfig.processCommand,
-			"--no_frontend",
-			"--no_database",
-			"--port",
-			`${port}`,
-			"--top_level_folder",
-			ServerConfig.rootFolderTemplate.replace("{username}", username),
-			"--controller_deployment",
-		]);
+    args = args.concat([
+      "-n", // run non-interactively. If password is required, sudo will bail
+      "-u",
+      `${username}`,
+      ServerConfig.processCommand,
+      "--no_frontend",
+      "--no_database",
+      "--port",
+      `${port}`,
+      "--top_level_folder",
+      ServerConfig.rootFolderTemplate.replace("{username}", username),
+      "--controller_deployment",
+    ]);
 
-		if (ServerConfig.backendLogFileTemplate) {
-			args.push("--no_log");
-		}
+    if (ServerConfig.backendLogFileTemplate) {
+      args.push("--no_log");
+    }
 
-		if (ServerConfig.additionalArgs) {
-			args = args.concat(ServerConfig.additionalArgs);
-		}
+    if (ServerConfig.additionalArgs) {
+      args = args.concat(ServerConfig.additionalArgs);
+    }
 
-		// Finally, add the positional argument for the base folder
-		args.push(ServerConfig.baseFolderTemplate.replace("{username}", username));
+    // Finally, add the positional argument for the base folder
+    args.push(ServerConfig.baseFolderTemplate.replace("{username}", username));
 
-		const headerToken = v4();
-		const child = spawn("sudo", args, {
-			env: { CARTA_AUTH_TOKEN: headerToken },
-		});
-		if (child?.pid == undefined) {
-			throw {
-				statusCode: 500,
-				message: `Problem starting process for user ${username}`,
-			};
-		}
-		setPendingProcess(username, port, headerToken, child);
+    const headerToken = v4();
+    const child = spawn("sudo", args, {
+      env: { CARTA_AUTH_TOKEN: headerToken },
+    });
+    if (child?.pid == undefined) {
+      throw {
+        statusCode: 500,
+        message: `Problem starting process for user ${username}`,
+      };
+    }
+    setPendingProcess(username, port, headerToken, child);
 
-		let logLocation;
+    let logLocation;
 
-		if (ServerConfig.backendLogFileTemplate) {
-			logLocation = ServerConfig.backendLogFileTemplate
-				.replace("{username}", username)
-				.replace("{pid}", child.pid.toString())
-				.replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
+    if (ServerConfig.backendLogFileTemplate) {
+      logLocation = ServerConfig.backendLogFileTemplate
+        .replace("{username}", username)
+        .replace("{pid}", child.pid.toString())
+        .replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
 
-			try {
-				logStream = fs.createWriteStream(logLocation, { flags: "a" });
-				if (logStream == undefined) {
-					throw new Error("Unable to open stream");
-				}
-				child.stdout.pipe(logStream);
-				child.stderr.pipe(logStream);
-				child.stdout.on("data", (data) => {
-					const line = data.toString() as string;
-					appendLog(username, line);
-				});
+      try {
+        logStream = fs.createWriteStream(logLocation, { flags: "a" });
+        if (logStream == undefined) {
+          throw new Error("Unable to open stream");
+        }
+        child.stdout.pipe(logStream);
+        child.stderr.pipe(logStream);
+        child.stdout.on("data", data => {
+          const line = data.toString() as string;
+          appendLog(username, line);
+        });
 
-				child.stderr.on("data", (data) => {
-					const line = data.toString() as string;
-					appendLog(username, line);
-				});
-			} catch (err) {
-				logger.debug(err);
-				logger.error(
-					`Could not create log file at ${logLocation}. Please ensure folder exists and permissions are set correctly`,
-				);
-			}
-		} else {
-			logLocation = "stdout";
-			child.stdout.on("data", (data) => {
-				const line = data.toString() as string;
-				appendLog(username, line);
-				logger.info(line);
-			});
+        child.stderr.on("data", data => {
+          const line = data.toString() as string;
+          appendLog(username, line);
+        });
+      } catch (err) {
+        logger.debug(err);
+        logger.error(`Could not create log file at ${logLocation}. Please ensure folder exists and permissions are set correctly`);
+      }
+    } else {
+      logLocation = "stdout";
+      child.stdout.on("data", data => {
+        const line = data.toString() as string;
+        appendLog(username, line);
+        logger.info(line);
+      });
 
-			child.stderr.on("data", (data) => {
-				const line = data.toString() as string;
-				appendLog(username, line);
-				logger.error(line);
-			});
-		}
+      child.stderr.on("data", data => {
+        const line = data.toString() as string;
+        appendLog(username, line);
+        logger.error(line);
+      });
+    }
 
-		child.on("exit", (code) => {
-			logger.info(
-				`Process ${child.pid} exited with code ${code} and signal ${child.signalCode}`,
-			);
-			deleteProcess(username);
-			logStream?.end();
-		});
+    child.on("exit", code => {
+      logger.info(`Process ${child.pid} exited with code ${code} and signal ${child.signalCode}`);
+      deleteProcess(username);
+      logStream?.end();
+    });
 
-		// Check for early exit of backend process
-		await delay(ServerConfig.startDelay);
-		if (child.exitCode || child.signalCode) {
-			throw {
-				statusCode: 500,
-				message: `Problem starting process for user ${username}`,
-			};
-		} else {
-			logger.info(
-				`Started process with PID ${child.pid} for user ${username} on port ${port}. Outputting to ${logLocation}`,
-			);
-			setReadyProcess(username, child.pid);
-			return;
-		}
-	} catch (e) {
-		logger.debug(e);
-		logger.error(`Problem starting process for user ${username}`);
-		logStream?.end();
-		if (e.statusCode && e.message) {
-			throw e;
-		} else {
-			throw {
-				statusCode: 500,
-				message: `Problem starting process for user ${username}`,
-			};
-		}
-	}
+    // Check for early exit of backend process
+    await delay(ServerConfig.startDelay);
+    if (child.exitCode || child.signalCode) {
+      throw {
+        statusCode: 500,
+        message: `Problem starting process for user ${username}`,
+      };
+    } else {
+      logger.info(`Started process with PID ${child.pid} for user ${username} on port ${port}. Outputting to ${logLocation}`);
+      setReadyProcess(username, child.pid);
+      return;
+    }
+  } catch (e) {
+    logger.debug(e);
+    logger.error(`Problem starting process for user ${username}`);
+    logStream?.end();
+    if (e.statusCode && e.message) {
+      throw e;
+    } else {
+      throw {
+        statusCode: 500,
+        message: `Problem starting process for user ${username}`,
+      };
+    }
+  }
 }
 
-async function handleStopServer(
-	req: AuthenticatedRequest,
-	res: Response,
-	next: NextFunction,
-) {
-	if (!req.username) {
-		return next({ statusCode: 403, message: "Invalid username" });
-	}
+async function handleStopServer(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  if (!req.username) {
+    return next({ statusCode: 403, message: "Invalid username" });
+  }
 
-	// Kill existing backend process for this
-	try {
-		const existingProcess = processMap.get(req.username);
-		if (existingProcess) {
-			existingProcess.process.removeAllListeners();
-			// Kill the process via the kill script
-			spawnSync("sudo", [
-				"-u",
-				`${req.username}`,
-				ServerConfig.killCommand,
-				`${existingProcess.process.pid}`,
-			]);
-			// Delay to allow the parent process to exit
-			await delay(10);
-			logger.info(
-				`Process with PID ${existingProcess.process.pid} for user ${req.username} exited via stop request`,
-			);
-			deleteProcess(req.username);
-			res.json({ success: true });
-		} else {
-			return next({
-				statusCode: 400,
-				message: `No existing process belonging to user ${req.username}`,
-			});
-		}
-	} catch (e) {
-		logger.debug(e);
-		logger.error(
-			`Error killing existing process belonging to user ${req.username}`,
-		);
-		return next({
-			statusCode: 500,
-			message: "Problem killing existing process",
-		});
-	}
+  // Kill existing backend process for this
+  try {
+    const existingProcess = processMap.get(req.username);
+    if (existingProcess) {
+      existingProcess.process.removeAllListeners();
+      // Kill the process via the kill script
+      spawnSync("sudo", ["-u", `${req.username}`, ServerConfig.killCommand, `${existingProcess.process.pid}`]);
+      // Delay to allow the parent process to exit
+      await delay(10);
+      logger.info(`Process with PID ${existingProcess.process.pid} for user ${req.username} exited via stop request`);
+      deleteProcess(req.username);
+      res.json({ success: true });
+    } else {
+      return next({
+        statusCode: 400,
+        message: `No existing process belonging to user ${req.username}`,
+      });
+    }
+  } catch (e) {
+    logger.debug(e);
+    logger.error(`Error killing existing process belonging to user ${req.username}`);
+    return next({
+      statusCode: 500,
+      message: "Problem killing existing process",
+    });
+  }
 }
 
-export const createUpgradeHandler =
-	(server: Server) => async (req: IncomingMessage, socket: any, head: any) => {
-		try {
-			if (!req?.url) {
-				return socket.end();
-			}
-			const parsedUrl = url.parse(req.url);
-			if (!parsedUrl?.query) {
-				logger.warning(
-					`Incoming Websocket upgrade request could not be parsed: ${req.url}`,
-				);
-				return socket.end();
-			}
-			const queryParameters = querystring.parse(parsedUrl.query);
-			const tokenString = queryParameters?.token;
-			if (!tokenString || Array.isArray(tokenString)) {
-				logger.warning(
-					`Incoming Websocket upgrade request is missing an authentication token`,
-				);
-				return socket.end();
-			}
+export const createUpgradeHandler = (server: Server) => async (req: IncomingMessage, socket: any, head: any) => {
+  try {
+    if (!req?.url) {
+      return socket.end();
+    }
+    const parsedUrl = url.parse(req.url);
+    if (!parsedUrl?.query) {
+      logger.warning(`Incoming Websocket upgrade request could not be parsed: ${req.url}`);
+      return socket.end();
+    }
+    const queryParameters = querystring.parse(parsedUrl.query);
+    const tokenString = queryParameters?.token;
+    if (!tokenString || Array.isArray(tokenString)) {
+      logger.warning(`Incoming Websocket upgrade request is missing an authentication token`);
+      return socket.end();
+    }
 
-			const token = await verifyToken(tokenString);
-			if (!token || !token.username) {
-				logger.warning(
-					`Incoming Websocket upgrade request has an invalid token`,
-				);
-				return socket.end();
-			}
+    const token = await verifyToken(tokenString);
+    if (!token || !token.username) {
+      logger.warning(`Incoming Websocket upgrade request has an invalid token`);
+      return socket.end();
+    }
 
-			const remoteAddress =
-				req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
-			logger.info(
-				`WS upgrade request from ${remoteAddress} for authenticated user ${token.username}`,
-			);
+    const remoteAddress = req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
+    logger.info(`WS upgrade request from ${remoteAddress} for authenticated user ${token.username}`);
 
-			const username = getUser(token.username, token.iss);
-			if (!username) {
-				logger.error(
-					`Could not find username ${token.username} in the user map`,
-				);
-				return socket.end();
-			}
-			let existingProcess = processMap.get(username);
+    const username = getUser(token.username, token.iss);
+    if (!username) {
+      logger.error(`Could not find username ${token.username} in the user map`);
+      return socket.end();
+    }
+    let existingProcess = processMap.get(username);
 
-			if (!existingProcess?.process || existingProcess.process.signalCode) {
-				// Attempt to start new process
-				existingProcess?.process?.removeAllListeners();
-				await startServer(username);
-				existingProcess = processMap.get(username);
-			}
+    if (!existingProcess?.process || existingProcess.process.signalCode) {
+      // Attempt to start new process
+      existingProcess?.process?.removeAllListeners();
+      await startServer(username);
+      existingProcess = processMap.get(username);
+    }
 
-			if (existingProcess && !existingProcess.process.signalCode) {
-				if (!existingProcess.ready) {
-					// Wait until existing process is ready
-					await delay(ServerConfig.startDelay);
-				}
-				logger.info(
-					`Redirecting to backend process for ${username} (port ${existingProcess.port})`,
-				);
-				req.headers["carta-auth-token"] = existingProcess.headerToken;
-				req.url = "/";
-				return server.ws(req, socket, head, {
-					target: { host: "localhost", port: existingProcess.port },
-				});
-			} else {
-				logger.error(`Backend process could not be started`);
-				return socket.end();
-			}
-		} catch (err) {
-			logger.error(`Error upgrading socket`);
-			logger.error(err);
-			return socket.end();
-		}
-	};
+    if (existingProcess && !existingProcess.process.signalCode) {
+      if (!existingProcess.ready) {
+        // Wait until existing process is ready
+        await delay(ServerConfig.startDelay);
+      }
+      logger.info(`Redirecting to backend process for ${username} (port ${existingProcess.port})`);
+      req.headers["carta-auth-token"] = existingProcess.headerToken;
+      req.url = "/";
+      return server.ws(req, socket, head, {
+        target: { host: "localhost", port: existingProcess.port },
+      });
+    } else {
+      logger.error(`Backend process could not be started`);
+      return socket.end();
+    }
+  } catch (err) {
+    logger.error(`Error upgrading socket`);
+    logger.error(err);
+    return socket.end();
+  }
+};
 
-export const createScriptingProxyHandler =
-	(server: Server) =>
-	async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-		const username = req?.username;
-		if (!username) {
-			return next({ statusCode: 401, message: "Not authorized" });
-		}
+export const createScriptingProxyHandler = (server: Server) => async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const username = req?.username;
+  if (!username) {
+    return next({ statusCode: 401, message: "Not authorized" });
+  }
 
-		if (!req.scripting) {
-			return next({
-				statusCode: 403,
-				message: "API token supplied does not permit scripting",
-			});
-		}
+  if (!req.scripting) {
+    return next({
+      statusCode: 403,
+      message: "API token supplied does not permit scripting",
+    });
+  }
 
-		try {
-			const remoteAddress =
-				req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
-			let existingProcess = processMap.get(username);
+  try {
+    const remoteAddress = req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
+    let existingProcess = processMap.get(username);
 
-			if (!existingProcess?.process || existingProcess.process.signalCode) {
-				// Attempt to start new process
-				existingProcess?.process?.removeAllListeners();
-				await startServer(username);
-				existingProcess = processMap.get(username);
-			}
+    if (!existingProcess?.process || existingProcess.process.signalCode) {
+      // Attempt to start new process
+      existingProcess?.process?.removeAllListeners();
+      await startServer(username);
+      existingProcess = processMap.get(username);
+    }
 
-			if (existingProcess && !existingProcess.process.signalCode) {
-				if (!existingProcess.ready) {
-					// Wait until existing process is ready
-					await delay(ServerConfig.startDelay);
-				}
-				req.headers["carta-auth-token"] = existingProcess.headerToken;
-				return server.web(req, res, {
-					target: { host: "localhost", port: existingProcess.port },
-				});
-			} else {
-				return next({
-					statusCode: 500,
-					message: `Backend process could not be started for ${username}`,
-				});
-			}
-		} catch (err) {
-			logger.error(`Error proxying scripting request for ${req.username}`);
-			logger.debug(err);
-			return next({
-				statusCode: 500,
-				message: `Error proxying scripting request for ${req.username}`,
-			});
-		}
-	};
+    if (existingProcess && !existingProcess.process.signalCode) {
+      if (!existingProcess.ready) {
+        // Wait until existing process is ready
+        await delay(ServerConfig.startDelay);
+      }
+      req.headers["carta-auth-token"] = existingProcess.headerToken;
+      return server.web(req, res, {
+        target: { host: "localhost", port: existingProcess.port },
+      });
+    } else {
+      return next({
+        statusCode: 500,
+        message: `Backend process could not be started for ${username}`,
+      });
+    }
+  } catch (err) {
+    logger.error(`Error proxying scripting request for ${req.username}`);
+    logger.debug(err);
+    return next({
+      statusCode: 500,
+      message: `Error proxying scripting request for ${req.username}`,
+    });
+  }
+};
 
 export const serverRouter = express.Router();
 serverRouter.post("/start", authGuard, noCache, handleStartServer);

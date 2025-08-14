@@ -1,239 +1,256 @@
 body {
-	background-color: #f6f8fa;
-	font-family: "Roboto", sans-serif;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
+  background-color: #f6f8fa;
+  font-family: "Roboto", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .center {
-	margin: 0;
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	-ms-transform: translate(-50%, -50%);
-	transform: translate(-50%, -50%);
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
 }
 
 .blurred {
-	transition: 100ms;
-	filter: blur(16px);
+  transition: 100ms;
+  filter: blur(16px);
 }
 
 .signin-dialog {
-	background-color: #ffffff;
-	width: 640px;
-	border-radius: 3px;
-	border: 0;
-	padding-top: 0;
-	margin: 20px auto 0 auto;
-	box-shadow: 0 0 15px 0 rgba(16, 22, 26, .05), 0 18px 46px 0 rgba(16, 22, 26, .05);
+  background-color: #ffffff;
+  width: 640px;
+  border-radius: 3px;
+  border: 0;
+  padding-top: 0;
+  margin: 20px auto 0 auto;
+  box-shadow:
+    0 0 15px 0 rgba(16, 22, 26, 0.05),
+    0 18px 46px 0 rgba(16, 22, 26, 0.05);
 }
 
 .logo {
-	display: flex;
-	justify-content: center;
-	height: 90px;
-	padding-top: 30px;
-	margin: 0 -20px 15px 0;
+  display: flex;
+  justify-content: center;
+  height: 90px;
+  padding-top: 30px;
+  margin: 0 -20px 15px 0;
 }
 
 .spacer {
-	width: 0px;
+  width: 0px;
 }
 
 .titletext {
-	display: block;
-	text-align: left;
-	font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", Icons16, sans-serif;
-	margin: 23px 40px auto 10px;
-	color: #123A6F;
-	line-height: 21px;
-	font-size: 32px;
-	font-weight: bold;
+  display: block;
+  text-align: left;
+  font-family:
+    Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", Icons16, sans-serif;
+  margin: 23px 40px auto 10px;
+  color: #123a6f;
+  line-height: 21px;
+  font-size: 32px;
+  font-weight: bold;
 }
 
-@supports (-moz-appearance:none) {
-    .titletext {
-		width: 280%;
-	}
-	.spacer {
-		width: 70%;
-	}
+@supports (-moz-appearance: none) {
+  .titletext {
+    width: 280%;
+  }
+  .spacer {
+    width: 70%;
+  }
 }
 
 .bodytext {
-	text-align: center;
-	font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", Icons16, sans-serif;
-	margin: 30px auto 10px auto;
-	font-size: 14px;
-	line-height: 18px;
-	color: #505b66;
+  text-align: center;
+  font-family:
+    Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", Icons16, sans-serif;
+  margin: 30px auto 10px auto;
+  font-size: 14px;
+  line-height: 18px;
+  color: #505b66;
 }
 
 .loggedin {
-	font-size: 13px;
-	margin: 20px auto -7px auto;
+  font-size: 13px;
+  margin: 20px auto -7px auto;
 }
 
 .banner {
-	padding: 20px;
-	display: block;
-	margin: 0 auto 0 auto;
-	vertical-align: top;
+  padding: 20px;
+  display: block;
+  margin: 0 auto 0 auto;
+  vertical-align: top;
 }
 
 .footer {
-	text-align: center;
-	font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", Icons16, sans-serif;
-	font-size: 13px;
-	line-height: 18px;
-	margin-top: 25px;
-	color: #000000;
+  text-align: center;
+  font-family:
+    Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", Icons16, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  margin-top: 25px;
+  color: #000000;
 }
 
-input[type=text], input[type=password] {
-	font-size: 14px;
-	font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", Icons16, sans-serif;
-	color: #245282;
-	width: 480px;
-	background-color: rgba(120, 131, 142, .4);
-	border: hidden;
-	border-radius: 3px;
-	padding: 15px 15px;
-	margin: 12px auto 0 auto;
-	display: inline-block;
-	box-sizing: border-box;
+input[type="text"],
+input[type="password"] {
+  font-size: 14px;
+  font-family:
+    Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", Icons16, sans-serif;
+  color: #245282;
+  width: 480px;
+  background-color: rgba(120, 131, 142, 0.4);
+  border: hidden;
+  border-radius: 3px;
+  padding: 15px 15px;
+  margin: 12px auto 0 auto;
+  display: inline-block;
+  box-sizing: border-box;
 }
 
 ::placeholder {
-	font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", Icons16, sans-serif;
-	font-size: 14px;
-	color: #FFFFFF;
+  font-family:
+    Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", Icons16, sans-serif;
+  font-size: 14px;
+  color: #ffffff;
 }
 
 button {
-	border-radius: 3px;
-	text-transform: uppercase;
-	color: #FFFFFF;
-	font-size: 14px;
-	padding: 15px;
-	margin: 15px auto 0 auto;
-	border: 0;
-	cursor: pointer;
-	width: 220px;
-	transition: 100ms;
+  border-radius: 3px;
+  text-transform: uppercase;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 15px;
+  margin: 15px auto 0 auto;
+  border: 0;
+  cursor: pointer;
+  width: 220px;
+  transition: 100ms;
 }
 
 .button-signin {
-	background: #2c649e;
+  background: #2c649e;
 }
 
-.button-signin:hover, .button-signin:active, .button-signin:focus {
-	background: #245282;
+.button-signin:hover,
+.button-signin:active,
+.button-signin:focus {
+  background: #245282;
 }
 
 .button-newsession {
-	background: #469765;
+  background: #469765;
 }
 
-.button-newsession:hover, .button-newsession:active, .button-newsession:focus {
-	background: #397d53;
+.button-newsession:hover,
+.button-newsession:active,
+.button-newsession:focus {
+  background: #397d53;
 }
 
 .button-restart {
-	background: #ca453f;
+  background: #ca453f;
 }
 
-.button-restart:hover, .button-restart:active .button-restart:focus {
-	background: #b03d37;
+.button-restart:hover,
+.button-restart:active .button-restart:focus {
+  background: #b03d37;
 }
 
 .button-restart:disabled {
-	color: rgba(120, 131, 142, .3);
-	background: rgba(120, 131, 142, .3);
-	cursor: not-allowed;
+  color: rgba(120, 131, 142, 0.3);
+  background: rgba(120, 131, 142, 0.3);
+  cursor: not-allowed;
 }
 
 .button-logs {
-	background: #964582;
+  background: #964582;
 }
 
-.button-logs:hover, .button-logs:active, .button-logs:focus {
-	background: #7d396c;
+.button-logs:hover,
+.button-logs:active,
+.button-logs:focus {
+  background: #7d396c;
 }
 
 .button-logs:disabled {
-	color: rgba(120, 131, 142, .3);
-	background: rgba(120, 131, 142, .3);
-	cursor: not-allowed;
+  color: rgba(120, 131, 142, 0.3);
+  background: rgba(120, 131, 142, 0.3);
+  cursor: not-allowed;
 }
 
 .button-logout {
-	background: #2c649e;
+  background: #2c649e;
 }
 
-.button-logout:hover, .button-logout:active, .button-logout:focus {
-	background: #245282;
+.button-logout:hover,
+.button-logout:active,
+.button-logout:focus {
+  background: #245282;
 }
 
 .formcontainer {
-	text-align: center;
-	padding-top: 0;
-	padding-bottom: 30px;
-	margin: 0 auto 0 auto;
+  text-align: center;
+  padding-top: 0;
+  padding-bottom: 30px;
+  margin: 0 auto 0 auto;
 }
 
 .sso-buttons {
-	padding-bottom: 15px;
+  padding-bottom: 15px;
 
-	display: flex;
-	justify-content: center;
-	align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .sso-buttons .g_id_signin div {
-	margin: 0 auto;
+  margin: 0 auto;
 }
 
 a {
-	color: #000000;
+  color: #000000;
 }
 
 #log-modal {
-	display: none;
-	background: rgba(3, 17, 3, 0.8);
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	border-radius: 3px;
-	border: 0;
-	margin: 20px;
+  display: none;
+  background: rgba(3, 17, 3, 0.8);
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 3px;
+  border: 0;
+  margin: 20px;
 }
 
 #log-output {
-	margin: 20px;
-	color: #bbbbbb;
-	overflow: auto;
-	font-family: Courier, monospace;
-	font-size: 12px;
-	white-space: nowrap;
-	line-height: 16px;
-	height: calc(100% - 150px);
+  margin: 20px;
+  color: #bbbbbb;
+  overflow: auto;
+  font-family: Courier, monospace;
+  font-size: 12px;
+  white-space: nowrap;
+  line-height: 16px;
+  height: calc(100% - 150px);
 }
 
 .log-buttons {
-	position: absolute;
-	bottom: 0;
-	margin: 0;
-	left: 50%;
-	-ms-transform: translate(-50%, -50%);
-	transform: translate(-50%, -50%);
-	display: flex;
+  position: absolute;
+  bottom: 0;
+  margin: 0;
+  left: 50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  display: flex;
 }
 
 .log-buttons .button {
-	margin-left: 10px;
-	margin-right: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
