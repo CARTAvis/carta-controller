@@ -1,8 +1,8 @@
 {
-  "$schema": "https://cartavis.org/schemas/preference_backend_schema_2.json",
-  "backendConfigVersion": "2.0",
-  "idle_timeout": 14400,
-  "omp_threads": 8,
-  "exit_timeout": 0,
-  "initial_timeout": 30
+    "$schema": "https://cartavis.org/schemas/preference_backend_schema_2.json",
+    "backendConfigVersion": "2.0",
+    "idle_timeout": 14400,
+    "omp_threads": 8,
+    "exit_timeout": 0,
+    "initial_timeout": 30
 }
