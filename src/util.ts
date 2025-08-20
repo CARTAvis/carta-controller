@@ -1,11 +1,11 @@
-import {NextFunction, Request, Response} from "express";
 import {spawnSync} from "child_process";
+import type {NextFunction, Request, Response} from "express";
 
 import winston from "winston";
 
 export const logger = winston.createLogger({
     // Detailed setup is completed in config.ts
-    levels: winston.config.syslog.levels,
+    levels: winston.config.syslog.levels
 });
 
 // Delay for the specified number of milliseconds

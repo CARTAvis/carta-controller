@@ -1,8 +1,8 @@
-import express from "express";
+import type express from "express";
 import LdapAuth from "ldapauth-fork";
-import {CartaLdapAuthConfig} from "../types";
-import {addTokensToResponse} from "./local";
+import type {CartaLdapAuthConfig} from "../types";
 import {getUserId, logger} from "../util";
+import {addTokensToResponse} from "./local";
 
 let ldap: LdapAuth;
 
@@ -19,7 +19,7 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
     }, 2000);
 
     return (req: express.Request, res: express.Response) => {
-        let username = req.body?.username;
+        const username = req.body?.username;
         const password = req.body?.password;
 
         if (!username || !password) {
@@ -29,7 +29,10 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
         const handleAuth = (err: Error | string, user: any) => {
             if (err) {
                 logger.error(err);
-                return res.status(403).json({statusCode: 403, message: "Invalid username/password combo"});
+                return res.status(403).json({
+                    statusCode: 403,
+                    message: "Invalid username/password combo"
+                });
             }
             if (user?.uid !== username) {
                 logger.warning(`Returned user "uid ${user?.uid}" does not match username "${username}"`);

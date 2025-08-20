@@ -1,8 +1,8 @@
 import * as fs from "fs";
-import {expect, test, vi} from 'vitest';
+import {expect, test, vi} from "vitest";
+import winston from "winston";
 import {populateUserMap} from "../src/auth/external";
-import { logger } from '../src/util';
-import winston from 'winston';
+import {logger} from "../src/util";
 
 const userMapString = `
    # foo
@@ -16,32 +16,35 @@ jane  janeuser # comment about Jane
 badline
 badlinewithcomment # comment
 
-`
+`;
 
-vi.mock('fs', () => ({
-    readFileSync: vi.fn((file_name) => {
+vi.mock("fs", () => ({
+    readFileSync: vi.fn(file_name => {
         return userMapString;
     })
-}))
+}));
 
 const logWarn = vi.spyOn(logger, "warning").mockImplementation(vi.fn());
 const logInfo = vi.spyOn(logger, "info").mockImplementation(vi.fn());
 
-test('Parse user mapping table file', () => {
+test("Parse user mapping table file", () => {
     const userMaps = new Map();
     const expectedMaps = new Map([
-        ["test_issuer", new Map([
-            ["alice", "aliceuser"],
-            ["Bob", "bobuser"],
-            ["carol", "caroluser"],
-            ["emma", "emmauser"],
-            ["Rosalind Franklin", "rfranklin"],
-            ["jane", "janeuser"]
-        ])]
+        [
+            "test_issuer",
+            new Map([
+                ["alice", "aliceuser"],
+                ["Bob", "bobuser"],
+                ["carol", "caroluser"],
+                ["emma", "emmauser"],
+                ["Rosalind Franklin", "rfranklin"],
+                ["jane", "janeuser"]
+            ])
+        ]
     ]);
 
     populateUserMap(userMaps, "test_issuer", "dummy path");
-    
+
     expect(userMaps).toStrictEqual(expectedMaps);
     expect(logWarn).toHaveBeenNthCalledWith(1, "Ignoring malformed usermap line: badline");
     expect(logWarn).toHaveBeenNthCalledWith(2, "Ignoring malformed usermap line: badlinewithcomment");

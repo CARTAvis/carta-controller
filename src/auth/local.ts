@@ -1,13 +1,12 @@
-import {CartaLocalAuthConfig, ScriptingAccess, Verifier} from "../types";
 import * as fs from "fs";
+import {type CartaLocalAuthConfig, ScriptingAccess, type Verifier} from "../types";
 import jwt = require("jsonwebtoken");
-import {VerifyOptions} from "jsonwebtoken";
-import express from "express";
-import {verifyToken} from "./index";
-import {RuntimeConfig, ServerConfig} from "../config";
+import type express from "express";
+import type {VerifyOptions} from "jsonwebtoken";
 import ms from "ms";
-import {getUserId} from "../util";
-import { logger } from "../util";
+import {RuntimeConfig, ServerConfig} from "../config";
+import {getUserId, logger} from "../util";
+import {verifyToken} from "./index";
 
 let privateKey: Buffer;
 
@@ -68,7 +67,9 @@ export function addTokensToResponse(res: express.Response, authConf: CartaLocalA
 export function generateLocalVerifier(verifierMap: Map<string, Verifier>, authConf: CartaLocalAuthConfig) {
     const publicKey = fs.readFileSync(authConf.publicKeyLocation);
     verifierMap.set(authConf.issuer, cookieString => {
-        const payload: any = jwt.verify(cookieString, publicKey, {algorithm: authConf.keyAlgorithm} as VerifyOptions);
+        const payload: any = jwt.verify(cookieString, publicKey, {
+            algorithm: authConf.keyAlgorithm
+        } as VerifyOptions);
         if (payload && payload.iss === authConf.issuer) {
             return payload;
         } else {
@@ -87,7 +88,10 @@ export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
                 if (!refreshToken || !refreshToken.username || !refreshToken.refresh) {
                     next({statusCode: 403, message: "Not authorized"});
                 } else if (scriptingToken && ServerConfig.scriptingAccess !== ScriptingAccess.Enabled) {
-                    next({statusCode: 500, message: "Scripting access not enabled for this server"});
+                    next({
+                        statusCode: 500,
+                        message: "Scripting access not enabled for this server"
+                    });
                 } else {
                     const uid = getUserId(refreshToken.username);
                     const access_token = generateToken(authConf, refreshToken.username, scriptingToken ? TokenType.Scripting : TokenType.Access);

@@ -1,11 +1,11 @@
-import express, {NextFunction, Response} from "express";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {Collection, Db, MongoClient, ObjectId} from "mongodb";
+import express, {type NextFunction, type Response} from "express";
+import {type Collection, type Db, MongoClient, ObjectId} from "mongodb";
 import {authGuard} from "./auth";
-import {noCache, logger} from "./util";
-import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
+import type {AuthenticatedRequest} from "./types";
+import {logger, noCache} from "./util";
 
 const PREFERENCE_SCHEMA_VERSION = 2;
 const LAYOUT_SCHEMA_VERSION = 2;
@@ -56,14 +56,18 @@ export async function initDB() {
             preferenceCollection = await createOrGetCollection(db, "preferences");
             workspacesCollection = await createOrGetCollection(db, "workspaces");
             // Remove any existing validation in preferences collection
-            await db.command({collMod: "preferences", validator: {}, validationLevel: "off"});
+            await db.command({
+                collMod: "preferences",
+                validator: {},
+                validationLevel: "off"
+            });
             // Update collection indices if necessary
             await updateUsernameIndex(layoutsCollection, false);
             await updateUsernameIndex(snippetsCollection, false);
             await updateUsernameIndex(workspacesCollection, false);
             await updateUsernameIndex(preferenceCollection, true);
 
-            logger.info(`Connected to ${client.options.dbName} on ${client.options.hosts} (Authenticated: ${client.options.credentials ? 'Yes': 'No'})`);
+            logger.info(`Connected to ${client.options.dbName} on ${client.options.hosts} (Authenticated: ${client.options.credentials ? "Yes" : "No"})`);
         } catch (err) {
             logger.debug(err);
             logger.emerg("Error connecting to database");
@@ -93,7 +97,10 @@ async function handleGetPreferences(req: AuthenticatedRequest, res: Response, ne
             }
             res.json({success: true, preferences: doc});
         } else {
-            return next({statusCode: 500, message: "Problem retrieving preferences"});
+            return next({
+                statusCode: 500,
+                message: "Problem retrieving preferences"
+            });
         }
     } catch (err) {
         logger.debug(err);
@@ -244,7 +251,10 @@ async function handleClearLayout(req: AuthenticatedRequest, res: Response, next:
 
     const layoutName = req.body?.layoutName;
     try {
-        const deleteResult = await layoutsCollection.deleteOne({username: req.username, name: layoutName});
+        const deleteResult = await layoutsCollection.deleteOne({
+            username: req.username,
+            name: layoutName
+        });
         if (deleteResult.acknowledged) {
             res.json({success: true});
         } else {
@@ -330,7 +340,10 @@ async function handleClearSnippet(req: AuthenticatedRequest, res: Response, next
 
     const snippetName = req.body?.snippetName;
     try {
-        const deleteResult = await snippetsCollection.deleteOne({username: req.username, name: snippetName});
+        const deleteResult = await snippetsCollection.deleteOne({
+            username: req.username,
+            name: snippetName
+        });
         if (deleteResult.acknowledged) {
             res.json({success: true});
         } else {
@@ -341,7 +354,6 @@ async function handleClearSnippet(req: AuthenticatedRequest, res: Response, next
         return next({statusCode: 500, message: "Problem clearing snippet"});
     }
 }
-
 
 async function handleClearWorkspace(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     if (!req.username) {
@@ -357,7 +369,10 @@ async function handleClearWorkspace(req: AuthenticatedRequest, res: Response, ne
     const workspaceId = req.body?.id;
 
     try {
-        const deleteResult = await workspacesCollection.deleteOne({username: req.username, name: workspaceName});
+        const deleteResult = await workspacesCollection.deleteOne({
+            username: req.username,
+            name: workspaceName
+        });
         if (deleteResult.acknowledged) {
             res.json({success: true});
         } else {
@@ -380,7 +395,12 @@ async function handleGetWorkspaceList(req: AuthenticatedRequest, res: Response, 
 
     try {
         const workspaceList = await workspacesCollection.find({username: req.username}, {projection: {_id: 1, name: 1, "workspace.date": 1}}).toArray();
-        const workspaces = workspaceList?.map(w => ({...w, id: w._id, date: w.workspace?.date})) ?? [];
+        const workspaces =
+            workspaceList?.map(w => ({
+                ...w,
+                id: w._id,
+                date: w.workspace?.date
+            })) ?? [];
         res.json({success: true, workspaces});
     } catch (err) {
         logger.debug(err);
@@ -406,7 +426,12 @@ async function handleGetWorkspaceByName(req: AuthenticatedRequest, res: Response
         if (!queryResult?.workspace) {
             return next({statusCode: 404, message: "Workspace not found"});
         } else {
-            const workspace = {id: queryResult._id, name: queryResult.name, editable: true, ...queryResult.workspace};
+            const workspace = {
+                id: queryResult._id,
+                name: queryResult.name,
+                editable: true,
+                ...queryResult.workspace
+            };
             const isValid = validateWorkspace(workspace);
             if (!isValid) {
                 logger.warning(`Returning invalid workspace '${workspace.name}':\n${validateWorkspace.errors}`);
@@ -418,7 +443,6 @@ async function handleGetWorkspaceByName(req: AuthenticatedRequest, res: Response
         return next({statusCode: 500, message: "Problem retrieving workspace"});
     }
 }
-
 
 async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     if (!req.username) {
@@ -435,13 +459,20 @@ async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: Response,
 
     try {
         const objectId = Buffer.from(req.params.key, "base64url").toString("hex");
-        const queryResult = await workspacesCollection.findOne({_id: new ObjectId(objectId)});
+        const queryResult = await workspacesCollection.findOne({
+            _id: new ObjectId(objectId)
+        });
         if (!queryResult?.workspace) {
             return next({statusCode: 404, message: "Workspace not found"});
         } else if (queryResult.username !== req.username && !queryResult.shared) {
             return next({statusCode: 403, message: "Workspace not accessible"});
         } else {
-            const workspace = {id: queryResult._id, name: queryResult.name, editable: queryResult.username === req.username, ...queryResult.workspace};
+            const workspace = {
+                id: queryResult._id,
+                name: queryResult.name,
+                editable: queryResult.username === req.username,
+                ...queryResult.workspace
+            };
             const isValid = validateWorkspace(workspace);
             if (!isValid) {
                 logger.warning(`Returning invalid workspace '${workspace.name}':\n${validateWorkspace.errors}`);
@@ -453,7 +484,6 @@ async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: Response,
         return next({statusCode: 500, message: "Problem retrieving workspace"});
     }
 }
-
 
 async function handleSetWorkspace(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     if (!req.username) {
@@ -487,7 +517,8 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: Response, next
                     id: updateResult.value._id.toString(),
                     editable: true,
                     name: workspaceName
-                }});
+                }
+            });
             return;
         } else {
             return next({statusCode: 500, message: "Problem updating workspace"});
@@ -497,7 +528,6 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: Response, next
         return next({statusCode: 500, message: err.errmsg});
     }
 }
-
 
 async function handleShareWorkspace(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     if (!req.username) {

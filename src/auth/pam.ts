@@ -1,14 +1,13 @@
-import {Request, Response} from "express";
-import {CartaLocalAuthConfig} from "../types";
+import type {Request, Response} from "express";
+import type {CartaLocalAuthConfig} from "../types";
+import {getUserId, logger} from "../util";
 import {addTokensToResponse} from "./local";
-import {getUserId} from "../util";
-import { logger } from "../util";
 
 export function getPamLoginHandler(authConf: CartaLocalAuthConfig) {
     const {pamAuthenticate} = require("node-linux-pam");
 
     return (req: Request, res: Response) => {
-        let username = req.body?.username;
+        const username = req.body?.username;
         const password = req.body?.password;
 
         if (!username || !password) {
@@ -17,7 +16,10 @@ export function getPamLoginHandler(authConf: CartaLocalAuthConfig) {
 
         pamAuthenticate({username, password}, (err: Error | string, code: number) => {
             if (err) {
-                return res.status(403).json({statusCode: 403, message: "Invalid username/password combo"});
+                return res.status(403).json({
+                    statusCode: 403,
+                    message: "Invalid username/password combo"
+                });
             } else {
                 try {
                     const uid = getUserId(username);

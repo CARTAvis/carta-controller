@@ -22,8 +22,7 @@ let notyf;
 
 let apiBase;
 getApiBase = async () => {
-    if (apiBase)
-        return apiBase;
+    if (apiBase) return apiBase;
     else {
         try {
             const configData = await fetch(`${strippedPath}config`);
@@ -35,7 +34,7 @@ getApiBase = async () => {
             return "/api"; // use default
         }
     }
-}
+};
 
 apiCall = async (callName, jsonBody, method, authRequired) => {
     const options = {
@@ -43,7 +42,7 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
     };
     if (method !== "get" && jsonBody) {
         options.body = JSON.stringify(jsonBody);
-        options.headers = {"Content-Type": "application/json"}
+        options.headers = {"Content-Type": "application/json"};
     } else {
         options.headers = {};
     }
@@ -62,7 +61,7 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
         }
     }
     return fetch(`${await getApiBase()}/${callName}`, options);
-}
+};
 
 function setToken(tokenString, expiresIn) {
     token = tokenString;
@@ -98,7 +97,7 @@ showMessage = (message, error, elementId) => {
         statusElement.className = "success-message";
     }
     statusElement.innerHTML = message;
-}
+};
 
 setButtonDisabled = (elementId, disabled) => {
     const button = document.getElementById(elementId);
@@ -107,10 +106,10 @@ setButtonDisabled = (elementId, disabled) => {
         if (disabled) {
             button.classList.add("button-disabled");
         } else {
-            button.classList.remove("button-disabled")
+            button.classList.remove("button-disabled");
         }
     }
-}
+};
 
 updateServerStatus = async () => {
     let hasServer = false;
@@ -130,15 +129,15 @@ updateServerStatus = async () => {
     }
     updateRedirectURL(hasServer);
     serverRunning = hasServer;
-}
+};
 
-updateRedirectURL = (hasServer) => {
+updateRedirectURL = hasServer => {
     if (hasServer) {
         showMessage("CARTA server running", false, "carta-status");
     } else {
         showMessage(`Logged in as ${authenticatedUser}`, false, "carta-status");
     }
-}
+};
 
 handleLogin = async () => {
     setButtonDisabled("login", true);
@@ -162,10 +161,10 @@ handleLogin = async () => {
     setButtonDisabled("login", false);
 };
 
-onLoginFailed = (status) => {
+onLoginFailed = status => {
     clearToken();
     notyf.error(status === 403 ? "Invalid username/password combination" : "Could not authenticate correctly");
-}
+};
 
 onLoginSucceeded = async (username, type) => {
     authenticatedUser = username;
@@ -181,7 +180,7 @@ onLoginSucceeded = async (username, type) => {
         serverCheckHandle = setInterval(updateServerStatus, 5000);
         await updateServerStatus();
     }
-}
+};
 
 handleServerStop = async () => {
     try {
@@ -202,7 +201,7 @@ handleServerStop = async () => {
         notyf.error("Failed to stop CARTA server");
         console.log(e);
     }
-}
+};
 
 handleLogout = async () => {
     localStorage.removeItem("authenticationType");
@@ -210,11 +209,11 @@ handleLogout = async () => {
         await handleServerStop();
     }
     window.open(`${await getApiBase()}/auth/logout`, "_self");
-}
+};
 
 handleOpenCarta = () => {
     window.open(redirectUrl, "_self");
-}
+};
 
 handleLog = async () => {
     // Disable log buttons for 5 seconds
@@ -230,7 +229,7 @@ handleLog = async () => {
         const res = await apiCall("server/log", undefined, "get", true);
         const body = await res.json();
         if (body.success && body.log) {
-            document.getElementById("log-modal").style.display = "block"
+            document.getElementById("log-modal").style.display = "block";
             document.getElementById("main-div").classList.add("blurred");
             const outputElement = document.getElementById("log-output");
             if (outputElement) {
@@ -244,25 +243,25 @@ handleLog = async () => {
     } catch (e) {
         console.log(e);
     }
-}
+};
 
 handleHideLog = () => {
-    document.getElementById("log-modal").style.display = "none"
+    document.getElementById("log-modal").style.display = "none";
     document.getElementById("main-div").classList.remove("blurred");
-}
+};
 
 handleLocalLogout = async () => {
     await apiCall("auth/logout", undefined, "post", false);
-}
+};
 
-handleKeyup = (e) => {
+handleKeyup = e => {
     if (e.keyCode === 13) {
         const loginButton = document.getElementById("login");
         if (loginButton && !loginButton.disabled) {
             handleLogin();
         }
     }
-}
+};
 
 refreshLocalToken = async () => {
     try {
@@ -277,46 +276,47 @@ refreshLocalToken = async () => {
         notyf.error("Error refreshing authentication");
         console.log(err);
     }
-}
+};
 
-showCartaForm = (show) => {
+showCartaForm = show => {
     const cartaForm = document.getElementsByClassName("carta-form")[0];
     if (show) {
         cartaForm.style.display = "block";
     } else {
         cartaForm.style.display = "none";
-
     }
-}
+};
 
-showLoginForm = (show) => {
+showLoginForm = show => {
     const loginForm = document.getElementsByClassName("login-form")[0];
     if (show) {
         loginForm.style.display = "block";
     } else {
         loginForm.style.display = "none";
-
     }
-}
+};
 
 window.onload = async () => {
     notyf = new Notyf({
         ripple: true,
         position: {x: "center"},
-        types: [{
-            type: "warning",
-            background: "orange"
-        }, {
-            type: "info",
-            background: "#4c84af",
-        }]
+        types: [
+            {
+                type: "warning",
+                background: "orange"
+            },
+            {
+                type: "info",
+                background: "#4c84af"
+            }
+        ]
     });
 
     // Check for completed login
     const usp = new URLSearchParams(window.location.search);
     if (usp.has("oidcuser")) {
         await refreshLocalToken();
-        onLoginSucceeded(usp.get("oidcuser"), "oidc")
+        onLoginSucceeded(usp.get("oidcuser"), "oidc");
     } else if (usp.has("googleuser")) {
         await refreshLocalToken();
         if (localStorage.getItem("redirectParams")) {
@@ -324,7 +324,7 @@ window.onload = async () => {
             localStorage.removeItem("redirectParams");
             autoRedirect = true;
         }
-        onLoginSucceeded(usp.get("googleuser"), "google")
+        onLoginSucceeded(usp.get("googleuser"), "google");
     } else if (usp.has("err")) {
         console.log(usp.get("err"));
         notyf.open({type: "error", message: usp.get("err")});
@@ -375,7 +375,9 @@ window.onload = async () => {
 
     const oidcLoginButton = document.getElementById("oidcLogin");
     if (oidcLoginButton) {
-        oidcLoginButton.onclick = async () => { window.location.href = `${await getApiBase()}/auth/login${window.location.search}` };
+        oidcLoginButton.onclick = async () => {
+            window.location.href = `${await getApiBase()}/auth/login${window.location.search}`;
+        };
     }
 
     document.getElementById("stop").onclick = handleServerStop;
@@ -384,5 +386,4 @@ window.onload = async () => {
     document.getElementById("refresh-logs").onclick = handleLog;
     document.getElementById("hide-logs").onclick = handleHideLog;
     document.getElementById("logout").onclick = handleLogout;
-
-}
+};
