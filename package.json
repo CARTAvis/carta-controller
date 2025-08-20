@@ -12,12 +12,12 @@
     "scripts": {
         "start": "npx ts-node src/index.ts",
         "test": "npx ts-node src/index.ts --test",
-        "reformat": "npx @biomejs/biome format --write ./src",
-        "checkformat": "npx @biomejs/biome format ./src",
-        "lint": "npx @biomejs/biome lint ./src",
-        "fixlint": "npx @biomejs/biome lint --write ./src",
-        "checkformat-and-lint": "npx @biomejs/biome check ./src",
-        "reformat-and-fixlint": "npx @biomejs/biome check --write ./src",
+        "reformat": "npx @biomejs/biome format --write",
+        "checkformat": "npx @biomejs/biome format",
+        "lint": "npx @biomejs/biome lint",
+        "fixlint": "npx @biomejs/biome lint --write",
+        "checkformat-and-lint": "npx @biomejs/biome check",
+        "reformat-and-fixlint": "npx @biomejs/biome check --write",
         "prepare": "npx tsc",
         "unit-test": "vitest run"
     },
