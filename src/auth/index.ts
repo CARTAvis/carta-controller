@@ -1,5 +1,4 @@
 import jwt = require("jsonwebtoken");
-
 import express, {Response} from "express";
 import {RuntimeConfig, ServerConfig} from "../config";
 import type {AsyncRequestHandler, AuthenticatedRequest, RequestHandler, UserMap, Verifier} from "../types";
