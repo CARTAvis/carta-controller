@@ -65,7 +65,7 @@ export function generateExternalVerifiers(verifierMap: Map<string, Verifier>, au
         const payload: any = jwt.verify(cookieString, publicKey, {
             algorithm: authConf.keyAlgorithm
         } as VerifyOptions);
-        if (payload && payload.iss && authConf.issuers.includes(payload.iss)) {
+        if (payload?.iss && authConf.issuers.includes(payload.iss)) {
             // substitute unique field in for username
             if (authConf.uniqueField) {
                 payload.username = payload[authConf.uniqueField];

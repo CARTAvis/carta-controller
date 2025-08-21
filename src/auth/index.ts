@@ -75,7 +75,7 @@ if (!tokenVerifiers.size) {
 export async function verifyToken(cookieString: string) {
     const tokenJson: any = jwt.decode(cookieString);
 
-    if (tokenJson && tokenJson.iss) {
+    if (tokenJson?.iss) {
         const verifier = tokenVerifiers.get(tokenJson.iss);
         if (verifier) {
             return await verifier(cookieString);
