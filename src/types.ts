@@ -1,4 +1,4 @@
-import express, {type NextFunction, type Request, type Response} from "express";
+import {type NextFunction, type Request, type Response} from "express";
 import type {Algorithm} from "jsonwebtoken";
 import type LdapAuth from "ldapauth-fork";
 

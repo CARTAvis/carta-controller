@@ -1,6 +1,6 @@
 import io from "@pm2/io";
 import {type ChildProcess, spawn, spawnSync} from "child_process";
-import express, {type NextFunction, Request, type Response} from "express";
+import express, {type NextFunction, type Response} from "express";
 import type {WriteStream} from "fs";
 import * as fs from "fs";
 import type {IncomingMessage} from "http";

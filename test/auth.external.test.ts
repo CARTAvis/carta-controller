@@ -1,6 +1,4 @@
-import * as fs from "fs";
 import {expect, test, vi} from "vitest";
-import winston from "winston";
 import {populateUserMap} from "../src/auth/external";
 import {logger} from "../src/util";
 

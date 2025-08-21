@@ -2,9 +2,9 @@ import type {NextFunction, Request, Response} from "express";
 import {OAuth2Client} from "google-auth-library";
 import ms from "ms";
 import {RuntimeConfig, ServerConfig} from "../config";
-import {type CartaGoogleAuthConfig, ScriptingAccess, Verifier} from "../types";
+import {type CartaGoogleAuthConfig, ScriptingAccess} from "../types";
 import {logger} from "../util";
-import {getUser, verifyToken} from "./index";
+import {verifyToken} from "./index";
 import {generateToken, TokenType} from "./local";
 
 export async function googleCallbackHandler(req: Request, res: Response, authConf: CartaGoogleAuthConfig) {

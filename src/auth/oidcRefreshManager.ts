@@ -1,5 +1,5 @@
 import {createCipheriv, createDecipheriv, randomBytes} from "crypto";
-import {ceil, floor} from "lodash";
+import {floor} from "lodash";
 import {Binary, type Collection, MongoClient} from "mongodb";
 
 import {ServerConfig} from "../config";
