@@ -4,11 +4,11 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, {type NextFunction, type Request, type Response} from "express";
 import bearerToken from "express-bearer-token";
-import * as fs from "fs";
-import * as http from "http";
+import * as fs from "node:fs";
+import * as http from "node:http";
 import httpProxy from "http-proxy";
-import * as path from "path";
-import * as url from "url";
+import * as path from "node:path";
+import * as url from "node:url";
 import {authGuard, authRouter} from "./auth";
 import {RuntimeConfig, ServerConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
@@ -41,7 +41,7 @@ if (testUser) {
     app.use("/api/server", bodyParser.json(), serverRouter);
     app.use("/api/database", bodyParser.json(), databaseRouter);
 
-    app.use("/config", (req: Request, res: Response) => {
+    app.use("/config", (_req: Request, res: Response) => {
         return res.json(RuntimeConfig);
     });
 
@@ -72,9 +72,9 @@ if (testUser) {
         const isBannerSvg = ServerConfig.dashboard.bannerImage.toLowerCase().endsWith(".svg");
         const bannerDataBase64 = fs.readFileSync(ServerConfig.dashboard.bannerImage, "base64");
         if (isBannerSvg) {
-            bannerDataUri = "data:image/svg+xml;base64," + bannerDataBase64;
+            bannerDataUri = `data:image/svg+xml;base64,${bannerDataBase64}`;
         } else {
-            bannerDataUri = "data:image/png;base64," + bannerDataBase64;
+            bannerDataUri = `data:image/png;base64,${bannerDataBase64}`;
         }
     }
 
@@ -88,7 +88,7 @@ if (testUser) {
     });
 
     const packageJson = require(path.join(__dirname, "../package.json"));
-    app.get("/dashboard", (req, res) => {
+    app.get("/dashboard", (_req, res) => {
         res.render("templated", {
             googleClientId: ServerConfig.authProviders.google?.clientId,
             oidcClientId: ServerConfig.authProviders.oidc?.clientId,
@@ -111,7 +111,7 @@ if (testUser) {
     app.post("/api/scripting/*", authGuard, createScriptingProxyHandler(backendProxy));
 
     // Simplified error handling
-    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
         err.statusCode = err.statusCode || 500;
         err.status = err.status || "error";
 

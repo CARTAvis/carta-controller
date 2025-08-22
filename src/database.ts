@@ -366,7 +366,7 @@ async function handleClearWorkspace(req: AuthenticatedRequest, res: Response, ne
 
     const workspaceName = req.body?.workspaceName;
     // TODO: handle CRUD with workspace ID instead of name
-    const workspaceId = req.body?.id;
+    // const workspaceId = req.body?.id;
 
     try {
         const deleteResult = await workspacesCollection.deleteOne({

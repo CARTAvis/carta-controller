@@ -1,11 +1,11 @@
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import * as fs from "fs";
+import * as fs from "node:fs";
 import * as JSONC from "jsonc-parser";
 import _ from "lodash";
 import moment from "moment-timezone";
-import * as path from "path";
-import * as url from "url";
+import * as path from "node:path";
+import * as url from "node:url";
 import winston from "winston";
 import yargs from "yargs";
 import type {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
@@ -144,6 +144,7 @@ try {
             new Intl.DateTimeFormat("en-US", {timeZone: serverConfig.timezone});
             timeZone = serverConfig.timezone;
         } catch (err) {
+            logger.debug(err);
             logger.error(`Ignoring invalid timezone "${serverConfig.timezone}" in config file`);
         }
     }
@@ -214,8 +215,8 @@ if (serverConfig.authProviders.external) {
     runtimeConfig.tokenRefreshAddress = serverConfig.authProviders.external.tokenRefreshAddress;
     runtimeConfig.logoutAddress = serverConfig.authProviders.external.logoutAddress;
 } else {
-    runtimeConfig.tokenRefreshAddress = runtimeConfig.apiAddress + "/auth/refresh";
-    runtimeConfig.logoutAddress = runtimeConfig.apiAddress + "/auth/logout";
+    runtimeConfig.tokenRefreshAddress = `${runtimeConfig.apiAddress}/auth/refresh`;
+    runtimeConfig.logoutAddress = `${runtimeConfig.apiAddress}/auth/logout`;
 }
 if (runtimeConfig.tokenRefreshAddress) {
     const authUrl = url.parse(runtimeConfig.tokenRefreshAddress);

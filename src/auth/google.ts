@@ -78,6 +78,7 @@ export function generateGoogleRefreshHandler(authConf: CartaGoogleAuthConfig) {
                     });
                 }
             } catch (err) {
+                logger.debug(err);
                 next({statusCode: 400, message: "Invalid refresh token"});
             }
         } else {

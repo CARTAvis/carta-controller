@@ -1,4 +1,4 @@
-import {createCipheriv, createDecipheriv, randomBytes} from "crypto";
+import {createCipheriv, createDecipheriv, randomBytes} from "node:crypto";
 import {floor} from "lodash";
 import {Binary, type Collection, MongoClient} from "mongodb";
 

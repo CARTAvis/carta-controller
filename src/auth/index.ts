@@ -15,15 +15,15 @@ const tokenVerifiers = new Map<string, Verifier>();
 // maps JWT claim "iss" to a user map
 const userMaps = new Map<string, UserMap>();
 
-let loginHandler: RequestHandler = (req, res) => {
+let loginHandler: RequestHandler = (_req, _res) => {
     throw {statusCode: 501, message: "Login not implemented"};
 };
 
-let refreshHandler: AsyncRequestHandler = (req, res) => {
+let refreshHandler: AsyncRequestHandler = (_req, _res) => {
     throw {statusCode: 501, message: "Token refresh not implemented"};
 };
 
-let callbackHandler: AsyncRequestHandler = (req, res) => {
+let callbackHandler: AsyncRequestHandler = (_req, _res) => {
     throw {statusCode: 501, message: "Callback handler not implemented"};
 };
 
@@ -94,7 +94,7 @@ export function getUser(username: string, issuer: string) {
 }
 
 // Express middleware to guard against unauthorized access. Writes the username to the request object
-export async function authGuard(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+export async function authGuard(req: AuthenticatedRequest, _res: express.Response, next: express.NextFunction) {
     const tokenString = req.token;
     if (tokenString) {
         try {
@@ -117,7 +117,7 @@ export async function authGuard(req: AuthenticatedRequest, res: express.Response
     }
 }
 
-function logoutHandler(req: express.Request, res: express.Response) {
+function logoutHandler(_req: express.Request, res: express.Response) {
     res.cookie("Refresh-Token", "", {
         path: RuntimeConfig.authPath,
         maxAge: 0,

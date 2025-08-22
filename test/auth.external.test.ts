@@ -17,7 +17,7 @@ badlinewithcomment # comment
 `;
 
 vi.mock("fs", () => ({
-    readFileSync: vi.fn(file_name => {
+    readFileSync: vi.fn(_file_name => {
         return userMapString;
     })
 }));

@@ -1,15 +1,15 @@
 import io from "@pm2/io";
-import {type ChildProcess, spawn, spawnSync} from "child_process";
+import {type ChildProcess, spawn, spawnSync} from "node:child_process";
 import express, {type NextFunction, type Response} from "express";
-import type {WriteStream} from "fs";
-import * as fs from "fs";
-import type {IncomingMessage} from "http";
+import type {WriteStream} from "node:fs";
+import * as fs from "node:fs";
+import type {IncomingMessage} from "node:http";
 import type Server from "http-proxy";
 import {LinkedList} from "mnemonist";
 import moment from "moment";
-import * as querystring from "querystring";
+import * as querystring from "node:querystring";
 import * as tcpPortUsed from "tcp-port-used";
-import * as url from "url";
+import * as url from "node:url";
 import {v4} from "uuid";
 import {authGuard, getUser, verifyToken} from "./auth";
 import {ServerConfig} from "./config";
@@ -227,7 +227,7 @@ async function startServer(username: string) {
         }
         setPendingProcess(username, port, headerToken, child);
 
-        let logLocation;
+        let logLocation: string;
 
         if (ServerConfig.backendLogFileTemplate) {
             logLocation = ServerConfig.backendLogFileTemplate.replace("{username}", username).replace("{pid}", child.pid.toString()).replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
@@ -410,6 +410,8 @@ export const createScriptingProxyHandler = (server: Server) => async (req: Authe
 
     try {
         const remoteAddress = req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
+        logger.info(`Scripting proxy request from ${remoteAddress} for authenticated user ${username}`);
+
         let existingProcess = processMap.get(username);
 
         if (!existingProcess?.process || existingProcess.process.signalCode) {

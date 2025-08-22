@@ -1,4 +1,4 @@
-import {spawnSync} from "child_process";
+import {spawnSync} from "node:child_process";
 import type {NextFunction, Request, Response} from "express";
 
 import winston from "winston";
@@ -15,7 +15,7 @@ export async function delay(delay: number) {
     });
 }
 
-export function noCache(req: Request, res: Response, next: NextFunction) {
+export function noCache(_req: Request, res: Response, next: NextFunction) {
     res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
     res.header("Expires", "-1");
     res.header("Pragma", "no-cache");

@@ -104,6 +104,7 @@ export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
                     });
                 }
             } catch (err) {
+                logger.debug(err);
                 next({statusCode: 400, message: "Invalid refresh token"});
             }
         } else {

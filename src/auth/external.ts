@@ -42,6 +42,7 @@ export function populateUserMap(userMaps: Map<string, UserMap>, issuer: string |
         }
         logger.info(`Updated usermap with ${userMap.size} entries`);
     } catch (e) {
+        logger.debug(e);
         logger.error(`Error reading user table`);
     }
 

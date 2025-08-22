@@ -189,6 +189,7 @@ export function generateLocalOidcRefreshHandler(authConf: CartaOidcAuthConfig) {
                         return returnErrorMsg(req, res, 500, "Timed out waiting to acquire lock");
                     }
                 } catch (err) {
+                    logger.debug(err);
                     return returnErrorMsg(req, res, 500, "Locking error");
                 }
 
@@ -226,6 +227,7 @@ export function generateLocalOidcRefreshHandler(authConf: CartaOidcAuthConfig) {
                     await releaseRefreshLock(payload?.sessionId);
                 }
             } catch (err) {
+                logger.debug(err);
                 return returnErrorMsg(req, res, 400, "Invalid refresh token");
             }
         } else {
@@ -273,7 +275,7 @@ export async function oidcLoginStart(req: Request, res: Response, authConf: Cart
         usp.set("state", sessionId);
 
         usp.set("client_id", authConf.clientId);
-        usp.set("redirect_uri", new URL(RuntimeConfig.apiAddress + "/auth/oidcCallback", ServerConfig.serverAddress).href);
+        usp.set("redirect_uri", new URL(`${RuntimeConfig.apiAddress}/auth/oidcCallback`, ServerConfig.serverAddress).href);
         usp.set("response_type", "code");
         usp.set("scope", authConf.scope);
 
