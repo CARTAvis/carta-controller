@@ -1,4 +1,4 @@
-import * as fs from "fs";
+import * as fs from "node:fs";
 import {type CartaLocalAuthConfig, ScriptingAccess, type Verifier} from "../types";
 import jwt = require("jsonwebtoken");
 import type express from "express";

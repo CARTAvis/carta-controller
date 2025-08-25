@@ -30,7 +30,7 @@ export function getUserId(username: string) {
     const result = spawnSync("id", ["-u", username]);
     if (!result.status && result?.stdout) {
         const uid = Number.parseInt(result.stdout.toString());
-        if (isFinite(uid)) {
+        if (Number.isFinite(uid)) {
             return uid;
         }
     }

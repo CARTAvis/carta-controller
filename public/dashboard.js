@@ -48,7 +48,7 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
     }
 
     if (token) {
-        options.headers["Authorization"] = `Bearer ${token}`;
+        options.headers.Authorization = `Bearer ${token}`;
     }
 
     const currentTime = Date.now() / 1000;
@@ -66,7 +66,7 @@ apiCall = async (callName, jsonBody, method, authRequired) => {
 function setToken(tokenString, expiresIn) {
     token = tokenString;
     tokenLifetime = expiresIn;
-    if (isFinite(tokenLifetime) && tokenLifetime > 0) {
+    if (Number.isFinite(tokenLifetime) && tokenLifetime > 0) {
         console.log(`Token updated and valid for ${tokenLifetime.toFixed()} seconds`);
         const currentTimeSeconds = Date.now() / 1000;
         tokenExpiryTime = currentTimeSeconds + tokenLifetime;
@@ -155,7 +155,7 @@ handleLogin = async () => {
         } else {
             onLoginFailed(res.status);
         }
-    } catch (e) {
+    } catch (_e) {
         onLoginFailed(500);
     }
     setButtonDisabled("login", false);

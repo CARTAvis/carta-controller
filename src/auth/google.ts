@@ -9,7 +9,7 @@ import {generateToken, TokenType} from "./local";
 
 export async function googleCallbackHandler(req: Request, res: Response, authConf: CartaGoogleAuthConfig) {
     // Check for g_csrf_token match between cookie and body
-    if (!req.cookies["g_csrf_token"] || !req.body["g_csrf_token"] || req.cookies["g_csrf_token"] !== req.body["g_csrf_token"]) {
+    if (!req.cookies.g_csrf_token || !req.body.g_csrf_token || req.cookies.g_csrf_token !== req.body.g_csrf_token) {
         return res.status(400).json({error: "Missing or non-matching CSRF token"});
     }
 
