@@ -8,6 +8,7 @@ import {RuntimeConfig, ServerConfig} from "../config";
 import type {CartaOidcAuthConfig, Verifier} from "../types";
 import {logger} from "../util";
 import {acquireRefreshLock, clearTokens, getAccessTokenExpiry, getRefreshToken, initRefreshManager, releaseRefreshLock, setAccessTokenExpiry, setRefreshToken} from "./oidcRefreshManager";
+import e from "express";
 
 let privateKey: KeyObject;
 let publicKey: KeyObject;
@@ -23,9 +24,24 @@ let postLogoutRedirect: string;
 
 export async function initOidc(authConf: CartaOidcAuthConfig) {
     // Load public & private keys
-    publicKey = createPublicKey(fs.readFileSync(authConf.localPublicKeyLocation));
-    privateKey = createPrivateKey(fs.readFileSync(authConf.localPrivateKeyLocation));
-    symmetricKey = createSecretKey(Buffer.from(fs.readFileSync(authConf.symmetricKeyLocation, "utf-8"), "base64"));
+    try {
+        publicKey = createPublicKey(fs.readFileSync(authConf.localPublicKeyLocation));
+    } catch (e) {
+        logger.crit(`Failed to read public key: ${e.message}`);
+        process.exit(1);
+    }
+    try {
+        privateKey = createPrivateKey(fs.readFileSync(authConf.localPrivateKeyLocation));
+    } catch (e) {
+        logger.crit(`Failed to read private key: ${e.message}`);
+        process.exit(1);
+    }
+    try {
+        symmetricKey = createSecretKey(Buffer.from(fs.readFileSync(authConf.symmetricKeyLocation, "utf-8"), "base64"));
+    } catch (e) {
+        logger.crit(`Failed to read symmetric key: ${e.message}`);
+        process.exit(1);
+    }
 
     // Parse details of IdP from metadata URL
     const idpConfig = await axios.get(authConf.idpUrl + "/.well-known/openid-configuration");

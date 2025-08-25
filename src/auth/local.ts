@@ -18,7 +18,12 @@ export enum TokenType {
 
 export function generateToken(authConf: CartaLocalAuthConfig, username: string, tokenType: TokenType) {
     if (!privateKey) {
-        privateKey = fs.readFileSync(authConf.privateKeyLocation);
+        try {
+            privateKey = fs.readFileSync(authConf.privateKeyLocation);
+        } catch (error) {
+            logger.crit(`Failed to read private key: ${error.message}`);
+            process.exit(1);
+        }
     }
     if (!authConf || !privateKey) {
         return null;
