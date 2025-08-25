@@ -81,7 +81,7 @@ if (testUser) {
     app.get("/frontend", (req, res) => {
         const queryString = url.parse(req.url, false)?.query;
         if (queryString) {
-            return res.redirect((ServerConfig.serverAddress ?? "") + "/?" + queryString);
+            return res.redirect(`${ServerConfig.serverAddress ?? ""}/?${queryString}`);
         } else {
             return res.redirect(ServerConfig.serverAddress ?? "");
         }
@@ -111,7 +111,7 @@ if (testUser) {
     app.post("/api/scripting/*", authGuard, createScriptingProxyHandler(backendProxy));
 
     // Simplified error handling
-    app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
         err.statusCode = err.statusCode || 500;
         err.status = err.status || "error";
 

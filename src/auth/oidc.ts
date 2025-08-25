@@ -29,10 +29,10 @@ export async function initOidc(authConf: CartaOidcAuthConfig) {
 
     // Parse details of IdP from metadata URL
     const idpConfig = await axios.get(authConf.idpUrl + "/.well-known/openid-configuration");
-    oidcAuthEndpoint = idpConfig.data["authorization_endpoint"];
-    oidcIssuer = idpConfig.data["issuer"];
-    oidcLogoutEndpoint = idpConfig.data["end_session_endpoint"];
-    oidcTokenEndpoint = idpConfig.data["token_endpoint"];
+    oidcAuthEndpoint = idpConfig.data.authorization_endpoint;
+    oidcIssuer = idpConfig.data.issuer;
+    oidcLogoutEndpoint = idpConfig.data.end_session_endpoint;
+    oidcTokenEndpoint = idpConfig.data.token_endpoint;
 
     // Init JWKS key management
     logger.info(`Setting up JWKS management for ${idpConfig.data["jwks_uri"]}`);
@@ -71,7 +71,7 @@ async function callIdpTokenEndpoint(usp: URLSearchParams, req: Request, res: Res
             return returnErrorMsg(req, res, 500, "Authentication error");
         }
 
-        const {payload, protectedHeader} = await jose.jwtVerify(result.data["id_token"], jwksManager, {
+        const {payload} = await jose.jwtVerify(result.data["id_token"], jwksManager, {
             issuer: oidcIssuer
         });
 
@@ -180,7 +180,7 @@ export function generateLocalOidcRefreshHandler(authConf: CartaOidcAuthConfig) {
         if (refreshTokenCookie) {
             try {
                 // Verify that the token is legit
-                const {payload, protectedHeader} = await jose.jwtDecrypt(refreshTokenCookie, symmetricKey, {
+                const {payload} = await jose.jwtDecrypt(refreshTokenCookie, symmetricKey, {
                     issuer: authConf.issuer
                 });
 
@@ -221,7 +221,7 @@ export function generateLocalOidcRefreshHandler(authConf: CartaOidcAuthConfig) {
                         const sessionEncKey = Buffer.from(`${payload?.sessionEncKey}`, "hex");
                         usp.set("grant_type", "refresh_token");
                         usp.set("refresh_token", `${await getRefreshToken(payload.username, payload.sessionId, sessionEncKey)}`);
-                        return await callIdpTokenEndpoint(usp, req, res, authConf, scriptingToken, false, `${payload["sessionId"]}`, sessionEncKey);
+                        return await callIdpTokenEndpoint(usp, req, res, authConf, scriptingToken, false, `${payload.sessionId}`, sessionEncKey);
                     }
                 } finally {
                     await releaseRefreshLock(payload?.sessionId);
@@ -286,7 +286,7 @@ export async function oidcLoginStart(req: Request, res: Response, authConf: Cart
 
         // Store redirectParams to redirect post-login
         if ("redirectParams" in req.query) {
-            res.cookie("redirectParams", req.query["redirectParams"], {
+            res.cookie("redirectParams", req.query.redirectParams, {
                 maxAge: 600000,
                 httpOnly: true,
                 secure: !ServerConfig.httpOnly
@@ -305,18 +305,18 @@ export async function oidcCallbackHandler(req: Request, res: Response, authConf:
     try {
         const usp = new URLSearchParams();
 
-        if (req.cookies["oidcVerifier"] === undefined) {
+        if (req.cookies.oidcVerifier === undefined) {
             return returnErrorMsg(req, res, 400, "Missing OIDC verifier");
         }
-        if (req.cookies["sessionId"] === undefined) {
+        if (req.cookies.sessionId === undefined) {
             return returnErrorMsg(req, res, 400, "Missing session ID");
-        } else if (req.cookies["sessionId"] != `${req.query.state}`) {
+        } else if (req.cookies.sessionId != `${req.query.state}`) {
             return returnErrorMsg(req, res, 400, "Invalid session ID");
         } else {
             res.clearCookie("sessionId");
         }
 
-        const decryptedCodeVerifier = await jose.compactDecrypt(req.cookies["oidcVerifier"], privateKey);
+        const decryptedCodeVerifier = await jose.compactDecrypt(req.cookies.oidcVerifier, privateKey);
         const codeVerifier = new TextDecoder().decode(decryptedCodeVerifier.plaintext);
 
         usp.set("code_verifier", codeVerifier);

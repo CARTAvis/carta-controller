@@ -219,7 +219,7 @@ async function startServer(username: string) {
         const child = spawn("sudo", args, {
             env: {CARTA_AUTH_TOKEN: headerToken}
         });
-        if (child?.pid == undefined) {
+        if (child?.pid == null) {
             throw {
                 statusCode: 500,
                 message: `Problem starting process for user ${username}`
@@ -234,7 +234,7 @@ async function startServer(username: string) {
 
             try {
                 logStream = fs.createWriteStream(logLocation, {flags: "a"});
-                if (logStream == undefined) {
+                if (logStream == null) {
                     throw new Error("Unable to open stream");
                 }
                 child.stdout.pipe(logStream);
