@@ -1,15 +1,15 @@
-import * as path from "path";
+import {type ChildProcess, spawn, spawnSync} from "child_process";
 import * as fs from "fs";
-import {MongoClient} from "mongodb";
 import LdapAuth from "ldapauth-fork";
 import * as logSymbols from "log-symbols";
 import moment from "moment";
-import {ServerConfig, testUser} from "./config";
-import {ChildProcess, spawn, spawnSync} from "child_process";
-import {delay, getUserId, logger} from "./util";
+import {MongoClient} from "mongodb";
+import * as path from "path";
 import {client} from "websocket";
-import {CartaLdapAuthConfig, CartaLocalAuthConfig} from "./types";
 import {generateToken, TokenType} from "./auth/local";
+import {ServerConfig, testUser} from "./config";
+import type {CartaLdapAuthConfig, CartaLocalAuthConfig} from "./types";
+import {delay, getUserId, logger} from "./util";
 
 import read = require("read");
 
@@ -91,7 +91,7 @@ function testPam(authConf: CartaLocalAuthConfig, username: string) {
                         logger.debug(err);
                         reject(new Error(`Could not authenticate as user ${username}. Error code ${code}`));
                     } else {
-                       logger.info(`${logSymbols.success} Checked PAM connection for user ${username}`);
+                        logger.info(`${logSymbols.success} Checked PAM connection for user ${username}`);
                         resolve();
                     }
                 });
@@ -207,7 +207,7 @@ async function testBackendStartup(username: string) {
     wsClient.on("connect", () => {
         wsConnected = true;
     });
-    wsClient.on("connectFailed", (e) => {
+    wsClient.on("connectFailed", e => {
         logger.debug(e);
     });
 
@@ -228,11 +228,11 @@ async function testKillScript(username: string, existingProcess: ChildProcess) {
     }
     const args = ["-u", `${username}`, ServerConfig.killCommand, `${existingProcess.pid}`];
     logger.debug(`running sudo ${args.join(" ")}`);
-    const res = spawnSync("sudo", args, { encoding : 'utf8' });
+    const res = spawnSync("sudo", args, {encoding: "utf8"});
     if (res.error) {
         logger.debug(res.error);
-        logger.debug(`stdout:\t${res.stdout}`)
-        logger.debug(`stderr:\t${res.stderr}`)
+        logger.debug(`stdout:\t${res.stdout}`);
+        logger.debug(`stderr:\t${res.stderr}`);
     }
     if (res.status) {
         throw new Error(`Cannot execute kill script (error status ${res.status}. Please check your killCommand option`);

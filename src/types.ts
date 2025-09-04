@@ -1,6 +1,6 @@
-import express, {NextFunction, Request, Response} from "express";
-import LdapAuth from "ldapauth-fork";
-import {Algorithm} from "jsonwebtoken";
+import express, {type NextFunction, type Request, type Response} from "express";
+import type {Algorithm} from "jsonwebtoken";
+import type LdapAuth from "ldapauth-fork";
 
 export type LogLevel = "none" | "emerg" | "alert" | "crit" | "error" | "warning" | "notice" | "info" | "debug";
 
@@ -178,7 +178,10 @@ export interface CartaRuntimeConfig {
 
 export type RequestHandler = (req: Request, res: Response) => void;
 export type AsyncRequestHandler = (req: Request, res: Response, next: NextFunction) => void;
-export type AuthenticatedRequest = Request & {username?: string; scripting?: boolean};
+export type AuthenticatedRequest = Request & {
+    username?: string;
+    scripting?: boolean;
+};
 
 // Token verifier function
 export type Verifier = (cookieString: string) => any;

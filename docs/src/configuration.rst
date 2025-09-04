@@ -104,13 +104,13 @@ You can alter the controller's dashboard appearance by adjusting the ``dashboard
 
 The ``httpOnly`` flag can be used to disable secure signing of authentication tokens. This should only be used during initial deployment and testing, or debugging.
 
-The controller assumes it is running at the root directory of your subdomain by default. If you would prefer to run on a subdirectory, you will need to specify the ``dashboardAddress`` and ``apiAddress`` values (relative to your subdomain) explicitly. For example, if you are hosting CARTA at ``https://subdomain.domain.com/carta/version/v3-beta/``, you would need to include the following in your config file:
+The controller assumes it is running at the root directory of your subdomain by default. If you would prefer to run on a subdirectory, you will need to specify the ``dashboardAddress`` and ``apiAddress`` values (relative to your subdomain) explicitly. For example, if you are hosting CARTA at ``https://subdomain.domain.com/carta/version/latest/``, you would need to include the following in your config file:
 
 .. code-block:: json
 
     {
-        "apiAddress": "/carta/version/v3-beta/api",
-        "dashboardAddress": "/carta/version/v3-beta/dashboard"
+        "apiAddress": "/carta/version/latest/api",
+        "dashboardAddress": "/carta/version/latest/dashboard"
     }
 
 The example controller configuration file enables logging to ``/var/log/carta/controller.log``, but the ``logFile`` field is optional and by default the controller will log only to the console. For logging to the example logfile location to work, you must ensure that the ``/var/log/carta`` directory exists and that the user account which is used to run the server has write permission to the log file.  It is also recommended to set up log rotation for this file, to prevent it from growing indefinitely. An example logrotate configuration is provided, which you can place in ``/etc/logrotate.d/carta-controller``:

@@ -1,4 +1,4 @@
-import express, {Request, Response, NextFunction} from 'express';
+import express, {Request, Response, NextFunction} from "express";
 import httpProxy from "http-proxy";
 import * as url from "url";
 import * as querystring from "querystring";
@@ -7,52 +7,50 @@ import {IncomingMessage} from "http";
 import {delay, noCache, logger} from "./util";
 import {authGuard, getUser, verifyToken} from "./auth";
 import {AuthenticatedRequest} from "./types";
-import { execFile } from 'child_process';
-import { env} from "process";
+import {execFile} from "child_process";
+import {env} from "process";
 
-import { KubeConfig, CoreV1Api } from '@kubernetes/client-node';
-const kubNamespace : string = env.K8S_NAMESPACE ? env.K8S_NAMESPACE : 'default';
-const kubBackendImg : string = env.K8S_BACKEND_IMG ? env.K8S_BACKEND_IMG : 'quay.io/aikema/carta_k8s_backend';
-const kubImagesPvc : string = env.K8S_IMAGES_PVC ? env.K8S_IMAGES_PVC : 'cephfs-images-pvc';
+import {KubeConfig, CoreV1Api} from "@kubernetes/client-node";
+const kubNamespace: string = env.K8S_NAMESPACE ? env.K8S_NAMESPACE : "default";
+const kubBackendImg: string = env.K8S_BACKEND_IMG ? env.K8S_BACKEND_IMG : "quay.io/aikema/carta_k8s_backend";
+const kubImagesPvc: string = env.K8S_IMAGES_PVC ? env.K8S_IMAGES_PVC : "cephfs-images-pvc";
 if (env.K8S_NAMESPACE) {
-    logger.info(`Read k8s namespace "${kubNamespace}" from environment`)
+    logger.info(`Read k8s namespace "${kubNamespace}" from environment`);
 }
 if (env.K8S_BACKEND_IMG) {
-    logger.info(`Read k8s backend image "${kubBackendImg}" from environment`)
+    logger.info(`Read k8s backend image "${kubBackendImg}" from environment`);
 }
 if (env.K8S_IMAGES_PVC) {
-    logger.info(`Read k8s image PVC "${kubImagesPvc}" from environment`)
+    logger.info(`Read k8s image PVC "${kubImagesPvc}" from environment`);
 }
 const kc = new KubeConfig();
 kc.loadFromCluster();
 
 const k8sApi = kc.makeApiClient(CoreV1Api);
 
-export function getUserIdInfo (username: string): Promise<{uid: number, gid: number, groups: number[]}> {
+export function getUserIdInfo(username: string): Promise<{uid: number; gid: number; groups: number[]}> {
     return new Promise((resolve, reject) => {
-        execFile('/usr/bin/id', [username], (error, stdout, stderr) => {
+        execFile("/usr/bin/id", [username], (error, stdout, stderr) => {
             if (error) {
                 reject(error);
             } else {
                 const output = stdout.trim();
                 const uid_output = output?.match(/uid=(\d+)/);
                 const gid_output = output?.match(/gid=(\d+)/);
-                const groups_output =  output.match(/groups=(.*)/);
+                const groups_output = output.match(/groups=(.*)/);
 
-                if (Array.isArray(uid_output) && uid_output[1] !== undefined &&
-                    Array.isArray(gid_output) && gid_output[1] !== undefined &&
-                    Array.isArray(groups_output) && groups_output[1] !== undefined) {
-                        const uid = parseInt(uid_output[1]);
-                        const gid = parseInt(gid_output[1]);
-                        const groups = groups_output[1].split(',').map(group => parseInt(group.split('(')[0]));
-                        if (isNaN(uid) || isNaN(gid) || groups.map(x => isNaN(x)).includes(true)) {
-                            reject(new Error("Invalid id info"))
-                        } else {
-                            resolve({ uid, gid, groups });
-                        }
+                if (Array.isArray(uid_output) && uid_output[1] !== undefined && Array.isArray(gid_output) && gid_output[1] !== undefined && Array.isArray(groups_output) && groups_output[1] !== undefined) {
+                    const uid = parseInt(uid_output[1]);
+                    const gid = parseInt(gid_output[1]);
+                    const groups = groups_output[1].split(",").map(group => parseInt(group.split("(")[0]));
+                    if (isNaN(uid) || isNaN(gid) || groups.map(x => isNaN(x)).includes(true)) {
+                        reject(new Error("Invalid id info"));
+                    } else {
+                        resolve({uid, gid, groups});
+                    }
                 } else {
                     reject(new Error("Invalid id info"));
-                } 
+                }
             }
         });
     });
@@ -72,7 +70,7 @@ async function handleCheckServer(req: AuthenticatedRequest, res: Response) {
 
         res.json({
             success: true,
-            running: containerStatuses && ! containerStatuses[0].state?.running
+            running: containerStatuses && !containerStatuses[0].state?.running
         });
     } catch (e) {
         res.json({
@@ -96,7 +94,7 @@ async function handleLog(req: AuthenticatedRequest, res: Response) {
         res.json({
             success: true,
             log: podLog.body
-        })
+        });
         return;
     } catch (error) {
         logger.error(error);
@@ -111,7 +109,7 @@ async function handleStartServer(req: AuthenticatedRequest, res: Response, next:
         return;
     }
 
-    logger.warning("handleStartServer never actually gets executed")
+    logger.warning("handleStartServer never actually gets executed");
     throw {statusCode: 501, message: "Not implemented as never in practice gets called"};
 
     /*
@@ -121,79 +119,79 @@ async function handleStartServer(req: AuthenticatedRequest, res: Response, next:
 }
 
 async function startServer(username: string) {
-
-    let userInfo : {uid: number, gid: number, groups: number[]} | undefined;
+    let userInfo: {uid: number; gid: number; groups: number[]} | undefined;
 
     try {
-        userInfo = await getUserIdInfo(username)
+        userInfo = await getUserIdInfo(username);
     } catch (err) {
-        logger.error(`User ${username} info could not be found`)
+        logger.error(`User ${username} info could not be found`);
         return;
     }
     if (!userInfo) {
-        logger.error(`User ${username} info could not be found`)
+        logger.error(`User ${username} info could not be found`);
         return;
     }
 
     const manifest = {
         metadata: {
-            name: `carta-backend-${username}`,
+            name: `carta-backend-${username}`
         },
         spec: {
-            volumes: [{ name: 'images-volume', persistentVolumeClaim: {claimName: kubImagesPvc}},
-                      { name: 'backend-config', configMap: { name: 'carta-backend-config' }},
-                      { name: 'nss-extrausers', configMap: { name: 'carta-extrausers' }}],
-            restartPolicy: 'Never',
+            volumes: [
+                {name: "images-volume", persistentVolumeClaim: {claimName: kubImagesPvc}},
+                {name: "backend-config", configMap: {name: "carta-backend-config"}},
+                {name: "nss-extrausers", configMap: {name: "carta-extrausers"}}
+            ],
+            restartPolicy: "Never",
             securityContext: {
                 runAsUser: userInfo.uid,
                 runAsGroup: userInfo.gid,
-                supplementalGroups: userInfo.groups,
+                supplementalGroups: userInfo.groups
             },
             containers: [
-            {
-                name: `carta-backend-${username}`,
-                image: kubBackendImg,
-                imagePullPolicy: 'Always',
-                args: [
-                '--top_level_folder',
-                '/images',
-                '--controller_deployment',
-                '/images'
-                ],
-                ports: [{ containerPort: 3002 }],
-                volumeMounts: [{
-                    mountPath: '/images',
-                    name: 'images-volume'
-                    }, {
-                        mountPath: '/config',
-                        readOnly: true,
-                        name: 'backend-config'
-                    }, {
-                        mountPath: '/var/lib/extrausers',
-                        readOnly: true,
-                        name: 'nss-extrausers'
-                    }],
-                env: [
                 {
-                    name: 'CARTA_AUTH_TOKEN',
-                    value: v4(),
-                },
-                ],
-                securityContext: {
-                    allowPrivilegeEscalation: false,
-                },
-            },
-            ],
+                    name: `carta-backend-${username}`,
+                    image: kubBackendImg,
+                    imagePullPolicy: "Always",
+                    args: ["--top_level_folder", "/images", "--controller_deployment", "/images"],
+                    ports: [{containerPort: 3002}],
+                    volumeMounts: [
+                        {
+                            mountPath: "/images",
+                            name: "images-volume"
+                        },
+                        {
+                            mountPath: "/config",
+                            readOnly: true,
+                            name: "backend-config"
+                        },
+                        {
+                            mountPath: "/var/lib/extrausers",
+                            readOnly: true,
+                            name: "nss-extrausers"
+                        }
+                    ],
+                    env: [
+                        {
+                            name: "CARTA_AUTH_TOKEN",
+                            value: v4()
+                        }
+                    ],
+                    securityContext: {
+                        allowPrivilegeEscalation: false
+                    }
+                }
+            ]
         }
     };
 
     k8sApi.createNamespacedPod(kubNamespace, manifest).then(
-        (response) => {
+        response => {
             logger.info(`Pod created:\t${response?.body?.metadata?.name}`);
         },
-        (err) => {
-            logger.error('Error:', err);
-        },
+        err => {
+            logger.error("Error:", err);
+        }
     );
 
     const labelSelector = `name=carta-backend-${username}`;
@@ -202,19 +200,19 @@ async function startServer(username: string) {
             const res = await k8sApi.readNamespacedPod(`carta-backend-${username}`, kubNamespace);
 
             const containerStatuses = res?.body?.status?.containerStatuses;
-            if (! containerStatuses || ! containerStatuses[0].state?.running ) {
-                logger.debug(`Pod not running for ${username}`)
+            if (!containerStatuses || !containerStatuses[0].state?.running) {
+                logger.debug(`Pod not running for ${username}`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
             } else {
-                logger.debug(`Pod running for ${username}`)
+                logger.debug(`Pod running for ${username}`);
                 break;
             }
         } catch (err) {
             if (err.response && err.response.body && err.response.body.code === 404) {
-                logger.debug(`Pod not running for ${username}`)
+                logger.debug(`Pod not running for ${username}`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
             } else {
-                logger.error(err)
+                logger.error(err);
             }
         }
     }
@@ -226,12 +224,12 @@ async function handleStopServer(req: AuthenticatedRequest, res: Response, next: 
     }
 
     try {
-        const podName=`carta-backend-${req.username}`;
+        const podName = `carta-backend-${req.username}`;
         const gracePeriodSeconds = 2;
         await k8sApi.deleteNamespacedPod(podName, kubNamespace, undefined, undefined, gracePeriodSeconds);
-        logger.info('Pod deleted:', podName);
+        logger.info("Pod deleted:", podName);
     } catch (error) {
-        logger.error('Error: ', error)
+        logger.error("Error: ", error);
     }
 
     res.json({success: true});
@@ -271,13 +269,13 @@ export const createUpgradeHandler = (server: httpProxy) => async (req: IncomingM
         }
 
         // Look up pod info and create if necessary
-       const podName = `carta-backend-${username}`;
-       try {
+        const podName = `carta-backend-${username}`;
+        try {
             const res = await k8sApi.readNamespacedPod(podName, kubNamespace);
 
             const containerStatuses = res?.body?.status?.containerStatuses;
             if (containerStatuses && containerStatuses[0].state?.terminated) {
-                logger.debug(`Found stopped backend for ${username} ... need to remove it and start a new one`)
+                logger.debug(`Found stopped backend for ${username} ... need to remove it and start a new one`);
                 await k8sApi.deleteNamespacedPod(podName, kubNamespace);
                 let podExists = true;
                 while (podExists) {
@@ -294,24 +292,24 @@ export const createUpgradeHandler = (server: httpProxy) => async (req: IncomingM
                 }
                 await startServer(username);
             }
-            if (! containerStatuses || ! containerStatuses[0].state?.running ) {
-                logger.debug(`Server not running for ${username}... assume it's still starting`)
+            if (!containerStatuses || !containerStatuses[0].state?.running) {
+                logger.debug(`Server not running for ${username}... assume it's still starting`);
                 await new Promise(resolve => setTimeout(resolve, 1000));
             }
-       } catch (err) {
-         if (err.response && err.response.body && err.response.body.code === 404) {
-            logger.debug(`No pod found for ${username}`);
-            await startServer(username);
-         } else {
-            logger.error(err);
-            return socket.end();
-         }
-       }
+        } catch (err) {
+            if (err.response && err.response.body && err.response.body.code === 404) {
+                logger.debug(`No pod found for ${username}`);
+                await startServer(username);
+            } else {
+                logger.error(err);
+                return socket.end();
+            }
+        }
 
         // Look up auth token
-        const pod = await k8sApi.readNamespacedPod(`carta-backend-${username}`, kubNamespace)
+        const pod = await k8sApi.readNamespacedPod(`carta-backend-${username}`, kubNamespace);
         const podIp = `${pod.body.status?.podIP}`;
-        const cartaAuthToken = pod?.body?.spec?.containers[0]?.env?.find(env => env.name === 'CARTA_AUTH_TOKEN');
+        const cartaAuthToken = pod?.body?.spec?.containers[0]?.env?.find(env => env.name === "CARTA_AUTH_TOKEN");
         if (cartaAuthToken === undefined) {
             throw new Error(`Auth token missing for ${username}`);
         }
@@ -327,7 +325,7 @@ export const createUpgradeHandler = (server: httpProxy) => async (req: IncomingM
 };
 
 export const createScriptingProxyHandler = (server: httpProxy) => async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    logger.warning("createScriptingProxyHandler not implemented as neither Google nor OIDC auth methods compatible")
+    logger.warning("createScriptingProxyHandler not implemented as neither Google nor OIDC auth methods compatible");
     throw {statusCode: 501, message: "createScriptingProxyHandler not implemented as neither Google nor OIDC auth methods compatible"};
 };
 

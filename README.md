@@ -1,7 +1,7 @@
 # CARTA Controller
 
-[![carta version](https://img.shields.io/badge/CARTA%20Version-4.1.0-brightgreen)](https://github.com/CARTAvis/carta-backend/releases/tag/v4.1.0)
-[![npm version](https://img.shields.io/npm/v/carta-controller?style=flat)](https://npmjs.org/package/carta-controller "View this project on npm")
+[![latest stable release](https://img.shields.io/npm/v/carta-controller/latest?label=stable%20release)](https://www.npmjs.com/package/carta-controller/v/latest)
+[![latest preview release](https://img.shields.io/npm/v/carta-controller/beta?label=preview%20release)](https://www.npmjs.com/package/carta-controller/v/beta)
 ![last commit](https://img.shields.io/github/last-commit/CARTAvis/carta-controller)
 ![commit activity](https://img.shields.io/github/commit-activity/m/CARTAvis/carta-controller)
 

@@ -1,35 +1,35 @@
-import express, {Request, Response, NextFunction} from 'express';
 import * as bodyParser from "body-parser";
-import bearerToken from "express-bearer-token";
-import cookieParser from "cookie-parser";
-import httpProxy from "http-proxy";
-import * as http from "http";
-import * as url from "url";
-import cors from "cors";
-import * as fs from "fs";
-import * as path from "path";
 import compression from "compression";
-import {RuntimeConfig, ServerConfig, testUser} from "./config";
-import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./podHandlers";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import express, {type NextFunction, type Request, type Response} from "express";
+import bearerToken from "express-bearer-token";
+import * as fs from "fs";
+import * as http from "http";
+import httpProxy from "http-proxy";
+import * as path from "path";
+import * as url from "url";
 import {authGuard, authRouter} from "./auth";
-import {databaseRouter, initDB} from "./database";
+import {RuntimeConfig, ServerConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
+import {databaseRouter, initDB} from "./database";
+import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./podHandlers";
 import {logger} from "./util";
 
 if (testUser) {
     runTests(testUser).then(
         () => {
-            logger.info(`Controller tests with user ${testUser} succeeded`)
+            logger.info(`Controller tests with user ${testUser} succeeded`);
             process.exit(0);
         },
         err => {
-            logger.error(err)
+            logger.error(err);
             logger.info(`Controller tests with user ${testUser} failed`);
             process.exit(1);
         }
     );
 } else {
-    let app = express();
+    const app = express();
     app.use(bodyParser.urlencoded({extended: true}));
     app.use(cookieParser());
     app.use(bearerToken());
@@ -53,8 +53,13 @@ if (testUser) {
     };
 
     if (ServerConfig.frontendPath) {
-        logger.info(`Serving CARTA frontend from ${ServerConfig.frontendPath}`)
-        app.use("/", express.static(ServerConfig.frontendPath, {setHeaders: staticHeaderHandler}));
+        logger.info(`Serving CARTA frontend from ${ServerConfig.frontendPath}`);
+        app.use(
+            "/",
+            express.static(ServerConfig.frontendPath, {
+                setHeaders: staticHeaderHandler
+            })
+        );
     } else {
         const frontendPackage = require("../node_modules/carta-frontend/package.json");
         const frontendVersion = frontendPackage?.version;
@@ -126,7 +131,7 @@ if (testUser) {
         if (err?.code === "ECONNRESET") {
             return;
         } else {
-            logger.error(`Proxy error:\t${err}`)
+            logger.error(`Proxy error:\t${err}`);
         }
     });
 

@@ -1,14 +1,14 @@
 import jwt = require("jsonwebtoken");
 import express, {Response} from "express";
+import {RuntimeConfig, ServerConfig} from "../config";
+import type {AsyncRequestHandler, AuthenticatedRequest, RequestHandler, UserMap, Verifier} from "../types";
 import {logger, noCache} from "../util";
-import {RequestHandler, AsyncRequestHandler, AuthenticatedRequest, Verifier, UserMap} from "../types";
-import {ServerConfig, RuntimeConfig} from "../config";
 import {generateExternalVerifiers, watchUserTable} from "./external";
-import {generateLocalRefreshHandler, generateLocalVerifier} from "./local";
-import {generateLocalOidcRefreshHandler, generateLocalOidcVerifier, oidcCallbackHandler, oidcLogoutHandler, oidcLoginStart, initOidc} from "./oidc";
+import {generateGoogleRefreshHandler, googleCallbackHandler} from "./google";
 import {getLdapLoginHandler} from "./ldap";
+import {generateLocalRefreshHandler, generateLocalVerifier} from "./local";
+import {generateLocalOidcRefreshHandler, generateLocalOidcVerifier, initOidc, oidcCallbackHandler, oidcLoginStart, oidcLogoutHandler} from "./oidc";
 import {getPamLoginHandler} from "./pam";
-import {googleCallbackHandler, generateGoogleRefreshHandler} from "./google";
 
 // maps JWT claim "iss" to a token verifier
 const tokenVerifiers = new Map<string, Verifier>();
@@ -125,7 +125,7 @@ function logoutHandler(req: express.Request, res: express.Response) {
         secure: !ServerConfig.httpOnly,
         sameSite: "strict"
     });
-        return res.redirect(`${RuntimeConfig.dashboardAddress}`);
+    return res.redirect(`${RuntimeConfig.dashboardAddress}`);
 }
 
 function handleCheckAuth(req: AuthenticatedRequest, res: express.Response) {
@@ -143,8 +143,7 @@ if (ServerConfig.authProviders.oidc) {
 } else if (ServerConfig.authProviders.google) {
     authRouter.post("/googleCallback", noCache, callbackHandler);
     authRouter.get("/logout", noCache, logoutHandler);
-}
-else {
+} else {
     authRouter.post("/login", noCache, loginHandler);
     authRouter.get("/logout", noCache, logoutHandler);
 }

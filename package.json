@@ -1,6 +1,6 @@
 {
     "name": "carta-controller",
-    "version": "5.0.0-dev",
+    "version": "6.0.0-dev",
     "description": "NodeJS-based controller for CARTA",
     "repository": "https://github.com/CARTAvis/carta-controller",
     "homepage": "https://www.cartavis.org",
@@ -12,13 +12,17 @@
     "scripts": {
         "start": "npx ts-node src/index.ts",
         "test": "npx ts-node src/index.ts --test",
-        "reformat": "npx prettier --write ./src",
-        "checkformat": "npx prettier --check ./src",
+        "reformat": "npx @biomejs/biome format --write",
+        "checkformat": "npx @biomejs/biome format",
+        "lint": "npx @biomejs/biome lint",
+        "fixlint": "npx @biomejs/biome lint --write",
+        "checkformat-and-lint": "npx @biomejs/biome check",
+        "reformat-and-fixlint": "npx @biomejs/biome check --write",
         "prepare": "npx tsc",
         "unit-test": "vitest run"
     },
     "author": "",
-    "license": "ISC",
+    "license": "GPLV3",
     "dependencies": {
         "@kubernetes/client-node": "^0.22.3",
         "@pm2/io": "^6.1.0",
@@ -26,7 +30,7 @@
         "ajv-formats": "^3.0.1",
         "axios": "^1.8.2",
         "body-parser": "^1.19.0",
-        "carta-frontend": "^5.0.0-beta.1c",
+        "carta-frontend": "^5.0.3",
         "compression": "^1.8.0",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
@@ -57,12 +61,13 @@
         "yargs": "^17.0.1"
     },
     "devDependencies": {
+        "@biomejs/biome": "2.1.4",
         "@types/compression": "^1.7.0",
         "@types/cookie-parser": "^1.4.8",
         "@types/cors": "^2.8.10",
         "@types/express": "^4.17.11",
         "@types/http-proxy": "^1.17.16",
-        "@types/jsonwebtoken": "^9.0.7",
+        "@types/jsonwebtoken": "9.0.6",
         "@types/lodash": "^4.17.15",
         "@types/ms": "^0.7.31",
         "@types/node": "^22.13.1",
@@ -70,8 +75,6 @@
         "@types/uuid": "^9.0.0",
         "@types/websocket": "^1.0.2",
         "@types/yargs": "^17.0.22",
-        "patch-package": "^7.0.0",
-        "prettier": "2.8.4",
         "ts-node": "^10.9.1",
         "typescript": "^5.5.4",
         "vitest": "^3.1.4"

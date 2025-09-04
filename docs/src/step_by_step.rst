@@ -18,17 +18,13 @@ Overview
 
         .. note::
 
-            CARTA version 4.x is supported on Ubuntu 20.04 (Focal Fossa) and 22.04 (Jammy Jellyfish). CARTA version 5.x is supported on Ubuntu 22.04 (Jammy Jellyfish) and 24.04 (Noble Numbat).
-
-            The Ubuntu instructions can be used almost unchanged on Ubuntu 20.04 (Focal Fossa). We note differences where they occur. They should also work on equivalent Ubuntu-based distributions, and may work with some adjustments on other Debian-based distributions and non-LTS Ubuntu releases.
+            CARTA version 5.x is supported on Ubuntu 22.04 (Jammy Jellyfish) and 24.04 (Noble Numbat). The Ubuntu instructions should also work on equivalent Ubuntu-based distributions, and may work with some adjustments on other Debian-based distributions and non-LTS Ubuntu releases.
 
     .. tab:: AlmaLinux
 
         .. note::
 
-            CARTA versions 4.x and 5.x are both supported on AlmaLinux 8 and 9. The AlmaLinux instructions should also work on other equivalent RPM-based distributions.
-
-            We also support legacy installations of CARTA 4.x on RHEL 7 and CentOS 7, but as both of these releases have reached end of life and are widely unsupported, we do not recommend using them for new installations. Adapting these instructions to these releases requires multiple workarounds, which are outside the scope of this document.
+            CARTA version 5.x is supported on AlmaLinux 8 and 9. The AlmaLinux instructions should also work on other equivalent RPM-based distributions.
 
 .. _sbs_prerequisites:
 
@@ -70,10 +66,6 @@ Install MongoDB
     .. tab:: Ubuntu
 
         We recommend installing the `Community Edition Debian package of MongoDB <https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/>`_ on all supported Ubuntu versions.
-
-        .. note::
-
-            There is a ``mongodb`` package available from the official Ubuntu repositories on Ubuntu 20.04 (Focal Fossa). However, this package is older than the Community Edition package, and it has been discontinued in later LTS releases.
 
         .. code-block:: shell
 
@@ -158,10 +150,6 @@ Install CARTA backend and other required packages
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
 
-        .. note::
-
-            Please note that Ubuntu packages for CARTA 4.x are only available for Focal and Jammy, and packages for CARTA 5.x are only available for Jammy and Noble.
-
     .. tab:: AlmaLinux
 
         RPM packages of the CARTA backend are available from our `Copr repository <https://copr.fedorainfracloud.org/coprs/cartavis/carta/>`_.
@@ -208,7 +196,7 @@ Install CARTA backend and other required packages
 Install Node.js
 ~~~~~~~~~~~~~~~
 
-We recommend installing the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_ of Node.js (currently v22) from the `NodeSource repository <https://github.com/nodesource/distributions>`_. The minimum version required for CARTA 5.x is v20. The oldest version known to work with CARTA 4.x is v16.
+We recommend installing the `latest LTS version <https://github.com/nodejs/release#release-schedule>`_ of Node.js (currently v22) from the `NodeSource repository <https://github.com/nodesource/distributions>`_. The minimum version required for CARTA 5.x is v20.
 
 .. tabs::
 
@@ -522,10 +510,6 @@ You should now be able to navigate to your domain, log into CARTA with your test
 .. note::
 
     In the example above, the default test image packaged with the CARTA backend is copied into the test user's home directory -- if you configured a different user directory structure, or installed a custom backend, please adjust these paths.
-
-.. warning::
-
-    A known issue in the CARTA v5 beta release prevents the packaged test image from rendering correctly. Please use a different image to test this version of CARTA. Example FITS images can be downloaded from various astronomical `institutions <https://fits.gsfc.nasa.gov/fits_samples.html>`_ and `software projects <https://www.astropy.org/astropy-data/>`_.
 
 .. _sbs_config_autostart:
 
