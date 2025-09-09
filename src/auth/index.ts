@@ -66,8 +66,13 @@ if (ServerConfig.authProviders.pam) {
     }
 }
 
-// Check for empty token verifies
-if (!tokenVerifiers.size) {
+// ForwardAuth configuration (optional)
+const forwardAuthConf = ServerConfig.authProviders.forwardAuth;
+const isForwardAuthEnabled = !!forwardAuthConf || !tokenVerifiers.size;
+const forwardAuthHeaderKey = forwardAuthConf?.headerKey || "carta-auth-token";
+
+// Check for empty token verifiers unless ForwardAuth is enabled (explicitly or as fallback)
+if (!isForwardAuthEnabled && !tokenVerifiers.size) {
     logger.emerg("No valid token verifiers specified");
     process.exit(1);
 }
@@ -96,6 +101,17 @@ export function getUser(username: string, issuer: string) {
 // Express middleware to guard against unauthorized access. Writes the username to the request object
 export async function authGuard(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
     const tokenString = req.token;
+
+    // ForwardAuth mode: trust upstream-provided username header when present
+    if (isForwardAuthEnabled) {
+        const headerVal = req.header(forwardAuthHeaderKey);
+        if (headerVal) {
+            logger.info(`Authorizing request using ${forwardAuthHeaderKey} header`);
+            req.username = headerVal;
+            return next();
+        }
+    }
+
     if (tokenString) {
         try {
             const token = await verifyToken(tokenString);

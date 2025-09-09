@@ -80,6 +80,11 @@ export interface CartaOidcAuthConfig {
     postLogoutRedirect: string;
 }
 
+export interface CartaForwardAuthConfig {
+    // Header containing the authenticated username provided by the upstream proxy
+    headerKey?: string;
+}
+
 export enum ScriptingAccess {
     Enabled = "enabled-all-users",
     Disabled = "disabled-all-users",
@@ -94,6 +99,7 @@ export interface CartaServerConfig {
         google?: CartaGoogleAuthConfig;
         external?: CartaExternalAuthConfig;
         oidc?: CartaOidcAuthConfig;
+        forwardAuth?: CartaForwardAuthConfig;
     };
     database: {
         uri: string;
