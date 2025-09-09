@@ -1,0 +1,27 @@
+version: "3.9"
+
+services:
+  controller:
+    image: carta-controller:latest
+    container_name: carta-controller
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    working_dir: /carta-controller
+    volumes:
+      # - .:/carta-controller:rw
+      - .:/etc/carta:ro
+    ports:
+      - "8000:8000"
+    command: bash -lc "npm ci && npm start"
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+
+

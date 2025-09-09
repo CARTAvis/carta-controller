@@ -1,0 +1,41 @@
+{
+    "$schema": "https://cartavis.org/schemas/controller_config_schema_2.json",
+    "controllerConfigVersion": "2.0",
+    "authProviders": {
+        "forwardAuth":
+        {
+            "headerKey": "carta-auth-token"
+        }
+    },
+    "database": {
+        "uri": "mongodb://mongodb:27017",
+        "databaseName": "CARTA"
+    },
+    "additionalArgs": [
+        "--no_frontend",
+        "--no_database", 
+        "--controller_deployment",
+        "--verbosity=4",
+        "--exit_timeout=30",
+        "--log_performance=true"
+    ],
+    "serverPort": 8000,
+    "serverInterface": "0.0.0.0",
+    "httpOnly": true,
+    "dashboardAddress": "/dashboard",
+    "processCommand": "echo by-pass processCommand",
+    "killCommand": "echo by-pass killCommand",
+    "rootFolderTemplate": "/home/{username}",
+    "baseFolderTemplate": "/home/{username}",
+    "logFile": "/var/log/carta/controller.log",
+    "logTypeConsole": "text",
+    "logTypeFile": "text",
+    "timezone": "America/Vancouver",
+    "dashboard": {
+        "bannerColor": "#d2dce5",
+        "backgroundColor": "#f6f8fa",
+        "infoText": "Welcome to CARTA 5 on CANFAR",
+        "loginText": "<span>Please enter your login credentials:</span>",
+        "footerText": "<span>CARTA 5 on CANFAR</span>"
+    }
+}
