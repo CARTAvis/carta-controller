@@ -2,19 +2,16 @@ version: "3.9"
 
 services:
   controller:
-    image: carta-controller:latest
-    container_name: carta-controller
     build:
       context: .
       dockerfile: Dockerfile
     platform: linux/amd64
-    working_dir: /carta-controller
     volumes:
       # - .:/carta-controller:rw
-      - .:/etc/carta:ro
+      - ./config.json:/etc/carta/config.json:ro
     ports:
       - "8000:8000"
-    command: bash -lc "npm ci && npm start"
+    command: carta-controller --config /etc/carta/config.json
     depends_on:
       - mongodb
 
