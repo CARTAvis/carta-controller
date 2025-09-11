@@ -7,14 +7,12 @@ services:
       dockerfile: Dockerfile
     platform: linux/amd64
     volumes:
-      # - .:/carta-controller:rw
       - ./config.json:/etc/carta/config.json:ro
     ports:
       - "8000:8000"
     command: carta-controller --config /etc/carta/config.json
     depends_on:
       - mongodb
-
   mongodb:
     image: mongodb/mongodb-community-server:latest
     container_name: mongodb
