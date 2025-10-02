@@ -7,7 +7,7 @@ version: 2
 
 # Include schemas submodule
 submodules:
-  include: schemas
+  include: ["schemas"]
 
 # Set the version of Python and other tools you might need
 build:
