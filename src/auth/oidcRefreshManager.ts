@@ -199,7 +199,3 @@ export async function setAccessTokenExpiry(username, sessionid, expiresIn) {
         return false;
     }
 }
-
-export async function clearTokens(username, sessionid) {
-    await Promise.all([accessTokenLifeTimesCollection.deleteOne({username, sessionid}).catch(e => logger.error(e)), refreshTokenCollection.deleteOne({username, sessionid}).catch(e => logger.error(e))]);
-}

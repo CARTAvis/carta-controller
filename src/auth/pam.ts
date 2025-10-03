@@ -26,6 +26,7 @@ export function getPamLoginHandler(authConf: CartaLocalAuthConfig) {
                     logger.info(`Authenticated as user ${username} with uid ${uid} using PAM`);
                     return addTokensToResponse(res, authConf, username);
                 } catch (e) {
+                    logger.debug(`A PAM-related error occurred: ${e} (code ${code})`);
                     return res.status(403).json({statusCode: 403, message: "User does not exist"});
                 }
             }

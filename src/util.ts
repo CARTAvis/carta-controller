@@ -36,3 +36,12 @@ export function getUserId(username: string) {
     }
     throw new Error(`Can't find uid for username ${username}`);
 }
+
+export function generateUrlSafeString(length: number): string {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~";
+    let sessionId = "";
+    for (let i = 0; i < length; i++) {
+        sessionId += charset[Math.floor(Math.random() * charset.length)];
+    }
+    return sessionId;
+}

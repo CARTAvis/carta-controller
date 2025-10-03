@@ -6,8 +6,8 @@ import * as jose from "jose";
 import type {GetKeyFunction} from "jose/dist/types/types";
 import {RuntimeConfig, ServerConfig} from "../config";
 import type {CartaOidcAuthConfig, Verifier} from "../types";
-import {logger} from "../util";
-import {acquireRefreshLock, clearTokens, getAccessTokenExpiry, getRefreshToken, initRefreshManager, releaseRefreshLock, setAccessTokenExpiry, setRefreshToken} from "./oidcRefreshManager";
+import {logger, generateUrlSafeString} from "../util";
+import {acquireRefreshLock, getAccessTokenExpiry, getRefreshToken, initRefreshManager, releaseRefreshLock, setAccessTokenExpiry, setRefreshToken} from "./oidcRefreshManager";
 
 let privateKey: KeyObject;
 let publicKey: KeyObject;
@@ -111,7 +111,6 @@ async function callIdpTokenEndpoint(usp: URLSearchParams, req: Request, res: Res
         }
 
         const refreshExpiry = result.data.refresh_expires_in !== undefined ? result.data.refresh_expires_in : result.data.expires_in;
-        //refreshData['access_token_expiry'] =  floor(new Date().getTime() / 1000) + result.data['expires_in'];
         if ("expires_in" in result.data  && result.data.expires_in != null) {
             setAccessTokenExpiry(username, sessionId, parseInt(result.data.expires_in));
         }
@@ -267,8 +266,7 @@ export async function oidcLoginStart(req: Request, res: Response, authConf: Cart
         const usp = new URLSearchParams();
 
         // Generate PKCE verifier & challenge
-        const urlSafeChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~";
-        const codeVerifier = Array.from({length: 64}, (_, i) => urlSafeChars[Math.floor(Math.random() * urlSafeChars.length)]).join("");
+        const codeVerifier = generateUrlSafeString(64);
         const encryptedCodeVerifier = await new jose.CompactEncrypt(new TextEncoder().encode(codeVerifier)).setProtectedHeader({alg: "RSA-OAEP", enc: "A128GCM"}).encrypt(publicKey);
 
         res.cookie("oidcVerifier", encryptedCodeVerifier, {
@@ -281,7 +279,7 @@ export async function oidcLoginStart(req: Request, res: Response, authConf: Cart
         usp.set("code_challenge", codeChallenge);
 
         // Create session key
-        const sessionId = Array.from({length: 32}, (_, i) => urlSafeChars[Math.floor(Math.random() * urlSafeChars.length)]).join("");
+        const sessionId = generateUrlSafeString(32);
         res.cookie("sessionId", sessionId, {
             maxAge: 600000,
             httpOnly: true,
