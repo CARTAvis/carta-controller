@@ -111,7 +111,7 @@ async function callIdpTokenEndpoint(usp: URLSearchParams, req: Request, res: Res
         }
 
         const refreshExpiry = result.data.refresh_expires_in !== undefined ? result.data.refresh_expires_in : result.data.expires_in;
-        if ("expires_in" in result.data  && result.data.expires_in != null) {
+        if ("expires_in" in result.data && result.data.expires_in != null) {
             setAccessTokenExpiry(username, sessionId, parseInt(result.data.expires_in));
         }
 
