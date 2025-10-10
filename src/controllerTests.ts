@@ -124,7 +124,7 @@ function testUid(username: string) {
 }
 
 function testToken(authConf: CartaLocalAuthConfig, username: string) {
-    let token : string;
+    let token: string;
     try {
         token = generateToken(authConf, username, TokenType.Access);
     } catch (e) {
