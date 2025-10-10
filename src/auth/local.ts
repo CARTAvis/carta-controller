@@ -24,9 +24,14 @@ export function generateToken(authConf: CartaLocalAuthConfig, username: string, 
             logger.crit(`Failed to read private key: ${error.message}`);
             process.exit(1);
         }
+        if (!privateKey) {
+            logger.crit("Failed to read private key: No data");
+            process.exit(1);
+        }
     }
-    if (!authConf || !privateKey) {
-        return null;
+    if (!authConf) {
+        logger.crit("No authentication configuration provided");
+        process.exit(1);
     }
 
     const payload: any = {
