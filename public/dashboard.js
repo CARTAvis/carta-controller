@@ -12,7 +12,6 @@ const isPopup = urlParams.get("popup");
 
 let serverCheckHandle;
 
-let authenticationType = "";
 let authenticatedUser = "";
 let token = "";
 let tokenLifetime = -1;
@@ -168,7 +167,6 @@ onLoginFailed = status => {
 
 onLoginSucceeded = async (username, type) => {
     authenticatedUser = username;
-    authenticationType = type;
     localStorage.setItem("authenticationType", type);
     notyf.success(`Logged in as ${authenticatedUser}`);
     if (autoRedirect) {
