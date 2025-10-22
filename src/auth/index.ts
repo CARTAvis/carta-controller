@@ -1,4 +1,3 @@
-import jwt = require("jsonwebtoken");
 import express from "express";
 import {RuntimeConfig, ServerConfig} from "../config";
 import type {AsyncRequestHandler, AuthenticatedRequest, RequestHandler, UserMap, Verifier} from "../types";
@@ -9,6 +8,7 @@ import {getLdapLoginHandler} from "./ldap";
 import {generateLocalRefreshHandler, generateLocalVerifier} from "./local";
 import {generateLocalOidcRefreshHandler, generateLocalOidcVerifier, initOidc, oidcCallbackHandler, oidcLoginStart, oidcLogoutHandler} from "./oidc";
 import {getPamLoginHandler} from "./pam";
+import jwt, {type JwtPayload} from "jsonwebtoken";
 
 // maps JWT claim "iss" to a token verifier
 const tokenVerifiers = new Map<string, Verifier>();
@@ -73,9 +73,9 @@ if (!tokenVerifiers.size) {
 }
 
 export async function verifyToken(cookieString: string) {
-    const tokenJson: any = jwt.decode(cookieString);
+    const tokenJson: JwtPayload | string | null = jwt.decode(cookieString);
 
-    if (tokenJson?.iss) {
+    if (typeof tokenJson !== "string" && typeof tokenJson !== "undefined" && tokenJson?.iss) {
         const verifier = tokenVerifiers.get(tokenJson.iss);
         if (verifier) {
             return await verifier(cookieString);
