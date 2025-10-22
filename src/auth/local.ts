@@ -1,5 +1,5 @@
 import * as fs from "node:fs";
-import {type CartaLocalAuthConfig, ScriptingAccess, type Verifier} from "../types";
+import {type CartaLocalAuthConfig, ScriptingAccess, type TokenPayload, type Verifier} from "../types";
 import jwt, {type JwtPayload, type VerifyOptions} from "jsonwebtoken";
 import type express from "express";
 import ms from "ms";
@@ -33,7 +33,7 @@ export function generateToken(authConf: CartaLocalAuthConfig, username: string, 
         process.exit(1);
     }
 
-    const payload: any = {
+    const payload: TokenPayload = {
         iss: authConf.issuer,
         username
     };
