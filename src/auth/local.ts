@@ -1,8 +1,7 @@
 import * as fs from "node:fs";
 import {type CartaLocalAuthConfig, ScriptingAccess, type Verifier} from "../types";
-import jwt = require("jsonwebtoken");
+import jwt, {type JwtPayload, type VerifyOptions} from "jsonwebtoken";
 import type express from "express";
-import type {VerifyOptions} from "jsonwebtoken";
 import ms from "ms";
 import {RuntimeConfig, ServerConfig} from "../config";
 import {getUserId, logger} from "../util";
@@ -77,10 +76,10 @@ export function addTokensToResponse(res: express.Response, authConf: CartaLocalA
 export function generateLocalVerifier(verifierMap: Map<string, Verifier>, authConf: CartaLocalAuthConfig) {
     const publicKey = fs.readFileSync(authConf.publicKeyLocation);
     verifierMap.set(authConf.issuer, cookieString => {
-        const payload: any = jwt.verify(cookieString, publicKey, {
+        const payload: JwtPayload | string = jwt.verify(cookieString, publicKey, {
             algorithm: authConf.keyAlgorithm
         } as VerifyOptions);
-        if (payload && payload.iss === authConf.issuer) {
+        if (typeof payload !== "string" && payload.iss === authConf.issuer) {
             return payload;
         } else {
             return undefined;

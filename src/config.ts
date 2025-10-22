@@ -109,7 +109,7 @@ try {
                 continue;
             }
             const jsonString = fs.readFileSync(path.join(configDir, file)).toString();
-            const additionalConfig: any = JSONC.parse(jsonString) as CartaServerConfig;
+            const additionalConfig: unknown = JSONC.parse(jsonString) as CartaServerConfig;
             const isPartialConfigValid = validateConfig(additionalConfig);
             if (isPartialConfigValid) {
                 serverConfig = _.merge(serverConfig, additionalConfig);
