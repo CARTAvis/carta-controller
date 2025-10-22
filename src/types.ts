@@ -183,15 +183,16 @@ export type AuthenticatedRequest = Request & {
     scripting?: boolean;
 };
 
-// Token verifier function
-export type Verifier = (cookieString: string) => any;
-// Map for looking up system user name from authenticated user name
-export type UserMap = Map<string, string>;
-
+// Commonality upon all token payloads in use
 export type TokenPayload = {
-    username: string;
+    username?: string;
     scripting?: boolean;
     iss?: string;
     refresh?: boolean;
     expires_in?: number;
 };
+
+// Token verifier function
+export type Verifier = (cookieString: string) => TokenPayload | Promise<TokenPayload> | undefined;
+// Map for looking up system user name from authenticated user name
+export type UserMap = Map<string, string>;

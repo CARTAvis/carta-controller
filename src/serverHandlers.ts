@@ -360,7 +360,7 @@ export const createUpgradeHandler = (server: Server) => async (req: IncomingMess
         const remoteAddress = req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
         logger.info(`WS upgrade request from ${remoteAddress} for authenticated user ${token.username}`);
 
-        const username = getUser(token.username, token.iss);
+        const username = getUser(token.username, `${token.iss}`);
         if (!username) {
             logger.error(`Could not find username ${token.username} in the user map`);
             return socket.end();

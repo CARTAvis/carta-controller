@@ -103,7 +103,7 @@ export async function authGuard(req: AuthenticatedRequest, _res: express.Respons
             if (!token || !token.username) {
                 next({statusCode: 403, message: "Not authorized"});
             } else {
-                req.username = getUser(token.username, token.iss);
+                req.username = getUser(token.username, `${token.iss}`);
                 if (token.scripting) {
                     req.scripting = true;
                 }
