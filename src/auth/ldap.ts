@@ -1,17 +1,20 @@
 import type express from "express";
 import LdapAuth from "ldapauth-fork";
-import type {SearchEntryObject} from "ldapjs";
+import type {Client, SearchEntryObject} from "ldapjs";
 import type {CartaLdapAuthConfig} from "../types";
 import {getUserId, logger} from "../util";
 import {addTokensToResponse} from "./local";
 
-let ldap: LdapAuth;
+interface LdapAuthWithClient extends LdapAuth {
+    _userClient?: Client & {connected?: boolean};
+}
+let ldap: LdapAuthWithClient;
 
 export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
     ldap = new LdapAuth(authConf.ldapOptions);
     ldap.on("error", err => logger.error("LdapAuth: ", err));
     setTimeout(() => {
-        const ldapConnected = (ldap as any)?._userClient?.connected;
+        const ldapConnected = ldap?._userClient?.connected;
         if (ldapConnected) {
             logger.info("LDAP connected correctly");
         } else {
