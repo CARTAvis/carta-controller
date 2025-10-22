@@ -211,11 +211,11 @@ export function generateLocalOidcRefreshHandler(authConf: CartaOidcAuthConfig) {
                     // Check if access token validity is there and at least cacheAccessTokenMinValidity seconds from expiry
                     const remainingValidity = await getAccessTokenExpiry(payload.username, payload.sessionId);
                     if (remainingValidity > authConf.cacheAccessTokenMinValidity) {
-                        const newAccessToken = {
-                            username: payload.username,
+                        const newAccessToken: TokenPayload = {
+                            username: `${payload.username}`,
                             expires_in: remainingValidity
                         };
-                        if (scriptingToken) newAccessToken["scripting"] = true;
+                        if (scriptingToken) newAccessToken.scripting = true;
                         const newAccessTokenJWT = await new jose.SignJWT(newAccessToken)
                             .setProtectedHeader({alg: authConf.keyAlgorithm})
                             .setIssuedAt()

@@ -193,4 +193,5 @@ export type TokenPayload = {
     scripting?: boolean;
     iss?: string;
     refresh?: boolean;
+    expires_in?: number;
 };
