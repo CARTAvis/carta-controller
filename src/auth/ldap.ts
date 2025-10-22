@@ -1,5 +1,6 @@
 import type express from "express";
 import LdapAuth from "ldapauth-fork";
+import type {SearchEntryObject} from "ldapjs";
 import type {CartaLdapAuthConfig} from "../types";
 import {getUserId, logger} from "../util";
 import {addTokensToResponse} from "./local";
@@ -26,7 +27,7 @@ export function getLdapLoginHandler(authConf: CartaLdapAuthConfig) {
             return res.status(400).json({statusCode: 400, message: "Malformed login request"});
         }
 
-        const handleAuth = (err: Error | string, user: any) => {
+        const handleAuth = (err: Error | string, user: SearchEntryObject | null) => {
             if (err) {
                 logger.error(err);
                 return res.status(403).json({
