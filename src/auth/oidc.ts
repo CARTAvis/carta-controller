@@ -5,7 +5,7 @@ import * as fs from "node:fs";
 import * as jose from "jose";
 import type {GetKeyFunction} from "jose/dist/types/types";
 import {RuntimeConfig, ServerConfig} from "../config";
-import type {CartaOidcAuthConfig, Verifier} from "../types";
+import type {CartaOidcAuthConfig, TokenPayload, Verifier} from "../types";
 import {logger, generateUrlSafeString} from "../util";
 import {acquireRefreshLock, getAccessTokenExpiry, getRefreshToken, initRefreshManager, releaseRefreshLock, setAccessTokenExpiry, setRefreshToken} from "./oidcRefreshManager";
 
@@ -170,8 +170,8 @@ async function callIdpTokenEndpoint(usp: URLSearchParams, req: Request, res: Res
             }
             return res.redirect(`${new URL(`${RuntimeConfig.dashboardAddress}`, ServerConfig.serverAddress).href}?${loginUsp.toString()}`);
         } else {
-            const newAccessToken = {username};
-            if (scriptingToken) newAccessToken["scripting"] = true;
+            const newAccessToken: TokenPayload = {username: `${username}`};
+            if (scriptingToken) newAccessToken.scripting = true;
             const newAccessTokenJWT = await new jose.SignJWT(newAccessToken).setProtectedHeader({alg: authConf.keyAlgorithm}).setIssuedAt().setIssuer(authConf.issuer).setExpirationTime(`${result.data.expires_in}s`).sign(privateKey);
             return res.json({
                 access_token: newAccessTokenJWT,

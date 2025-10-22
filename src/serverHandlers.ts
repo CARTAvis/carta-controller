@@ -15,6 +15,7 @@ import {authGuard, getUser, verifyToken} from "./auth";
 import {ServerConfig} from "./config";
 import type {AuthenticatedRequest} from "./types";
 import {delay, logger, noCache} from "./util";
+import type {Socket} from "node:net";
 
 type ProcessInfo = {
     process: ChildProcess;
@@ -333,7 +334,7 @@ async function handleStopServer(req: AuthenticatedRequest, res: Response, next: 
     }
 }
 
-export const createUpgradeHandler = (server: Server) => async (req: IncomingMessage, socket: any, head: any) => {
+export const createUpgradeHandler = (server: Server) => async (req: IncomingMessage, socket: Socket, head: Buffer) => {
     try {
         if (!req?.url) {
             return socket.end();

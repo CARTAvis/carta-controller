@@ -187,3 +187,10 @@ export type AuthenticatedRequest = Request & {
 export type Verifier = (cookieString: string) => any;
 // Map for looking up system user name from authenticated user name
 export type UserMap = Map<string, string>;
+
+export type TokenPayload = {
+    username: string;
+    scripting?: boolean;
+    iss?: string;
+    refresh?: boolean;
+};

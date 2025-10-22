@@ -126,7 +126,7 @@ if (testUser) {
     expressServer.on("upgrade", createUpgradeHandler(backendProxy));
 
     // Handle WS disconnects
-    backendProxy.on("error", (err: any) => {
+    backendProxy.on("error", (err: Error & {code?: string}) => {
         // Ignore connection resets
         if (err?.code === "ECONNRESET") {
             return;
