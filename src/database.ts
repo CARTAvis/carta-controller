@@ -159,7 +159,7 @@ async function handleClearPreferences(req: AuthenticatedRequest, res: Response, 
         return next({statusCode: 400, message: "Malformed key list"});
     }
 
-    const update: any = {};
+    const update: Record<string, string> = {};
     for (const key of keys) {
         update[key] = "";
     }
@@ -188,7 +188,7 @@ async function handleGetLayouts(req: AuthenticatedRequest, res: Response, next: 
 
     try {
         const layoutList = await layoutsCollection.find({username: req.username}, {projection: {_id: 0, username: 0}}).toArray();
-        const layouts = {} as any;
+        const layouts: Record<string, string> = {};
         for (const entry of layoutList) {
             if (entry.name && entry.layout) {
                 const isValid = validateLayout(entry.layout);
@@ -277,7 +277,7 @@ async function handleGetSnippets(req: AuthenticatedRequest, res: Response, next:
 
     try {
         const snippetList = await snippetsCollection.find({username: req.username}, {projection: {_id: 0, username: 0}}).toArray();
-        const snippets = {} as any;
+        const snippets: Record<string, string> = {};
         for (const entry of snippetList) {
             if (entry.name && entry.snippet) {
                 const isValid = validateSnippet(entry.snippet);
