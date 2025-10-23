@@ -35,7 +35,7 @@ jobs:
 
       # This currently only checks formatting, rather than also linting
       - name: Run biome to check formatting
-        run: npm run checkformat
+        run: npm run checkformat-and-lint
 
       - name: Compile TypeScript
         run: npm run prepare
