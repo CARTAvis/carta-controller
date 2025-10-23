@@ -513,7 +513,7 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: Response, next
             res.json({
                 success: true,
                 workspace: {
-                    ...(workspace as any),
+                    ...(workspace as Record<string, unknown>),
                     id: updateResult.value._id.toString(),
                     editable: true,
                     name: workspaceName
