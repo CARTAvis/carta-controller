@@ -1,12 +1,12 @@
-import axios from "axios";
 import {createHash, createPrivateKey, createPublicKey, createSecretKey, type KeyObject, randomBytes} from "node:crypto";
-import type {Request, Response} from "express";
 import * as fs from "node:fs";
+import axios from "axios";
+import type {Request, Response} from "express";
 import * as jose from "jose";
 import type {GetKeyFunction} from "jose/dist/types/types";
 import {RuntimeConfig, ServerConfig} from "../config";
 import type {CartaOidcAuthConfig, TokenPayload, Verifier} from "../types";
-import {logger, generateUrlSafeString} from "../util";
+import {generateUrlSafeString, logger} from "../util";
 import {acquireRefreshLock, getAccessTokenExpiry, getRefreshToken, initRefreshManager, releaseRefreshLock, setAccessTokenExpiry, setRefreshToken} from "./oidcRefreshManager";
 
 let privateKey: KeyObject;

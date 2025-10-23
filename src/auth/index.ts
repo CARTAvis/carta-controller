@@ -1,4 +1,5 @@
 import express from "express";
+import jwt, {type JwtPayload} from "jsonwebtoken";
 import {RuntimeConfig, ServerConfig} from "../config";
 import type {AsyncRequestHandler, AuthenticatedRequest, RequestHandler, UserMap, Verifier} from "../types";
 import {logger, noCache} from "../util";
@@ -8,7 +9,6 @@ import {getLdapLoginHandler} from "./ldap";
 import {generateLocalRefreshHandler, generateLocalVerifier} from "./local";
 import {generateLocalOidcRefreshHandler, generateLocalOidcVerifier, initOidc, oidcCallbackHandler, oidcLoginStart, oidcLogoutHandler} from "./oidc";
 import {getPamLoginHandler} from "./pam";
-import jwt, {type JwtPayload} from "jsonwebtoken";
 
 // maps JWT claim "iss" to a token verifier
 const tokenVerifiers = new Map<string, Verifier>();

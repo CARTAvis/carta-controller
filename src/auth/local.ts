@@ -1,9 +1,9 @@
 import * as fs from "node:fs";
-import {type CartaLocalAuthConfig, ScriptingAccess, type TokenPayload, type Verifier} from "../types";
-import jwt, {type JwtPayload, type VerifyOptions} from "jsonwebtoken";
 import type express from "express";
+import jwt, {type JwtPayload, type VerifyOptions} from "jsonwebtoken";
 import ms from "ms";
 import {RuntimeConfig, ServerConfig} from "../config";
+import {type CartaLocalAuthConfig, ScriptingAccess, type TokenPayload, type Verifier} from "../types";
 import {getUserId, logger} from "../util";
 import {verifyToken} from "./index";
 

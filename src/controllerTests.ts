@@ -1,10 +1,10 @@
 import {type ChildProcess, spawn, spawnSync} from "node:child_process";
 import * as fs from "node:fs";
+import * as path from "node:path";
 import LdapAuth from "ldapauth-fork";
 import * as logSymbols from "log-symbols";
 import moment from "moment";
 import {MongoClient} from "mongodb";
-import * as path from "node:path";
 import {client} from "websocket";
 import {generateToken, TokenType} from "./auth/local";
 import {ServerConfig, testUser} from "./config";
