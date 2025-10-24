@@ -404,7 +404,7 @@ async function handleGetWorkspaceList(req: AuthenticatedRequest, res: Response, 
         const workspaces =
             workspaceList?.map(w => ({
                 ...w,
-                id: w._id,
+                id: w._id.toString(),
                 date: w.workspace?.date
             })) ?? [];
         res.json({success: true, workspaces});
@@ -433,7 +433,7 @@ async function handleGetWorkspaceByName(req: AuthenticatedRequest, res: Response
             return next({statusCode: 404, message: "Workspace not found"});
         } else {
             const workspace = {
-                id: queryResult._id,
+                id: queryResult._id.toString(),
                 name: queryResult.name,
                 editable: true,
                 ...queryResult.workspace
@@ -475,7 +475,7 @@ async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: Response,
             return next({statusCode: 403, message: "Workspace not accessible"});
         } else {
             const workspace = {
-                id: queryResult._id,
+                id: queryResult._id.toString(),
                 name: queryResult.name,
                 editable: queryResult.username === req.username,
                 ...queryResult.workspace
