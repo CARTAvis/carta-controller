@@ -93,7 +93,8 @@ async function handleGetPreferences(req: AuthenticatedRequest, res: Response, ne
         if (doc) {
             const isValid = validatePreferences(doc);
             if (!isValid) {
-                logger.warning(`Returning invalid preferences:\n${validatePreferences.errors}`);
+                const errors = JSON.stringify(validatePreferences.errors);
+                logger.warning(`Returning invalid preferences:\n${errors}`);
             }
             res.json({success: true, preferences: doc});
         } else {
@@ -127,7 +128,8 @@ async function handleSetPreferences(req: AuthenticatedRequest, res: Response, ne
 
     const validUpdate = validatePreferences(update);
     if (!validUpdate) {
-        logger.warning(`Rejecting invalid preference update:\n${validatePreferences.errors}`);
+        const errors = JSON.stringify(validatePreferences.errors);
+        logger.warning(`Rejecting invalid preference update:\n${errors}`);
         return next({statusCode: 400, message: "Invalid preference update"});
     }
 
@@ -159,7 +161,7 @@ async function handleClearPreferences(req: AuthenticatedRequest, res: Response, 
         return next({statusCode: 400, message: "Malformed key list"});
     }
 
-    const update: any = {};
+    const update: Record<string, string> = {};
     for (const key of keys) {
         update[key] = "";
     }
@@ -188,12 +190,13 @@ async function handleGetLayouts(req: AuthenticatedRequest, res: Response, next: 
 
     try {
         const layoutList = await layoutsCollection.find({username: req.username}, {projection: {_id: 0, username: 0}}).toArray();
-        const layouts = {} as any;
+        const layouts: Record<string, string> = {};
         for (const entry of layoutList) {
             if (entry.name && entry.layout) {
                 const isValid = validateLayout(entry.layout);
                 if (!isValid) {
-                    logger.warning(`Returning invalid layout '${entry.name}':\n${validateLayout.errors}`);
+                    const errors = JSON.stringify(validateLayout.errors);
+                    logger.warning(`Returning invalid layout '${entry.name}':\n${errors}`);
                 }
                 layouts[entry.name] = entry.layout;
             }
@@ -223,7 +226,8 @@ async function handleSetLayout(req: AuthenticatedRequest, res: Response, next: N
 
     const validUpdate = validateLayout(layout);
     if (!validUpdate) {
-        logger.warning(`Rejecting invalid layout update:\n${validateLayout.errors}`);
+        const errors = JSON.stringify(validateLayout.errors);
+        logger.warning(`Rejecting invalid layout update:\n${errors}`);
         return next({statusCode: 400, message: "Invalid layout update"});
     }
 
@@ -277,12 +281,13 @@ async function handleGetSnippets(req: AuthenticatedRequest, res: Response, next:
 
     try {
         const snippetList = await snippetsCollection.find({username: req.username}, {projection: {_id: 0, username: 0}}).toArray();
-        const snippets = {} as any;
+        const snippets: Record<string, string> = {};
         for (const entry of snippetList) {
             if (entry.name && entry.snippet) {
                 const isValid = validateSnippet(entry.snippet);
                 if (!isValid) {
-                    logger.warning(`Returning invalid snippet '${entry.name}':\n${validateSnippet.errors}`);
+                    const errors = JSON.stringify(validateSnippet.errors);
+                    logger.warning(`Returning invalid snippet '${entry.name}':\n${errors}`);
                 }
                 snippets[entry.name] = entry.snippet;
             }
@@ -312,7 +317,8 @@ async function handleSetSnippet(req: AuthenticatedRequest, res: Response, next: 
 
     const validUpdate = validateSnippet(snippet);
     if (!validUpdate) {
-        logger.error(`Rejecting invalid snippet update:\n${validateSnippet.errors}`);
+        const errors = JSON.stringify(validateSnippet.errors);
+        logger.error(`Rejecting invalid snippet update:\n${errors}`);
         return next({statusCode: 400, message: "Invalid snippet update"});
     }
 
@@ -366,7 +372,7 @@ async function handleClearWorkspace(req: AuthenticatedRequest, res: Response, ne
 
     const workspaceName = req.body?.workspaceName;
     // TODO: handle CRUD with workspace ID instead of name
-    const workspaceId = req.body?.id;
+    // const workspaceId = req.body?.id;
 
     try {
         const deleteResult = await workspacesCollection.deleteOne({
@@ -398,7 +404,7 @@ async function handleGetWorkspaceList(req: AuthenticatedRequest, res: Response, 
         const workspaces =
             workspaceList?.map(w => ({
                 ...w,
-                id: w._id,
+                id: w._id.toString(),
                 date: w.workspace?.date
             })) ?? [];
         res.json({success: true, workspaces});
@@ -427,14 +433,15 @@ async function handleGetWorkspaceByName(req: AuthenticatedRequest, res: Response
             return next({statusCode: 404, message: "Workspace not found"});
         } else {
             const workspace = {
-                id: queryResult._id,
+                id: queryResult._id.toString(),
                 name: queryResult.name,
                 editable: true,
                 ...queryResult.workspace
             };
             const isValid = validateWorkspace(workspace);
             if (!isValid) {
-                logger.warning(`Returning invalid workspace '${workspace.name}':\n${validateWorkspace.errors}`);
+                const errors = JSON.stringify(validateWorkspace.errors);
+                logger.warning(`Returning invalid workspace '${workspace.name}':\n${errors}`);
             }
             res.json({success: true, workspace: workspace});
         }
@@ -468,14 +475,15 @@ async function handleGetWorkspaceByKey(req: AuthenticatedRequest, res: Response,
             return next({statusCode: 403, message: "Workspace not accessible"});
         } else {
             const workspace = {
-                id: queryResult._id,
+                id: queryResult._id.toString(),
                 name: queryResult.name,
                 editable: queryResult.username === req.username,
                 ...queryResult.workspace
             };
             const isValid = validateWorkspace(workspace);
             if (!isValid) {
-                logger.warning(`Returning invalid workspace '${workspace.name}':\n${validateWorkspace.errors}`);
+                const errors = JSON.stringify(validateWorkspace.errors);
+                logger.warning(`Returning invalid workspace '${workspace.name}':\n${errors}`);
             }
             res.json({success: true, workspace: workspace});
         }
@@ -503,7 +511,8 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: Response, next
 
     const validUpdate = validateWorkspace(workspace);
     if (!validUpdate) {
-        logger.error(`Rejecting invalid workspace update:\n${validateWorkspace.errors}`);
+        const errors = JSON.stringify(validateWorkspace.errors);
+        logger.error(`Rejecting invalid workspace update:\n${errors}`);
         return next({statusCode: 400, message: "Invalid workspace update"});
     }
 
@@ -513,7 +522,7 @@ async function handleSetWorkspace(req: AuthenticatedRequest, res: Response, next
             res.json({
                 success: true,
                 workspace: {
-                    ...(workspace as any),
+                    ...(workspace as Record<string, unknown>),
                     id: updateResult.value._id.toString(),
                     editable: true,
                     name: workspaceName

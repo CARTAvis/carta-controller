@@ -1,4 +1,4 @@
-import express, {type NextFunction, type Request, type Response} from "express";
+import type {NextFunction, Request, Response} from "express";
 import type {Algorithm} from "jsonwebtoken";
 import type LdapAuth from "ldapauth-fork";
 
@@ -183,7 +183,16 @@ export type AuthenticatedRequest = Request & {
     scripting?: boolean;
 };
 
+// Commonality upon all token payloads in use
+export type TokenPayload = {
+    username?: string;
+    scripting?: boolean;
+    iss?: string;
+    refresh?: boolean;
+    expires_in?: number;
+};
+
 // Token verifier function
-export type Verifier = (cookieString: string) => any;
+export type Verifier = (cookieString: string) => TokenPayload | Promise<TokenPayload> | undefined;
 // Map for looking up system user name from authenticated user name
 export type UserMap = Map<string, string>;

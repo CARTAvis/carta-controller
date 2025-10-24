@@ -1,5 +1,5 @@
-import jwt = require("jsonwebtoken");
-import express, {Response} from "express";
+import express from "express";
+import jwt, {type JwtPayload} from "jsonwebtoken";
 import {RuntimeConfig, ServerConfig} from "../config";
 import type {AsyncRequestHandler, AuthenticatedRequest, RequestHandler, UserMap, Verifier} from "../types";
 import {logger, noCache} from "../util";
@@ -15,15 +15,15 @@ const tokenVerifiers = new Map<string, Verifier>();
 // maps JWT claim "iss" to a user map
 const userMaps = new Map<string, UserMap>();
 
-let loginHandler: RequestHandler = (req, res) => {
+let loginHandler: RequestHandler = (_req, _res) => {
     throw {statusCode: 501, message: "Login not implemented"};
 };
 
-let refreshHandler: AsyncRequestHandler = (req, res) => {
+let refreshHandler: AsyncRequestHandler = (_req, _res) => {
     throw {statusCode: 501, message: "Token refresh not implemented"};
 };
 
-let callbackHandler: AsyncRequestHandler = (req, res) => {
+let callbackHandler: AsyncRequestHandler = (_req, _res) => {
     throw {statusCode: 501, message: "Callback handler not implemented"};
 };
 
@@ -73,9 +73,9 @@ if (!tokenVerifiers.size) {
 }
 
 export async function verifyToken(cookieString: string) {
-    const tokenJson: any = jwt.decode(cookieString);
+    const tokenJson: JwtPayload | string | null = jwt.decode(cookieString);
 
-    if (tokenJson && tokenJson.iss) {
+    if (typeof tokenJson !== "string" && typeof tokenJson !== "undefined" && tokenJson?.iss) {
         const verifier = tokenVerifiers.get(tokenJson.iss);
         if (verifier) {
             return await verifier(cookieString);
@@ -94,7 +94,7 @@ export function getUser(username: string, issuer: string) {
 }
 
 // Express middleware to guard against unauthorized access. Writes the username to the request object
-export async function authGuard(req: AuthenticatedRequest, res: express.Response, next: express.NextFunction) {
+export async function authGuard(req: AuthenticatedRequest, _res: express.Response, next: express.NextFunction) {
     const tokenString = req.token;
     if (tokenString) {
         try {
@@ -103,7 +103,7 @@ export async function authGuard(req: AuthenticatedRequest, res: express.Response
             if (!token || !token.username) {
                 next({statusCode: 403, message: "Not authorized"});
             } else {
-                req.username = getUser(token.username, token.iss);
+                req.username = getUser(token.username, `${token.iss}`);
                 if (token.scripting) {
                     req.scripting = true;
                 }
@@ -117,7 +117,7 @@ export async function authGuard(req: AuthenticatedRequest, res: express.Response
     }
 }
 
-function logoutHandler(req: express.Request, res: express.Response) {
+function logoutHandler(_req: express.Request, res: express.Response) {
     res.cookie("Refresh-Token", "", {
         path: RuntimeConfig.authPath,
         maxAge: 0,

@@ -1,10 +1,9 @@
-import * as fs from "fs";
-import {type CartaLocalAuthConfig, ScriptingAccess, type Verifier} from "../types";
-import jwt = require("jsonwebtoken");
+import * as fs from "node:fs";
 import type express from "express";
-import type {VerifyOptions} from "jsonwebtoken";
+import jwt, {type JwtPayload, type VerifyOptions} from "jsonwebtoken";
 import ms from "ms";
 import {RuntimeConfig, ServerConfig} from "../config";
+import {type CartaLocalAuthConfig, ScriptingAccess, type TokenPayload, type Verifier} from "../types";
 import {getUserId, logger} from "../util";
 import {verifyToken} from "./index";
 
@@ -18,13 +17,23 @@ export enum TokenType {
 
 export function generateToken(authConf: CartaLocalAuthConfig, username: string, tokenType: TokenType) {
     if (!privateKey) {
-        privateKey = fs.readFileSync(authConf.privateKeyLocation);
+        try {
+            privateKey = fs.readFileSync(authConf.privateKeyLocation);
+        } catch (error) {
+            logger.crit(`Failed to read private key: ${error.message}`);
+            process.exit(1);
+        }
+        if (!privateKey) {
+            logger.crit("Failed to read private key: No data");
+            process.exit(1);
+        }
     }
-    if (!authConf || !privateKey) {
-        return null;
+    if (!authConf) {
+        logger.crit("No authentication configuration provided");
+        process.exit(1);
     }
 
-    const payload: any = {
+    const payload: TokenPayload = {
         iss: authConf.issuer,
         username
     };
@@ -67,10 +76,10 @@ export function addTokensToResponse(res: express.Response, authConf: CartaLocalA
 export function generateLocalVerifier(verifierMap: Map<string, Verifier>, authConf: CartaLocalAuthConfig) {
     const publicKey = fs.readFileSync(authConf.publicKeyLocation);
     verifierMap.set(authConf.issuer, cookieString => {
-        const payload: any = jwt.verify(cookieString, publicKey, {
+        const payload: JwtPayload | string = jwt.verify(cookieString, publicKey, {
             algorithm: authConf.keyAlgorithm
         } as VerifyOptions);
-        if (payload && payload.iss === authConf.issuer) {
+        if (typeof payload !== "string" && payload.iss === authConf.issuer) {
             return payload;
         } else {
             return undefined;
@@ -104,6 +113,7 @@ export function generateLocalRefreshHandler(authConf: CartaLocalAuthConfig) {
                     });
                 }
             } catch (err) {
+                logger.debug(err);
                 next({statusCode: 400, message: "Invalid refresh token"});
             }
         } else {

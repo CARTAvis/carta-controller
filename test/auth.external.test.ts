@@ -1,6 +1,4 @@
-import * as fs from "fs";
 import {expect, test, vi} from "vitest";
-import winston from "winston";
 import {populateUserMap} from "../src/auth/external";
 import {logger} from "../src/util";
 
@@ -19,7 +17,7 @@ badlinewithcomment # comment
 `;
 
 vi.mock("fs", () => ({
-    readFileSync: vi.fn(file_name => {
+    readFileSync: vi.fn(_file_name => {
         return userMapString;
     })
 }));

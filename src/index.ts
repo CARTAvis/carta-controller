@@ -1,20 +1,25 @@
+import * as fs from "node:fs";
+import * as http from "node:http";
+import * as path from "node:path";
+import * as url from "node:url";
 import * as bodyParser from "body-parser";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, {type NextFunction, type Request, type Response} from "express";
 import bearerToken from "express-bearer-token";
-import * as fs from "fs";
-import * as http from "http";
 import httpProxy from "http-proxy";
-import * as path from "path";
-import * as url from "url";
 import {authGuard, authRouter} from "./auth";
 import {RuntimeConfig, ServerConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
 import {databaseRouter, initDB} from "./database";
 import {createScriptingProxyHandler, createUpgradeHandler, serverRouter} from "./serverHandlers";
 import {logger} from "./util";
+
+interface AppError extends Error {
+    statusCode?: number;
+    status?: string;
+}
 
 if (testUser) {
     runTests(testUser).then(
@@ -41,7 +46,7 @@ if (testUser) {
     app.use("/api/server", bodyParser.json(), serverRouter);
     app.use("/api/database", bodyParser.json(), databaseRouter);
 
-    app.use("/config", (req: Request, res: Response) => {
+    app.use("/config", (_req: Request, res: Response) => {
         return res.json(RuntimeConfig);
     });
 
@@ -72,23 +77,23 @@ if (testUser) {
         const isBannerSvg = ServerConfig.dashboard.bannerImage.toLowerCase().endsWith(".svg");
         const bannerDataBase64 = fs.readFileSync(ServerConfig.dashboard.bannerImage, "base64");
         if (isBannerSvg) {
-            bannerDataUri = "data:image/svg+xml;base64," + bannerDataBase64;
+            bannerDataUri = `data:image/svg+xml;base64,${bannerDataBase64}`;
         } else {
-            bannerDataUri = "data:image/png;base64," + bannerDataBase64;
+            bannerDataUri = `data:image/png;base64,${bannerDataBase64}`;
         }
     }
 
     app.get("/frontend", (req, res) => {
         const queryString = url.parse(req.url, false)?.query;
         if (queryString) {
-            return res.redirect((ServerConfig.serverAddress ?? "") + "/?" + queryString);
+            return res.redirect(`${ServerConfig.serverAddress ?? ""}/?${queryString}`);
         } else {
             return res.redirect(ServerConfig.serverAddress ?? "");
         }
     });
 
     const packageJson = require(path.join(__dirname, "../package.json"));
-    app.get("/dashboard", (req, res) => {
+    app.get("/dashboard", (_req, res) => {
         res.render("templated", {
             googleClientId: ServerConfig.authProviders.google?.clientId,
             oidcClientId: ServerConfig.authProviders.oidc?.clientId,
@@ -111,12 +116,9 @@ if (testUser) {
     app.post("/api/scripting/*", authGuard, createScriptingProxyHandler(backendProxy));
 
     // Simplified error handling
-    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-        err.statusCode = err.statusCode || 500;
-        err.status = err.status || "error";
-
-        res.status(err.statusCode).json({
-            status: err.status,
+    app.use((err: AppError, _req: Request, res: Response, _next: NextFunction) => {
+        res.status(err.statusCode ?? 500).json({
+            status: err.status ?? "error",
             message: err.message
         });
     });
@@ -126,7 +128,7 @@ if (testUser) {
     expressServer.on("upgrade", createUpgradeHandler(backendProxy));
 
     // Handle WS disconnects
-    backendProxy.on("error", (err: any) => {
+    backendProxy.on("error", (err: Error & {code?: string}) => {
         // Ignore connection resets
         if (err?.code === "ECONNRESET") {
             return;

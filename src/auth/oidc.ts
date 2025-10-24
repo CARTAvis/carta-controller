@@ -1,13 +1,13 @@
+import {createHash, createPrivateKey, createPublicKey, createSecretKey, type KeyObject, randomBytes} from "node:crypto";
+import * as fs from "node:fs";
 import axios from "axios";
-import {createHash, createPrivateKey, createPublicKey, createSecretKey, type KeyObject, randomBytes} from "crypto";
 import type {Request, Response} from "express";
-import * as fs from "fs";
 import * as jose from "jose";
 import type {GetKeyFunction} from "jose/dist/types/types";
 import {RuntimeConfig, ServerConfig} from "../config";
-import type {CartaOidcAuthConfig, Verifier} from "../types";
-import {logger} from "../util";
-import {acquireRefreshLock, clearTokens, getAccessTokenExpiry, getRefreshToken, initRefreshManager, releaseRefreshLock, setAccessTokenExpiry, setRefreshToken} from "./oidcRefreshManager";
+import type {CartaOidcAuthConfig, TokenPayload, Verifier} from "../types";
+import {generateUrlSafeString, logger} from "../util";
+import {acquireRefreshLock, getAccessTokenExpiry, getRefreshToken, initRefreshManager, releaseRefreshLock, setAccessTokenExpiry, setRefreshToken} from "./oidcRefreshManager";
 
 let privateKey: KeyObject;
 let publicKey: KeyObject;
@@ -23,20 +23,35 @@ let postLogoutRedirect: string;
 
 export async function initOidc(authConf: CartaOidcAuthConfig) {
     // Load public & private keys
-    publicKey = createPublicKey(fs.readFileSync(authConf.localPublicKeyLocation));
-    privateKey = createPrivateKey(fs.readFileSync(authConf.localPrivateKeyLocation));
-    symmetricKey = createSecretKey(Buffer.from(fs.readFileSync(authConf.symmetricKeyLocation, "utf-8"), "base64"));
+    try {
+        publicKey = createPublicKey(fs.readFileSync(authConf.localPublicKeyLocation));
+    } catch (e) {
+        logger.crit(`Failed to read public key: ${e.message}`);
+        process.exit(1);
+    }
+    try {
+        privateKey = createPrivateKey(fs.readFileSync(authConf.localPrivateKeyLocation));
+    } catch (e) {
+        logger.crit(`Failed to read private key: ${e.message}`);
+        process.exit(1);
+    }
+    try {
+        symmetricKey = createSecretKey(Buffer.from(fs.readFileSync(authConf.symmetricKeyLocation, "utf-8"), "base64"));
+    } catch (e) {
+        logger.crit(`Failed to read symmetric key: ${e.message}`);
+        process.exit(1);
+    }
 
     // Parse details of IdP from metadata URL
-    const idpConfig = await axios.get(authConf.idpUrl + "/.well-known/openid-configuration");
-    oidcAuthEndpoint = idpConfig.data["authorization_endpoint"];
-    oidcIssuer = idpConfig.data["issuer"];
-    oidcLogoutEndpoint = idpConfig.data["end_session_endpoint"];
-    oidcTokenEndpoint = idpConfig.data["token_endpoint"];
+    const idpConfig = await axios.get(`${authConf.idpUrl}/.well-known/openid-configuration`);
+    oidcAuthEndpoint = idpConfig.data.authorization_endpoint;
+    oidcIssuer = idpConfig.data.issuer;
+    oidcLogoutEndpoint = idpConfig.data.end_session_endpoint;
+    oidcTokenEndpoint = idpConfig.data.token_endpoint;
 
     // Init JWKS key management
-    logger.info(`Setting up JWKS management for ${idpConfig.data["jwks_uri"]}`);
-    jwksManager = jose.createRemoteJWKSet(new URL(idpConfig.data["jwks_uri"]));
+    logger.info(`Setting up JWKS management for ${idpConfig.data.jwks_uri}`);
+    jwksManager = jose.createRemoteJWKSet(new URL(idpConfig.data.jwks_uri));
 
     // Set logout redirect URL
     if (authConf.postLogoutRedirect !== undefined) {
@@ -50,7 +65,7 @@ export async function initOidc(authConf: CartaOidcAuthConfig) {
 }
 
 function returnErrorMsg(req: Request, res: Response, statusCode: number, msg: string) {
-    if (req.header("accept") == "application/json") {
+    if (req.header("accept") === "application/json") {
         return res.status(statusCode).json({statusCode: statusCode, message: msg});
     } else {
         // Errors are presented to the user on the dashboard rather than returned via JSON messages
@@ -67,16 +82,16 @@ async function callIdpTokenEndpoint(usp: URLSearchParams, req: Request, res: Res
 
     try {
         const result = await axios.post(`${oidcTokenEndpoint}`, usp);
-        if (result.status != 200) {
+        if (result.status !== 200) {
             return returnErrorMsg(req, res, 500, "Authentication error");
         }
 
-        const {payload, protectedHeader} = await jose.jwtVerify(result.data["id_token"], jwksManager, {
+        const {payload} = await jose.jwtVerify(result.data.id_token, jwksManager, {
             issuer: oidcIssuer
         });
 
         // Check audience
-        if (payload.aud != authConf.clientId) {
+        if (payload.aud !== authConf.clientId) {
             return returnErrorMsg(req, res, 500, "Service received an ID token directed to a different service");
         }
 
@@ -91,14 +106,13 @@ async function callIdpTokenEndpoint(usp: URLSearchParams, req: Request, res: Res
         }
 
         // Update DB to reflect new token + associated access token expiry
-        if (result.data["refresh_token"] !== undefined) {
-            setRefreshToken(username, sessionId, result.data["refresh_token"], sessionEncKey, parseInt(result.data["refresh_expires_in"]));
+        if ("refresh_token" in result.data && result.data.refresh_token != null) {
+            setRefreshToken(username, sessionId, result.data.refresh_token, sessionEncKey, parseInt(result.data.refresh_expires_in));
         }
 
-        const refreshExpiry = result.data["refresh_expires_in"] !== undefined ? result.data["refresh_expires_in"] : result.data["expires_in"];
-        //refreshData['access_token_expiry'] =  floor(new Date().getTime() / 1000) + result.data['expires_in'];
-        if (result.data["expires_in"] !== undefined) {
-            setAccessTokenExpiry(username, sessionId, parseInt(result.data["expires_in"]));
+        const refreshExpiry = result.data.refresh_expires_in !== undefined ? result.data.refresh_expires_in : result.data.expires_in;
+        if ("expires_in" in result.data && result.data.expires_in != null) {
+            setAccessTokenExpiry(username, sessionId, parseInt(result.data.expires_in));
         }
 
         // Check group membership
@@ -133,8 +147,8 @@ async function callIdpTokenEndpoint(usp: URLSearchParams, req: Request, res: Res
             sameSite: "strict"
         });
 
-        if (result.data["id_token"] !== undefined) {
-            res.cookie("Logout-Token", result.data["id_token"], {
+        if (result.data.id_token !== undefined) {
+            res.cookie("Logout-Token", result.data.id_token, {
                 path: RuntimeConfig.logoutAddress,
                 httpOnly: true,
                 secure: !ServerConfig.httpOnly,
@@ -146,8 +160,8 @@ async function callIdpTokenEndpoint(usp: URLSearchParams, req: Request, res: Res
         if (isLogin) {
             const loginUsp = new URLSearchParams();
             loginUsp.set("oidcuser", `${username}`);
-            if (req.cookies["redirectParams"]) {
-                loginUsp.set("redirectParams", req.cookies["redirectParams"]);
+            if (req.cookies.redirectParams) {
+                loginUsp.set("redirectParams", req.cookies.redirectParams);
                 res.cookie("redirectParams", "", {
                     maxAge: 600000,
                     httpOnly: true,
@@ -156,14 +170,14 @@ async function callIdpTokenEndpoint(usp: URLSearchParams, req: Request, res: Res
             }
             return res.redirect(`${new URL(`${RuntimeConfig.dashboardAddress}`, ServerConfig.serverAddress).href}?${loginUsp.toString()}`);
         } else {
-            const newAccessToken = {username};
-            if (scriptingToken) newAccessToken["scripting"] = true;
-            const newAccessTokenJWT = await new jose.SignJWT(newAccessToken).setProtectedHeader({alg: authConf.keyAlgorithm}).setIssuedAt().setIssuer(authConf.issuer).setExpirationTime(`${result.data["expires_in"]}s`).sign(privateKey);
+            const newAccessToken: TokenPayload = {username: `${username}`};
+            if (scriptingToken) newAccessToken.scripting = true;
+            const newAccessTokenJWT = await new jose.SignJWT(newAccessToken).setProtectedHeader({alg: authConf.keyAlgorithm}).setIssuedAt().setIssuer(authConf.issuer).setExpirationTime(`${result.data.expires_in}s`).sign(privateKey);
             return res.json({
                 access_token: newAccessTokenJWT,
                 token_type: "bearer",
                 username: payload.username,
-                expires_in: result.data["expires_in"]
+                expires_in: result.data.expires_in
             });
         }
     } catch (err) {
@@ -180,7 +194,7 @@ export function generateLocalOidcRefreshHandler(authConf: CartaOidcAuthConfig) {
         if (refreshTokenCookie) {
             try {
                 // Verify that the token is legit
-                const {payload, protectedHeader} = await jose.jwtDecrypt(refreshTokenCookie, symmetricKey, {
+                const {payload} = await jose.jwtDecrypt(refreshTokenCookie, symmetricKey, {
                     issuer: authConf.issuer
                 });
 
@@ -189,6 +203,7 @@ export function generateLocalOidcRefreshHandler(authConf: CartaOidcAuthConfig) {
                         return returnErrorMsg(req, res, 500, "Timed out waiting to acquire lock");
                     }
                 } catch (err) {
+                    logger.debug(err);
                     return returnErrorMsg(req, res, 500, "Locking error");
                 }
 
@@ -196,11 +211,11 @@ export function generateLocalOidcRefreshHandler(authConf: CartaOidcAuthConfig) {
                     // Check if access token validity is there and at least cacheAccessTokenMinValidity seconds from expiry
                     const remainingValidity = await getAccessTokenExpiry(payload.username, payload.sessionId);
                     if (remainingValidity > authConf.cacheAccessTokenMinValidity) {
-                        const newAccessToken = {
-                            username: payload.username,
+                        const newAccessToken: TokenPayload = {
+                            username: `${payload.username}`,
                             expires_in: remainingValidity
                         };
-                        if (scriptingToken) newAccessToken["scripting"] = true;
+                        if (scriptingToken) newAccessToken.scripting = true;
                         const newAccessTokenJWT = await new jose.SignJWT(newAccessToken)
                             .setProtectedHeader({alg: authConf.keyAlgorithm})
                             .setIssuedAt()
@@ -220,12 +235,13 @@ export function generateLocalOidcRefreshHandler(authConf: CartaOidcAuthConfig) {
                         const sessionEncKey = Buffer.from(`${payload?.sessionEncKey}`, "hex");
                         usp.set("grant_type", "refresh_token");
                         usp.set("refresh_token", `${await getRefreshToken(payload.username, payload.sessionId, sessionEncKey)}`);
-                        return await callIdpTokenEndpoint(usp, req, res, authConf, scriptingToken, false, `${payload["sessionId"]}`, sessionEncKey);
+                        return await callIdpTokenEndpoint(usp, req, res, authConf, scriptingToken, false, `${payload.sessionId}`, sessionEncKey);
                     }
                 } finally {
                     await releaseRefreshLock(payload?.sessionId);
                 }
             } catch (err) {
+                logger.debug(err);
                 return returnErrorMsg(req, res, 400, "Invalid refresh token");
             }
         } else {
@@ -250,8 +266,7 @@ export async function oidcLoginStart(req: Request, res: Response, authConf: Cart
         const usp = new URLSearchParams();
 
         // Generate PKCE verifier & challenge
-        const urlSafeChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~";
-        const codeVerifier = Array.from({length: 64}, (_, i) => urlSafeChars[Math.floor(Math.random() * urlSafeChars.length)]).join("");
+        const codeVerifier = generateUrlSafeString(64);
         const encryptedCodeVerifier = await new jose.CompactEncrypt(new TextEncoder().encode(codeVerifier)).setProtectedHeader({alg: "RSA-OAEP", enc: "A128GCM"}).encrypt(publicKey);
 
         res.cookie("oidcVerifier", encryptedCodeVerifier, {
@@ -264,7 +279,7 @@ export async function oidcLoginStart(req: Request, res: Response, authConf: Cart
         usp.set("code_challenge", codeChallenge);
 
         // Create session key
-        const sessionId = Array.from({length: 32}, (_, i) => urlSafeChars[Math.floor(Math.random() * urlSafeChars.length)]).join("");
+        const sessionId = generateUrlSafeString(32);
         res.cookie("sessionId", sessionId, {
             maxAge: 600000,
             httpOnly: true,
@@ -273,7 +288,7 @@ export async function oidcLoginStart(req: Request, res: Response, authConf: Cart
         usp.set("state", sessionId);
 
         usp.set("client_id", authConf.clientId);
-        usp.set("redirect_uri", new URL(RuntimeConfig.apiAddress + "/auth/oidcCallback", ServerConfig.serverAddress).href);
+        usp.set("redirect_uri", new URL(`${RuntimeConfig.apiAddress}/auth/oidcCallback`, ServerConfig.serverAddress).href);
         usp.set("response_type", "code");
         usp.set("scope", authConf.scope);
 
@@ -284,7 +299,7 @@ export async function oidcLoginStart(req: Request, res: Response, authConf: Cart
 
         // Store redirectParams to redirect post-login
         if ("redirectParams" in req.query) {
-            res.cookie("redirectParams", req.query["redirectParams"], {
+            res.cookie("redirectParams", req.query.redirectParams, {
                 maxAge: 600000,
                 httpOnly: true,
                 secure: !ServerConfig.httpOnly
@@ -303,25 +318,25 @@ export async function oidcCallbackHandler(req: Request, res: Response, authConf:
     try {
         const usp = new URLSearchParams();
 
-        if (req.cookies["oidcVerifier"] === undefined) {
+        if (req.cookies.oidcVerifier === undefined) {
             return returnErrorMsg(req, res, 400, "Missing OIDC verifier");
         }
-        if (req.cookies["sessionId"] === undefined) {
+        if (req.cookies.sessionId === undefined) {
             return returnErrorMsg(req, res, 400, "Missing session ID");
-        } else if (req.cookies["sessionId"] != `${req.query.state}`) {
+        } else if (`${req.cookies.sessionId}` !== `${req.query.state}`) {
             return returnErrorMsg(req, res, 400, "Invalid session ID");
         } else {
             res.clearCookie("sessionId");
         }
 
-        const decryptedCodeVerifier = await jose.compactDecrypt(req.cookies["oidcVerifier"], privateKey);
+        const decryptedCodeVerifier = await jose.compactDecrypt(req.cookies.oidcVerifier, privateKey);
         const codeVerifier = new TextDecoder().decode(decryptedCodeVerifier.plaintext);
 
         usp.set("code_verifier", codeVerifier);
         res.clearCookie("oidcVerifier");
         usp.set("code", `${req.query.code}`);
         usp.set("grant_type", "authorization_code");
-        usp.set("redirect_uri", new URL(RuntimeConfig.apiAddress + "/auth/oidcCallback", ServerConfig.serverAddress).href);
+        usp.set("redirect_uri", new URL(`${RuntimeConfig.apiAddress}/auth/oidcCallback`, ServerConfig.serverAddress).href);
 
         return await callIdpTokenEndpoint(usp, req, res, authConf, false, true, `${req.query.state}`, undefined);
     } catch (err) {

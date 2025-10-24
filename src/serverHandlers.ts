@@ -1,15 +1,16 @@
+import {type ChildProcess, spawn, spawnSync} from "node:child_process";
+import type {WriteStream} from "node:fs";
+import * as fs from "node:fs";
+import type {IncomingMessage} from "node:http";
+import type {Socket} from "node:net";
+import * as querystring from "node:querystring";
+import * as url from "node:url";
 import io from "@pm2/io";
-import {type ChildProcess, spawn, spawnSync} from "child_process";
-import express, {type NextFunction, Request, type Response} from "express";
-import type {WriteStream} from "fs";
-import * as fs from "fs";
-import type {IncomingMessage} from "http";
+import express, {type NextFunction, type Response} from "express";
 import type Server from "http-proxy";
 import {LinkedList} from "mnemonist";
 import moment from "moment";
-import * as querystring from "querystring";
 import * as tcpPortUsed from "tcp-port-used";
-import * as url from "url";
 import {v4} from "uuid";
 import {authGuard, getUser, verifyToken} from "./auth";
 import {ServerConfig} from "./config";
@@ -219,7 +220,7 @@ async function startServer(username: string) {
         const child = spawn("sudo", args, {
             env: {CARTA_AUTH_TOKEN: headerToken}
         });
-        if (child?.pid == undefined) {
+        if (child?.pid == null) {
             throw {
                 statusCode: 500,
                 message: `Problem starting process for user ${username}`
@@ -227,14 +228,14 @@ async function startServer(username: string) {
         }
         setPendingProcess(username, port, headerToken, child);
 
-        let logLocation;
+        let logLocation: string;
 
         if (ServerConfig.backendLogFileTemplate) {
             logLocation = ServerConfig.backendLogFileTemplate.replace("{username}", username).replace("{pid}", child.pid.toString()).replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
 
             try {
                 logStream = fs.createWriteStream(logLocation, {flags: "a"});
-                if (logStream == undefined) {
+                if (logStream == null) {
                     throw new Error("Unable to open stream");
                 }
                 child.stdout.pipe(logStream);
@@ -333,7 +334,7 @@ async function handleStopServer(req: AuthenticatedRequest, res: Response, next: 
     }
 }
 
-export const createUpgradeHandler = (server: Server) => async (req: IncomingMessage, socket: any, head: any) => {
+export const createUpgradeHandler = (server: Server) => async (req: IncomingMessage, socket: Socket, head: Buffer) => {
     try {
         if (!req?.url) {
             return socket.end();
@@ -359,7 +360,7 @@ export const createUpgradeHandler = (server: Server) => async (req: IncomingMess
         const remoteAddress = req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
         logger.info(`WS upgrade request from ${remoteAddress} for authenticated user ${token.username}`);
 
-        const username = getUser(token.username, token.iss);
+        const username = getUser(token.username, `${token.iss}`);
         if (!username) {
             logger.error(`Could not find username ${token.username} in the user map`);
             return socket.end();
@@ -410,6 +411,8 @@ export const createScriptingProxyHandler = (server: Server) => async (req: Authe
 
     try {
         const remoteAddress = req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
+        logger.info(`Scripting proxy request from ${remoteAddress} for authenticated user ${username}`);
+
         let existingProcess = processMap.get(username);
 
         if (!existingProcess?.process || existingProcess.process.signalCode) {

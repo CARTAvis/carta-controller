@@ -1,4 +1,4 @@
-import {spawnSync} from "child_process";
+import {spawnSync} from "node:child_process";
 import type {NextFunction, Request, Response} from "express";
 
 import winston from "winston";
@@ -15,7 +15,7 @@ export async function delay(delay: number) {
     });
 }
 
-export function noCache(req: Request, res: Response, next: NextFunction) {
+export function noCache(_req: Request, res: Response, next: NextFunction) {
     res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
     res.header("Expires", "-1");
     res.header("Pragma", "no-cache");
@@ -30,9 +30,18 @@ export function getUserId(username: string) {
     const result = spawnSync("id", ["-u", username]);
     if (!result.status && result?.stdout) {
         const uid = Number.parseInt(result.stdout.toString());
-        if (isFinite(uid)) {
+        if (Number.isFinite(uid)) {
             return uid;
         }
     }
     throw new Error(`Can't find uid for username ${username}`);
+}
+
+export function generateUrlSafeString(length: number): string {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~";
+    let sessionId = "";
+    for (let i = 0; i < length; i++) {
+        sessionId += charset[Math.floor(Math.random() * charset.length)];
+    }
+    return sessionId;
 }

@@ -2,14 +2,14 @@ import type {NextFunction, Request, Response} from "express";
 import {OAuth2Client} from "google-auth-library";
 import ms from "ms";
 import {RuntimeConfig, ServerConfig} from "../config";
-import {type CartaGoogleAuthConfig, ScriptingAccess, Verifier} from "../types";
+import {type CartaGoogleAuthConfig, ScriptingAccess} from "../types";
 import {logger} from "../util";
-import {getUser, verifyToken} from "./index";
+import {verifyToken} from "./index";
 import {generateToken, TokenType} from "./local";
 
 export async function googleCallbackHandler(req: Request, res: Response, authConf: CartaGoogleAuthConfig) {
     // Check for g_csrf_token match between cookie and body
-    if (!req.cookies["g_csrf_token"] || !req.body["g_csrf_token"] || req.cookies["g_csrf_token"] !== req.body["g_csrf_token"]) {
+    if (!req.cookies.g_csrf_token || !req.body.g_csrf_token || req.cookies.g_csrf_token !== req.body.g_csrf_token) {
         return res.status(400).json({error: "Missing or non-matching CSRF token"});
     }
 
@@ -78,6 +78,7 @@ export function generateGoogleRefreshHandler(authConf: CartaGoogleAuthConfig) {
                     });
                 }
             } catch (err) {
+                logger.debug(err);
                 next({statusCode: 400, message: "Invalid refresh token"});
             }
         } else {

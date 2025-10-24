@@ -1,5 +1,5 @@
-import {createCipheriv, createDecipheriv, randomBytes} from "crypto";
-import {ceil, floor} from "lodash";
+import {createCipheriv, createDecipheriv, randomBytes} from "node:crypto";
+import {floor} from "lodash";
 import {Binary, type Collection, MongoClient} from "mongodb";
 
 import {ServerConfig} from "../config";
@@ -198,8 +198,4 @@ export async function setAccessTokenExpiry(username, sessionid, expiresIn) {
         logger.error(e);
         return false;
     }
-}
-
-export async function clearTokens(username, sessionid) {
-    await Promise.all([accessTokenLifeTimesCollection.deleteOne({username, sessionid}).catch(e => logger.error(e)), refreshTokenCollection.deleteOne({username, sessionid}).catch(e => logger.error(e))]);
 }
