@@ -15,7 +15,7 @@ const preferenceSchema = require("../schemas/preferences_schema_2.json");
 const layoutSchema = require("../schemas/layout_schema_2.json");
 const snippetSchema = require("../schemas/snippet_schema_1.json");
 const workspaceSchema = require("../schemas/workspace_schema_1.json");
-const ajv = new Ajv({useDefaults: true, strictTypes: false});
+const ajv = new Ajv({useDefaults: false, strictTypes: false});
 addFormats(ajv);
 const validatePreferences = ajv.compile(preferenceSchema);
 const validateLayout = ajv.compile(layoutSchema);
@@ -121,6 +121,7 @@ async function handleSetPreferences(req: AuthenticatedRequest, res: Response, ne
     const update = req.body;
     // Check for malformed update
     if (!update || !Object.keys(update).length || update.username || update._id) {
+        logger.warning("Malformed preference update received");
         return next({statusCode: 400, message: "Malformed preference update"});
     }
 
@@ -136,8 +137,10 @@ async function handleSetPreferences(req: AuthenticatedRequest, res: Response, ne
     try {
         const updateResult = await preferenceCollection.updateOne({username: req.username}, {$set: update}, {upsert: true});
         if (updateResult.acknowledged) {
+            logger.debug("Preferences updated");
             res.json({success: true});
         } else {
+            logger.warning("Error updateing preferences");
             return next({statusCode: 500, message: "Problem updating preferences"});
         }
     } catch (err) {
@@ -158,6 +161,7 @@ async function handleClearPreferences(req: AuthenticatedRequest, res: Response, 
     const keys: string[] = req.body?.keys;
     // Check for malformed update
     if (!keys || !Array.isArray(keys) || !keys.length) {
+        logger.debug("Malformed key list received for clearing preferences");
         return next({statusCode: 400, message: "Malformed key list"});
     }
 
@@ -169,11 +173,14 @@ async function handleClearPreferences(req: AuthenticatedRequest, res: Response, 
     try {
         const updateResult = await preferenceCollection.updateOne({username: req.username}, {$unset: update});
         if (updateResult.acknowledged) {
+            logger.debug("Preferences cleared");
             res.json({success: true});
         } else {
+            logger.debug("Error clearing preferences");
             return next({statusCode: 500, message: "Problem clearing preferences"});
         }
     } catch (err) {
+        logger.debug("Error clearing preferences");
         logger.debug(err);
         return next({statusCode: 500, message: "Problem clearing preferences"});
     }
