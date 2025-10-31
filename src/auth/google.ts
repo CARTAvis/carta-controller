@@ -1,22 +1,25 @@
-import {RuntimeConfig, ServerConfig} from "../config";
-import {CartaGoogleAuthConfig, ScriptingAccess, Verifier} from "../types";
+import type {NextFunction, Request, Response} from "express";
 import {OAuth2Client} from "google-auth-library";
-import {generateToken, TokenType} from "./local";
-import {getUser, verifyToken} from "./index";
 import ms from "ms";
-import {NextFunction, Request, Response} from "express";
-import { logger } from "../util";
+import {RuntimeConfig, ServerConfig} from "../config";
+import {type CartaGoogleAuthConfig, ScriptingAccess} from "../types";
+import {logger} from "../util";
+import {verifyToken} from "./index";
+import {generateToken, TokenType} from "./local";
 
-export async function googleCallbackHandler (req: Request, res: Response, authConf: CartaGoogleAuthConfig) {
+export async function googleCallbackHandler(req: Request, res: Response, authConf: CartaGoogleAuthConfig) {
     // Check for g_csrf_token match between cookie and body
-    if (!req.cookies["g_csrf_token"] || !req.body["g_csrf_token"] || req.cookies["g_csrf_token"] !== req.body["g_csrf_token"]) {
-        return res.status(400).json({"error": "Missing or non-matching CSRF token"})
+    if (!req.cookies.g_csrf_token || !req.body.g_csrf_token || req.cookies.g_csrf_token !== req.body.g_csrf_token) {
+        return res.status(400).json({error: "Missing or non-matching CSRF token"});
     }
 
     const oAuth2Client = new OAuth2Client();
     try {
-        const result = await oAuth2Client.verifyIdToken({idToken: req?.body?.credential, audience: authConf.clientId});
-        const payload = result.getPayload()
+        const result = await oAuth2Client.verifyIdToken({
+            idToken: req?.body?.credential,
+            audience: authConf.clientId
+        });
+        const payload = result.getPayload();
 
         // Do the mapping
         const username = authConf.useEmailAsId ? payload?.email : payload?.sub;
@@ -24,13 +27,13 @@ export async function googleCallbackHandler (req: Request, res: Response, authCo
         // check that username exists and email is verified
         if (!username || !payload?.email_verified) {
             logger.warning("Google auth rejected due to lack of unique ID or email verification");
-            return res.status(500).json({"error": "An error occured processing your login"});
+            return res.status(500).json({error: "An error occured processing your login"});
         }
-        
+
         // check that domain is valid
         if (authConf.validDomain && authConf.validDomain !== payload.hd) {
             logger.warning(`Google auth rejected due to incorrect domain: ${payload.hd}`);
-            return res.status(500).json({"error": "An error occured processing your login"});
+            return res.status(500).json({error: "An error occured processing your login"});
         }
 
         // create initial refresh token
@@ -43,14 +46,12 @@ export async function googleCallbackHandler (req: Request, res: Response, authCo
             sameSite: "strict"
         });
 
-        return res.redirect(`${RuntimeConfig.dashboardAddress}?googleuser=${username}`)
-
+        return res.redirect(`${RuntimeConfig.dashboardAddress}?googleuser=${username}`);
     } catch (e) {
-        logger.debug(e)
-        return res.status(500).json({"error": "An error occured processing your login"})
+        logger.debug(e);
+        return res.status(500).json({error: "An error occured processing your login"});
     }
 }
-
 
 export function generateGoogleRefreshHandler(authConf: CartaGoogleAuthConfig) {
     return async (req: Request, res: Response, next: NextFunction) => {
@@ -62,7 +63,10 @@ export function generateGoogleRefreshHandler(authConf: CartaGoogleAuthConfig) {
                 if (!refreshToken || !refreshToken.username || !refreshToken.refresh) {
                     next({statusCode: 403, message: "Not authorized"});
                 } else if (scriptingToken && ServerConfig.scriptingAccess !== ScriptingAccess.Enabled) {
-                    next({statusCode: 500, message: "Scripting access not enabled for this server"});
+                    next({
+                        statusCode: 500,
+                        message: "Scripting access not enabled for this server"
+                    });
                 } else {
                     const access_token = generateToken(authConf, refreshToken.username, scriptingToken ? TokenType.Scripting : TokenType.Access);
                     logger.info(`Refreshed ${scriptingToken ? "scripting" : "access"} token for user ${refreshToken.username}`);
@@ -74,6 +78,7 @@ export function generateGoogleRefreshHandler(authConf: CartaGoogleAuthConfig) {
                     });
                 }
             } catch (err) {
+                logger.debug(err);
                 next({statusCode: 400, message: "Invalid refresh token"});
             }
         } else {

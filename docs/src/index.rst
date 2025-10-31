@@ -6,19 +6,9 @@
 CARTA Controller
 ================
 
-..
-        These badges should be uncommented only in the dev branch.
-        Don't forget to update the dev version in the definitions below.
+|stable-release| |preview-release| |last-commit| |commit-activity|
 
-|backend-github| |frontend-github| |controller-github| |last-commit| |commit-activity|
-
-..
-        These badges should be uncommented only in release branches.
-        Don't forget to update the versions and tags in the definitions below.
-
-        |carta-release-github| |npm-package|
-
-CARTA is the Cube Analysis and Rendering Tool for Astronomy. This document describes the installation and configuration process for a site deployment of CARTA, including the controller and its dependencies. We recommend this deployment option for organisations providing CARTA to multiple users.
+`CARTA <https://cartavis.org/>`_ is the Cube Analysis and Rendering Tool for Astronomy. This document describes the installation and configuration process for a site deployment of CARTA, including the controller and its dependencies. We recommend this deployment option for organisations providing CARTA to multiple users.
 
 Detailed :ref:`step-by-step instructions <step_by_step>` are provided for a standalone CARTA deployment on a dedicated server. Please use these instructions as a starting point, and make adjustments as required to integrate CARTA into your organisation's existing systems. More detailed information about customisation can be found in the :ref:`installation` and :ref:`configuration` sections.
 
@@ -35,28 +25,16 @@ We officially support Ubuntu 22.04 and 24.04, and AlmaLinux 8 and 9 (and equival
    schema
    schema_backend
 
-.. |carta-release-github| image:: https://img.shields.io/github/v/release/CartaVis/carta?label=CARTA%20release
-        :alt: CARTA version
-        :target: https://github.com/CARTAvis/carta/releases/latest
-
-.. |npm-package| image:: https://img.shields.io/npm/v/carta-controller/latest?label=Controller%20release
-        :alt: NPM package
+.. |stable-release| image:: https://img.shields.io/npm/v/carta-controller/latest?label=stable%20release
+        :alt: Last stable NPM release
         :target: https://www.npmjs.com/package/carta-controller/v/latest
 
-.. |backend-github| image:: https://img.shields.io/badge/backend%20branch-dev-brightgreen
-        :alt: CARTA backend version
-        :target: https://github.com/CARTAvis/carta-backend/
-
-.. |frontend-github| image:: https://img.shields.io/badge/frontend%20branch-dev-brightgreen
-        :alt: CARTA frontend version
-        :target: https://github.com/CARTAvis/carta-frontend/
-
-.. |controller-github| image:: https://img.shields.io/badge/controller%20branch-dev-brightgreen
-        :alt: CARTA controller version
-        :target: https://github.com/CARTAvis/carta-controller/
+.. |preview-release| image:: https://img.shields.io/npm/v/carta-controller/beta?label=preview%20release
+        :alt: Last preview NPM release
+        :target: https://www.npmjs.com/package/carta-controller/v/beta
 
 .. |last-commit| image:: https://img.shields.io/github/last-commit/CARTAvis/carta-controller
-        :alt: Last commit
+        :alt: Last dev commit
 
 .. |commit-activity| image:: https://img.shields.io/github/commit-activity/m/CARTAvis/carta-controller
         :alt: Commit activity

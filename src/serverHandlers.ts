@@ -1,20 +1,21 @@
-import express, { Request, Response, NextFunction } from "express";
-import Server from "http-proxy";
-import * as url from "url";
-import * as fs from "fs";
-import {WriteStream} from "fs";
-import moment from "moment";
-import * as querystring from "querystring";
-import {v4} from "uuid";
+import {type ChildProcess, spawn, spawnSync} from "node:child_process";
+import type {WriteStream} from "node:fs";
+import * as fs from "node:fs";
+import type {IncomingMessage} from "node:http";
+import type {Socket} from "node:net";
+import * as querystring from "node:querystring";
+import * as url from "node:url";
 import io from "@pm2/io";
-import * as tcpPortUsed from "tcp-port-used";
-import {ChildProcess, spawn, spawnSync} from "child_process";
-import {IncomingMessage} from "http";
+import express, {type NextFunction, type Response} from "express";
+import type Server from "http-proxy";
 import {LinkedList} from "mnemonist";
-import {delay, logger, noCache} from "./util";
+import moment from "moment";
+import * as tcpPortUsed from "tcp-port-used";
+import {v4} from "uuid";
 import {authGuard, getUser, verifyToken} from "./auth";
-import {AuthenticatedRequest} from "./types";
 import {ServerConfig} from "./config";
+import type {AuthenticatedRequest} from "./types";
+import {delay, logger, noCache} from "./util";
 
 type ProcessInfo = {
     process: ChildProcess;
@@ -69,7 +70,7 @@ function deleteProcess(username: string) {
 
 async function nextAvailablePort() {
     // Get a map of all the ports in the range currently in use
-    let existingPorts = new Map<number, boolean>();
+    const existingPorts = new Map<number, boolean>();
     processMap.forEach(value => {
         existingPorts.set(value.port, true);
     });
@@ -154,7 +155,10 @@ async function handleStartServer(req: AuthenticatedRequest, res: Response, next:
             } catch (e) {
                 logger.debug(e);
                 logger.error(`Error killing existing process belonging to user ${username}`);
-                return next({statusCode: 400, message: "Problem killing existing process"});
+                return next({
+                    statusCode: 400,
+                    message: "Problem killing existing process"
+                });
             }
         } else {
             return res.json({success: true, existing: true});
@@ -176,7 +180,10 @@ async function startServer(username: string) {
     try {
         const port = await nextAvailablePort();
         if (port < 0) {
-            throw {statusCode: 500, message: "No available ports for the backend process"};
+            throw {
+                statusCode: 500,
+                message: "No available ports for the backend process"
+            };
         }
 
         let args: string[] = [];
@@ -210,30 +217,35 @@ async function startServer(username: string) {
         args.push(ServerConfig.baseFolderTemplate.replace("{username}", username));
 
         const headerToken = v4();
-        const child = spawn("sudo", args, {env: {CARTA_AUTH_TOKEN: headerToken}});
-        if (child?.pid == undefined) {
-            throw {statusCode: 500, message: `Problem starting process for user ${username}`};
+        const child = spawn("sudo", args, {
+            env: {CARTA_AUTH_TOKEN: headerToken}
+        });
+        if (child?.pid == null) {
+            throw {
+                statusCode: 500,
+                message: `Problem starting process for user ${username}`
+            };
         }
         setPendingProcess(username, port, headerToken, child);
 
-        let logLocation;
+        let logLocation: string;
 
         if (ServerConfig.backendLogFileTemplate) {
             logLocation = ServerConfig.backendLogFileTemplate.replace("{username}", username).replace("{pid}", child.pid.toString()).replace("{datetime}", moment().format("YYYYMMDD.h_mm_ss"));
 
             try {
                 logStream = fs.createWriteStream(logLocation, {flags: "a"});
-                if (logStream == undefined) {
+                if (logStream == null) {
                     throw new Error("Unable to open stream");
                 }
                 child.stdout.pipe(logStream);
                 child.stderr.pipe(logStream);
-                child.stdout.on("data", function (data) {
+                child.stdout.on("data", data => {
                     const line = data.toString() as string;
                     appendLog(username, line);
                 });
 
-                child.stderr.on("data", function (data) {
+                child.stderr.on("data", data => {
                     const line = data.toString() as string;
                     appendLog(username, line);
                 });
@@ -243,13 +255,13 @@ async function startServer(username: string) {
             }
         } else {
             logLocation = "stdout";
-            child.stdout.on("data", function (data) {
+            child.stdout.on("data", data => {
                 const line = data.toString() as string;
                 appendLog(username, line);
                 logger.info(line);
             });
 
-            child.stderr.on("data", function (data) {
+            child.stderr.on("data", data => {
                 const line = data.toString() as string;
                 appendLog(username, line);
                 logger.error(line);
@@ -265,7 +277,10 @@ async function startServer(username: string) {
         // Check for early exit of backend process
         await delay(ServerConfig.startDelay);
         if (child.exitCode || child.signalCode) {
-            throw {statusCode: 500, message: `Problem starting process for user ${username}`};
+            throw {
+                statusCode: 500,
+                message: `Problem starting process for user ${username}`
+            };
         } else {
             logger.info(`Started process with PID ${child.pid} for user ${username} on port ${port}. Outputting to ${logLocation}`);
             setReadyProcess(username, child.pid);
@@ -278,7 +293,10 @@ async function startServer(username: string) {
         if (e.statusCode && e.message) {
             throw e;
         } else {
-            throw {statusCode: 500, message: `Problem starting process for user ${username}`};
+            throw {
+                statusCode: 500,
+                message: `Problem starting process for user ${username}`
+            };
         }
     }
 }
@@ -301,26 +319,32 @@ async function handleStopServer(req: AuthenticatedRequest, res: Response, next: 
             deleteProcess(req.username);
             res.json({success: true});
         } else {
-            return next({statusCode: 400, message: `No existing process belonging to user ${req.username}`});
+            return next({
+                statusCode: 400,
+                message: `No existing process belonging to user ${req.username}`
+            });
         }
     } catch (e) {
         logger.debug(e);
         logger.error(`Error killing existing process belonging to user ${req.username}`);
-        return next({statusCode: 500, message: "Problem killing existing process"});
+        return next({
+            statusCode: 500,
+            message: "Problem killing existing process"
+        });
     }
 }
 
-export const createUpgradeHandler = (server: Server) => async (req: IncomingMessage, socket: any, head: any) => {
+export const createUpgradeHandler = (server: Server) => async (req: IncomingMessage, socket: Socket, head: Buffer) => {
     try {
         if (!req?.url) {
             return socket.end();
         }
-        let parsedUrl = url.parse(req.url);
+        const parsedUrl = url.parse(req.url);
         if (!parsedUrl?.query) {
             logger.warning(`Incoming Websocket upgrade request could not be parsed: ${req.url}`);
             return socket.end();
         }
-        let queryParameters = querystring.parse(parsedUrl.query);
+        const queryParameters = querystring.parse(parsedUrl.query);
         const tokenString = queryParameters?.token;
         if (!tokenString || Array.isArray(tokenString)) {
             logger.warning(`Incoming Websocket upgrade request is missing an authentication token`);
@@ -336,7 +360,7 @@ export const createUpgradeHandler = (server: Server) => async (req: IncomingMess
         const remoteAddress = req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
         logger.info(`WS upgrade request from ${remoteAddress} for authenticated user ${token.username}`);
 
-        const username = getUser(token.username, token.iss);
+        const username = getUser(token.username, `${token.iss}`);
         if (!username) {
             logger.error(`Could not find username ${token.username} in the user map`);
             return socket.end();
@@ -358,7 +382,9 @@ export const createUpgradeHandler = (server: Server) => async (req: IncomingMess
             logger.info(`Redirecting to backend process for ${username} (port ${existingProcess.port})`);
             req.headers["carta-auth-token"] = existingProcess.headerToken;
             req.url = "/";
-            return server.ws(req, socket, head, {target: {host: "localhost", port: existingProcess.port}});
+            return server.ws(req, socket, head, {
+                target: {host: "localhost", port: existingProcess.port}
+            });
         } else {
             logger.error(`Backend process could not be started`);
             return socket.end();
@@ -377,11 +403,16 @@ export const createScriptingProxyHandler = (server: Server) => async (req: Authe
     }
 
     if (!req.scripting) {
-        return next({statusCode: 403, message: "API token supplied does not permit scripting"});
+        return next({
+            statusCode: 403,
+            message: "API token supplied does not permit scripting"
+        });
     }
 
     try {
         const remoteAddress = req.headers?.["x-forwarded-for"] || req.connection?.remoteAddress;
+        logger.info(`Scripting proxy request from ${remoteAddress} for authenticated user ${username}`);
+
         let existingProcess = processMap.get(username);
 
         if (!existingProcess?.process || existingProcess.process.signalCode) {
@@ -397,14 +428,22 @@ export const createScriptingProxyHandler = (server: Server) => async (req: Authe
                 await delay(ServerConfig.startDelay);
             }
             req.headers["carta-auth-token"] = existingProcess.headerToken;
-            return server.web(req, res, {target: {host: "localhost", port: existingProcess.port}});
+            return server.web(req, res, {
+                target: {host: "localhost", port: existingProcess.port}
+            });
         } else {
-            return next({statusCode: 500, message: `Backend process could not be started for ${username}`});
+            return next({
+                statusCode: 500,
+                message: `Backend process could not be started for ${username}`
+            });
         }
     } catch (err) {
         logger.error(`Error proxying scripting request for ${req.username}`);
         logger.debug(err);
-        return next({statusCode: 500, message: `Error proxying scripting request for ${req.username}`});
+        return next({
+            statusCode: 500,
+            message: `Error proxying scripting request for ${req.username}`
+        });
     }
 };
 

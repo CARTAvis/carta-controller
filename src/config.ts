@@ -1,47 +1,42 @@
-import yargs from "yargs";
-import * as url from "url";
-import * as fs from "fs";
-import * as path from "path";
-import * as JSONC from "jsonc-parser";
-import _ from "lodash";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import * as url from "node:url";
 import Ajv from "ajv";
 import addFormats from "ajv-formats";
-import {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
-import { logger } from "./util";
+import * as JSONC from "jsonc-parser";
+import _ from "lodash";
+import moment from "moment-timezone";
 import winston from "winston";
-import moment from 'moment-timezone';
+import yargs from "yargs";
+import type {CartaCommandLineOptions, CartaRuntimeConfig, CartaServerConfig} from "./types";
+import {logger} from "./util";
 
-let timeZone : string | undefined;
+let timeZone: string | undefined;
 const customTimestamp = () => {
-    if (timeZone)
-        return moment().tz(timeZone).format('YYYY-MM-DD HH:mm:ss');
-    else
-        return moment().format('YYYY-MM-DD HH:mm:ss');
-}
+    if (timeZone) return moment().tz(timeZone).format("YYYY-MM-DD HH:mm:ss");
+    else return moment().format("YYYY-MM-DD HH:mm:ss");
+};
 
 // Different log formats
 const logTextFormat = winston.format.combine(
-    winston.format.timestamp({ format: customTimestamp }),
-    winston.format.printf(({ level, message, timestamp }) => {
+    winston.format.timestamp({format: customTimestamp}),
+    winston.format.printf(({level, message, timestamp}) => {
         return `${timestamp} [${level.toUpperCase()}]: ${message}`;
     })
 );
 const logColorTextFormat = winston.format.combine(
-    winston.format.timestamp({ format: customTimestamp }),
-    winston.format.printf(({ level, message, timestamp }) => {
+    winston.format.timestamp({format: customTimestamp}),
+    winston.format.printf(({level, message, timestamp}) => {
         const colorizer = winston.format.colorize();
         return `${timestamp} [${colorizer.colorize(level, level.toUpperCase())}]: ${message}`;
     })
 );
-const logJsonFormat = winston.format.combine(
-        winston.format.timestamp({ format: customTimestamp }),
-        winston.format.json(),
-);
+const logJsonFormat = winston.format.combine(winston.format.timestamp({format: customTimestamp}), winston.format.json());
 
 const defaultConfigPath = "/etc/carta/config.json";
 const argv = yargs
     .parserConfiguration({
-        'short-option-groups': false,
+        "short-option-groups": false
     })
     .options({
         config: {
@@ -83,17 +78,16 @@ const validateAndAddDefaults = ajvWithDefaults.compile(configSchema);
 let serverConfig: CartaServerConfig;
 
 const consoleTransport = new winston.transports.Console({
-            format: argv.logFormat === "json" ?  logJsonFormat : logColorTextFormat,
-            level: argv.logLevel ? argv.logLevel : "info", // default to info until having parsed the config
-            silent: argv.logLevel === "none"
-        });
+    format: argv.logFormat === "json" ? logJsonFormat : logColorTextFormat,
+    level: argv.logLevel ? argv.logLevel : "info", // default to info until having parsed the config
+    silent: argv.logLevel === "none"
+});
 logger.add(consoleTransport);
 
-
 try {
-    let configFiles: string[] = [];
+    const configFiles: string[] = [];
     if (fs.existsSync(argv.config)) {
-        configFiles.push(argv.config)
+        configFiles.push(argv.config);
         const jsonString = fs.readFileSync(argv.config).toString();
         serverConfig = JSONC.parse(jsonString);
     } else {
@@ -115,7 +109,7 @@ try {
                 continue;
             }
             const jsonString = fs.readFileSync(path.join(configDir, file)).toString();
-            const additionalConfig: any = JSONC.parse(jsonString) as CartaServerConfig;
+            const additionalConfig: unknown = JSONC.parse(jsonString) as CartaServerConfig;
             const isPartialConfigValid = validateConfig(additionalConfig);
             if (isPartialConfigValid) {
                 serverConfig = _.merge(serverConfig, additionalConfig);
@@ -147,22 +141,23 @@ try {
     // Validate timezone setting
     if (serverConfig.timezone) {
         try {
-            new Intl.DateTimeFormat('en-US', { timeZone: serverConfig.timezone });
+            new Intl.DateTimeFormat("en-US", {timeZone: serverConfig.timezone});
             timeZone = serverConfig.timezone;
         } catch (err) {
+            logger.debug(err);
             logger.error(`Ignoring invalid timezone "${serverConfig.timezone}" in config file`);
         }
     }
 
     // Reconfigure log transports
-    if (argv.logLevel ) {
+    if (argv.logLevel) {
         serverConfig.logLevelConsole = argv.logLevel;
     }
     if (argv.logFormat) {
         serverConfig.logTypeConsole = argv.logFormat;
     }
     consoleTransport.level = serverConfig.logLevelConsole;
-    consoleTransport.format = serverConfig.logTypeConsole === "json" ?  logJsonFormat : logColorTextFormat;
+    consoleTransport.format = serverConfig.logTypeConsole === "json" ? logJsonFormat : logColorTextFormat;
     consoleTransport.silent = serverConfig.logLevelConsole === "none";
 
     if (serverConfig.logFile && serverConfig.logFile !== "") {
@@ -170,21 +165,23 @@ try {
             logger.error(`Log file "${serverConfig.logFile}" specified but with a log level of "none"`);
         } else {
             try {
-                logger.add(new winston.transports.File({
-                    level: serverConfig.logLevelFile,
-                    filename: serverConfig.logFile,
-                    format: serverConfig.logTypeFile === "json" ?  logJsonFormat : logTextFormat,
-                }))
-                logger.info(`Started logging to ${serverConfig.logFile}`)
+                logger.add(
+                    new winston.transports.File({
+                        level: serverConfig.logLevelFile,
+                        filename: serverConfig.logFile,
+                        format: serverConfig.logTypeFile === "json" ? logJsonFormat : logTextFormat
+                    })
+                );
+                logger.info(`Started logging to ${serverConfig.logFile}`);
             } catch (err) {
-                logger.debug(err)
-                logger.error(`Error initializing logging to ${serverConfig.logFile}`)
+                logger.debug(err);
+                logger.error(`Error initializing logging to ${serverConfig.logFile}`);
                 // Server currently continues to run
             }
         }
     }
 
-    logger.info(`Loaded config from ${configFiles.join(", ")}`)
+    logger.info(`Loaded config from ${configFiles.join(", ")}`);
 } catch (err) {
     logger.emerg(err);
     process.exit(1);
@@ -218,8 +215,8 @@ if (serverConfig.authProviders.external) {
     runtimeConfig.tokenRefreshAddress = serverConfig.authProviders.external.tokenRefreshAddress;
     runtimeConfig.logoutAddress = serverConfig.authProviders.external.logoutAddress;
 } else {
-    runtimeConfig.tokenRefreshAddress = runtimeConfig.apiAddress + "/auth/refresh";
-    runtimeConfig.logoutAddress = runtimeConfig.apiAddress + "/auth/logout";
+    runtimeConfig.tokenRefreshAddress = `${runtimeConfig.apiAddress}/auth/refresh`;
+    runtimeConfig.logoutAddress = `${runtimeConfig.apiAddress}/auth/logout`;
 }
 if (runtimeConfig.tokenRefreshAddress) {
     const authUrl = url.parse(runtimeConfig.tokenRefreshAddress);

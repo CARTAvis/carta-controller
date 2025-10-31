@@ -1,8 +1,7 @@
-import * as fs from "fs";
-import {CartaExternalAuthConfig, UserMap, Verifier} from "../types";
-import jwt = require("jsonwebtoken");
-import {VerifyOptions} from "jsonwebtoken";
-import { logger } from "../util";
+import * as fs from "node:fs";
+import jwt, {type JwtPayload, type VerifyOptions} from "jsonwebtoken";
+import type {CartaExternalAuthConfig, UserMap, Verifier} from "../types";
+import {logger} from "../util";
 
 export function populateUserMap(userMaps: Map<string, UserMap>, issuer: string | string[], filename: string) {
     const userMap = new Map<string, string>();
@@ -40,6 +39,7 @@ export function populateUserMap(userMaps: Map<string, UserMap>, issuer: string |
         }
         logger.info(`Updated usermap with ${userMap.size} entries`);
     } catch (e) {
+        logger.debug(e);
         logger.error(`Error reading user table`);
     }
 
@@ -60,8 +60,10 @@ export function watchUserTable(userMaps: Map<string, UserMap>, issuers: string |
 export function generateExternalVerifiers(verifierMap: Map<string, Verifier>, authConf: CartaExternalAuthConfig) {
     const publicKey = fs.readFileSync(authConf.publicKeyLocation);
     const verifier = (cookieString: string) => {
-        const payload: any = jwt.verify(cookieString, publicKey, {algorithm: authConf.keyAlgorithm} as VerifyOptions);
-        if (payload && payload.iss && authConf.issuers.includes(payload.iss)) {
+        const payload: JwtPayload | string = jwt.verify(cookieString, publicKey, {
+            algorithm: authConf.keyAlgorithm
+        } as VerifyOptions);
+        if (typeof payload !== "string" && payload.iss && authConf.issuers.includes(payload.iss)) {
             // substitute unique field in for username
             if (authConf.uniqueField) {
                 payload.username = payload[authConf.uniqueField];

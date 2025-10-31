@@ -92,13 +92,14 @@ Installing from source
 
 To install the backend on a different host system, or to install a custom version, you can build it from source from the `backend repository <https://github.com/CARTAvis/carta-backend/>`_ on GitHub. The `dockerfiles <https://github.com/CARTAvis/carta-backend/tree/dev/Dockerfiles>`_ in the backend repository are a good starting point for installing and configuring all the build dependencies on different Linux distributions.
 
-Once all dependencies have been installed, check out the backend repository with all its submodules, and build using ``cmake``.
+Once all dependencies have been installed, check out the backend repository and all its submodules, and build using ``cmake``.
 
 .. code-block:: shell
 
     # Clone the backend repository
-    git clone --recurse-submodules https://github.com/CARTAvis/carta-backend.git
+    git clone https://github.com/CARTAvis/carta-backend.git
     cd carta-backend
+    git submodule update --init
 
     # Configure the build
     mkdir build
@@ -143,8 +144,9 @@ Development versions of the frontend can be installed from the `frontend reposit
 .. code-block:: shell
 
     # Clone the frontend repository
-    git clone --recurse-submodules https://github.com/CARTAvis/carta-frontend.git
+    git clone https://github.com/CARTAvis/carta-frontend.git
     cd carta-frontend
+    git submodule update --init
 
     # Build the frontend (using Docker for WebAssembly compilation)
     npm install
@@ -185,6 +187,7 @@ Development versions of the controller can be installed from the `controller rep
     # Clone the controller repository
     git clone https://github.com/CARTAvis/carta-controller.git
     cd carta-controller
+    git submodule update --init
 
     # Install the controller
     npm install
