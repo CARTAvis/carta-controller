@@ -140,7 +140,7 @@ async function handleSetPreferences(req: AuthenticatedRequest, res: Response, ne
             logger.debug("Preferences updated");
             res.json({success: true});
         } else {
-            logger.warning("Error updateing preferences");
+            logger.warning("Error updating preferences");
             return next({statusCode: 500, message: "Problem updating preferences"});
         }
     } catch (err) {
