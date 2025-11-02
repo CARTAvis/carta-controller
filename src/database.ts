@@ -16,11 +16,13 @@ const layoutSchema = require("../schemas/layout_schema_2.json");
 const snippetSchema = require("../schemas/snippet_schema_1.json");
 const workspaceSchema = require("../schemas/workspace_schema_1.json");
 const ajv = new Ajv({useDefaults: false, strictTypes: false});
+const ajvWithDefaults = new Ajv({useDefaults: true, strictTypes: false});
 addFormats(ajv);
+addFormats(ajvWithDefaults);
 const validatePreferences = ajv.compile(preferenceSchema);
-const validateLayout = ajv.compile(layoutSchema);
-const validateSnippet = ajv.compile(snippetSchema);
-const validateWorkspace = ajv.compile(workspaceSchema);
+const validateLayout = ajvWithDefaults.compile(layoutSchema);
+const validateSnippet = ajvWithDefaults.compile(snippetSchema);
+const validateWorkspace = ajvWithDefaults.compile(workspaceSchema);
 
 let client: MongoClient;
 let preferenceCollection: Collection;
