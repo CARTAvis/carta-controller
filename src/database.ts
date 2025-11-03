@@ -100,10 +100,8 @@ async function handleGetPreferences(req: AuthenticatedRequest, res: Response, ne
             }
             res.json({success: true, preferences: doc});
         } else {
-            return next({
-                statusCode: 500,
-                message: "Problem retrieving preferences"
-            });
+            logger.debug(`No preferences found for user ${req.username}`);
+            res.json({success: true, preferences: {}});
         }
     } catch (err) {
         logger.debug(err);
