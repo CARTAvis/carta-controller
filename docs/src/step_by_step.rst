@@ -138,7 +138,7 @@ Install CARTA backend and other required packages
             # Install additional packages
             sudo apt-get install libpam0g
 
-            # The following packages are only required if needing to build the PAM module from source
+            # The following packages are only required if you need to build the PAM module from source
             # sudo apt-get install g++ make build-essential libpam0g-dev
 
         .. note::
@@ -170,7 +170,7 @@ Install CARTA backend and other required packages
             # Install additional packages
             sudo dnf install pam
 
-            # The following packages are only required if needing to build the PAM module from source
+            # The following packages are only required if you need to build the PAM module from source
             # sudo dnf install python3 make gcc-c++ pam-devel
 
         .. note::
