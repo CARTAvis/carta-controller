@@ -10,7 +10,7 @@ Overview
 
 .. note::
 
-    These instructions aim to be a complete guide for installing CARTA for multiple users on a dedicated server, with authentication of local users via PAM, and other simple suggested defaults. If you are integrating CARTA into an existing system, you may need to adjust some of these steps. Please refer to the more detailed :ref:`installation` and :ref:`configuration` instructions for more options.
+    These instructions aim to be a complete guide for installing CARTA for multiple users on a dedicated server using the x86_64 processor architecture and a supported Node LTS release, with authentication of local users via PAM and other simple suggested defaults. If you are integrating CARTA into an existing system, you may need to adjust some of these steps. Please refer to the more detailed :ref:`installation` and :ref:`configuration` instructions for more options.
 
 .. tabs::
 
@@ -138,9 +138,6 @@ Install CARTA backend and other required packages
             # Install additional packages
             sudo apt-get install libpam0g
 
-            # The following packages are only required if you need to build the PAM module from source, which
-            # is not necessary when installing on a CARTA-supported Node LTS release on the x86_64 architecture
-            # sudo apt-get install g++ make build-essential libpam0g-dev
 
         .. note::
 
@@ -170,10 +167,6 @@ Install CARTA backend and other required packages
 
             # Install additional packages
             sudo dnf install pam
-
-            # The following packages are only required if you need to build the PAM module from source, which
-            # is not necessary when installing on a CARTA-supported Node LTS release on the x86_64 architecture
-            # sudo dnf install python3 make gcc-c++ pam-devel
 
         .. note::
 
