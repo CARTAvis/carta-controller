@@ -10,7 +10,7 @@ Overview
 
 .. note::
 
-    These instructions aim to be a complete guide for installing CARTA for multiple users on a dedicated server using the x86_64 processor architecture and a supported Node LTS release, with authentication of local users via PAM and other simple suggested defaults. If you are integrating CARTA into an existing system, you may need to adjust some of these steps. Please refer to the more detailed :ref:`installation` and :ref:`configuration` instructions for more options.
+    These instructions aim to be a complete guide for installing CARTA for multiple users on a dedicated server, with authentication of local users via PAM, and other simple suggested defaults. If you are integrating CARTA into an existing system, you may need to adjust some of these steps. Please refer to the more detailed :ref:`installation` and :ref:`configuration` instructions for more options.
 
 .. tabs::
 
@@ -120,6 +120,10 @@ Please refer to the `detailed MongoDB installation instructions <https://www.mon
 Install CARTA backend and other required packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. note::
+
+    If not running on a server using the x86_64 architecture or not using a supported Node LTS release, you may need to install additional dependencies to build the PAM module required by the controller as described in the :ref:`PAM dependencies section<install_pam_dependencies>`.
+
 .. tabs::
 
     .. tab:: Ubuntu
@@ -137,7 +141,6 @@ Install CARTA backend and other required packages
 
             # Install additional packages
             sudo apt-get install libpam0g
-
 
         .. note::
 
@@ -166,7 +169,7 @@ Install CARTA backend and other required packages
             sudo dnf install carta-backend
 
             # Install additional packages
-            sudo dnf install pam
+            sudo dnf install python3 pam
 
         .. note::
 
