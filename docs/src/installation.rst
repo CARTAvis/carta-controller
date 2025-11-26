@@ -171,7 +171,7 @@ Installing the controller
 PAM dependencies
 ~~~~~~~~~~~~~~~~
 
-    If you're installing the controller on an architecture other than x86_64 or using a version of Node other than a CARTA-supported LTS release, you may need to install additional dependencies to build binaries for the `node-linux-pam package <https://github.com/cartavis/node-linux-pam>`_.  For example, on Ubuntu, ``sudo apt-get install g++ make build-essential libpam0g-dev``, or on AlmaLinux, ``sudo dnf install python3 make gcc-c++ pam-devel``.
+    If you're installing the controller on an architecture other than x86_64 or using a version of Node other than a CARTA-supported LTS release, you may need to install additional dependencies to build binaries for the `node-linux-pam package <https://github.com/cartavis/node-linux-pam>`_, such as a C++ build environment, make, and the PAM library headers. See the :ref:`step-by-step backend section<sbs_packages>` for examples of system packages required in our supported distributions.
 
 NPM package
 ~~~~~~~~~~~
