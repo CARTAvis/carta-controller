@@ -166,6 +166,13 @@ The build can be found in ``carta-frontend/build`` in the ``node_packages`` dire
 Installing the controller
 -------------------------
 
+.. _install_pam_dependencies: 
+
+PAM dependencies
+~~~~~~~~~~~~~~~~
+
+    If you're installing the controller on an architecture other than x86_64 or using a version of Node other than a CARTA-supported LTS release, you may need to install additional dependencies to build binaries for the `node-linux-pam package <https://github.com/cartavis/node-linux-pam>`_, such as a C++ build environment, make, and the PAM library headers. See the :ref:`step-by-step backend section<sbs_packages>` for examples of system packages required in our supported distributions.
+
 NPM package
 ~~~~~~~~~~~
 

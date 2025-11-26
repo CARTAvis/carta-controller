@@ -136,7 +136,7 @@ Install CARTA backend and other required packages
             sudo apt-get install carta-backend
 
             # Install additional packages
-            sudo apt-get install g++ make build-essential libpam0g-dev
+            sudo apt-get install libpam0g
 
         .. note::
 
@@ -149,6 +149,15 @@ Install CARTA backend and other required packages
             These packages cannot be installed simultaneously, as they use the same install locations. If you install one, you will automatically be prompted to uninstall the other.
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
+
+        .. note::
+
+            We provide binary builds of the Node.js PAM package for the x86_64 architecture and recent LTS versions of Node. On other platforms, additional system dependencies are required to build the package from source:
+
+            .. code-block:: shell
+
+                sudo apt-get install sudo apt-get install g++ make build-essential libpam0g-dev
+
 
     .. tab:: AlmaLinux
 
@@ -165,8 +174,7 @@ Install CARTA backend and other required packages
             sudo dnf install carta-backend
 
             # Install additional packages
-
-            sudo dnf install python3 make gcc-c++ pam-devel
+            sudo dnf install python3 pam
 
         .. note::
 
@@ -190,6 +198,14 @@ Install CARTA backend and other required packages
             We currently install the beta version of the backend package in a non-standard location, ``/opt/carta-beta``. This makes it possible to install the stable and beta packages simultaneously. When you use this package, remember to change the path to the backend executable to ``/opt/carta-beta/bin/carta_backend`` in both the sudoers file and the controller configuration.
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
+
+        .. note::
+
+            We provide binary builds of the Node.js PAM package for the x86_64 architecture and recent LTS versions of Node. On other platforms, additional system dependencies are required to build the package from source:
+
+            .. code-block:: shell
+
+                sudo dnf install python3 make gcc-c++ pam-devel
 
 .. _sbs_node:
 
