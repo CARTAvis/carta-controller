@@ -15,20 +15,20 @@ Installing the backend
 Packages
 ~~~~~~~~
 
-We provide binary `Ubuntu <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ and `RPM <https://copr.fedorainfracloud.org/coprs/cartavis/carta>`_ packages of the latest beta and stable releases of the CARTA backend for all officially supported distributions.
+We provide binary Ubuntu and RPM packages of the latest beta and stable releases of the CARTA backend for all officially supported distributions.
 
-You can install the latest stable version with all dependencies on Ubuntu by adding our PPA to your system and running ``apt-get install carta-backend``.
+You can install the latest stable version with all dependencies on Ubuntu by adding our `main PPA <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ to your system and running ``apt-get install carta-backend``.
 
-On AlmaLinux you can add our Copr repository and run ``sudo dnf install carta-backend``.
+On AlmaLinux you can add our `main Copr repository <https://copr.fedorainfracloud.org/coprs/cartavis/carta>`_ and run ``sudo dnf install carta-backend``.
 
 .. note::
 
-    The ``carta-backend`` package is updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please install the ``carta-backend-beta`` package instead.
+    The packages in the main repositories are updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please use the alternate `preview PPA <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta-preview>`_ or `preview Copr repository <https://copr.fedorainfracloud.org/coprs/cartavis/carta-preview>`_ instead.
 
 Packaged debug symbols
 ~~~~~~~~~~~~~~~~~~~~~~
 
-You can install debugging symbols for our Ubuntu packages with ``apt`` if you enable this option for our PPA.
+You can install debugging symbols for our Ubuntu packages with ``apt`` if you enable this option for our PPA (substitute the preview PPA URL as required).
 
 .. code-block:: shell
 
@@ -47,7 +47,7 @@ Rebuilding packages
 
 Our Ubuntu package source is available in `a collection of public repositories <https://github.com/search?q=org%3Aidia-astro+-deb&type=repositories>`_. Please refer to the ``debian`` subdirectories in these repositories if you would like to build your own Debian packages, or to check what build options we use.
 
-You can also obtain the Ubuntu package source with ``apt-src`` (after enabling source packages for our PPA).
+You can also obtain the Ubuntu package source with ``apt-src`` after enabling source packages for our PPA (substitute the preview PPA URL as required).
 
 .. code-block:: shell
 
@@ -72,7 +72,7 @@ External data for Casacore
 
 Casacore depends on a collection of external astronomical data. Some distributions provide packages for this. Because these packages may be far behind the current version of the data, you may wish to manage the required files without using a package.
 
-The ``casacore-data`` package is recommended by the Ubuntu backend package, but installing it is optional. The packages in `our Ubuntu PPA <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ should be compatible both with the ``casacore-data`` package in the core Ubuntu repositories and with the package provided by the `Kern PPAs <https://launchpad.net/~kernsuite>`_. To avoid installing the ``casacore-data`` package, use the ``--no-install-recommends`` flag when installing the backend package.
+The ``casacore-data`` package is recommended by the Ubuntu backend package, but installing it is optional. The packages in our ubuntu PPAs (`release <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ or `preview <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta-preview>`_) should be compatible both with the ``casacore-data`` package in the core Ubuntu repositories and with the package provided by the `Kern PPAs <https://launchpad.net/~kernsuite>`_. To avoid installing the ``casacore-data`` package, use the ``--no-install-recommends`` flag when installing the backend package.
 
 An example script for fetching the data manually (you can configure ``cron`` to run this weekly):
 
@@ -110,6 +110,10 @@ Once all dependencies have been installed, check out the backend repository and 
     make -j8
 
 The backend executable will be located in the ``build`` directory.
+
+.. note::
+
+    If you are building the latest development or beta version of the backend on a recent Ubuntu or RPM-based system, you should be able to install the packaged build dependencies from the ``preview`` PPA or Copr repository. However, if you are building the latest stable release version, you should install them from the main PPA or Copr repository instead.
 
 .. note::
 
