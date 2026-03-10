@@ -72,7 +72,7 @@ External data for Casacore
 
 Casacore depends on a collection of external astronomical data. Some distributions provide packages for this. Because these packages may be far behind the current version of the data, you may wish to manage the required files without using a package.
 
-The ``casacore-data`` package is recommended by the Ubuntu backend package, but installing it is optional. The packages in our ubuntu PPAs (`release <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ or `preview <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta-preview>`_) should be compatible both with the ``casacore-data`` package in the core Ubuntu repositories and with the package provided by the `Kern PPAs <https://launchpad.net/~kernsuite>`_. To avoid installing the ``casacore-data`` package, use the ``--no-install-recommends`` flag when installing the backend package.
+The ``casacore-data`` package is recommended by the Ubuntu backend package, but installing it is optional. The packages in our Ubuntu PPAs (`release <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta>`_ or `preview <https://launchpad.net/~cartavis-team/+archive/ubuntu/carta-preview>`_) should be compatible both with the ``casacore-data`` package in the core Ubuntu repositories and with the package provided by the `Kern PPAs <https://launchpad.net/~kernsuite>`_. To avoid installing the ``casacore-data`` package, use the ``--no-install-recommends`` flag when installing the backend package.
 
 An example script for fetching the data manually (you can configure ``cron`` to run this weekly):
 

@@ -149,7 +149,7 @@ Install CARTA backend and other required packages
                 sudo add-apt-repository ppa:cartavis-team/carta-preview
                 sudo apt-get update
 
-            Multiple versions of the backend package and its casacore dependency cannot be installed simultaneously. If you would like to install the release and beta backends in parallel on the same system, we recommend that you use containers.
+            Multiple versions of the backend package and its CASA dependency cannot be installed simultaneously. If you would like to install the release and beta backends in parallel on the same system, we recommend that you use containers.
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
 
@@ -203,7 +203,7 @@ Install CARTA backend and other required packages
                 # Add the CARTA preview repository
                 sudo dnf copr enable cartavis/carta-preview  
 
-            Multiple versions of the backend package and its casacore dependency cannot be installed simultaneously. If you would like to install the release and beta backends in parallel on the same system, we recommend that you use containers.
+            Multiple versions of the backend package and its CASA dependency cannot be installed simultaneously. If you would like to install the release and beta backends in parallel on the same system, we recommend that you use containers.
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
 
