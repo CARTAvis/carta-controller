@@ -139,14 +139,17 @@ Install CARTA backend and other required packages
             sudo apt-get install g++ make build-essential libpam0g-dev
 
         .. note::
-
-            The ``carta-backend`` package is updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please install the ``carta-backend-beta`` package instead:
+        
+        
+            The packages in the main PPA are updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please use the alternate ``preview`` PPA instead:
 
             .. code-block:: shell
 
-                sudo apt-get install carta-backend-beta
+                # Add CARTA preview PPA
+                sudo add-apt-repository ppa:cartavis-team/carta-preview
+                sudo apt-get update
 
-            These packages cannot be installed simultaneously, as they use the same install locations. If you install one, you will automatically be prompted to uninstall the other.
+            Multiple versions of the backend package and its CASA dependency cannot be installed simultaneously. If you would like to install the release and beta backends in parallel on the same system, we recommend that you use containers.
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
 
@@ -159,9 +162,13 @@ Install CARTA backend and other required packages
             # Install EPEL repository
             sudo dnf install epel-release
 
-            # Install the CARTA backend
+            # Enable Copr integration
             sudo dnf install 'dnf-command(copr)'
+            
+            # Add the CARTA repository
             sudo dnf copr enable cartavis/carta
+
+            # Install the CARTA backend
             sudo dnf install carta-backend
 
             # Install additional packages
@@ -180,14 +187,15 @@ Install CARTA backend and other required packages
             Follow the prompts, and check that the default version is correct: ``python3 --version``.
                 
         .. note::
-
-            The ``carta-backend`` package is updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please install ``carta-backend-beta`` instead:
+        
+            The packages in the main Copr repository are updated with every stable CARTA release. If you would like to install the latest **beta** version of CARTA, or to receive beta release updates as well as stable release updates in the future, please use the alternate ``preview`` repository instead:
 
             .. code-block:: shell
 
-                sudo dnf install carta-backend-beta
+                # Add the CARTA preview repository
+                sudo dnf copr enable cartavis/carta-preview  
 
-            We currently install the beta version of the backend package in a non-standard location, ``/opt/carta-beta``. This makes it possible to install the stable and beta packages simultaneously. When you use this package, remember to change the path to the backend executable to ``/opt/carta-beta/bin/carta_backend`` in both the sudoers file and the controller configuration.
+            Multiple versions of the backend package and its CASA dependency cannot be installed simultaneously. If you would like to install the release and beta backends in parallel on the same system, we recommend that you use containers.
 
             Make sure that you install the matching controller version (using the ``beta`` tag).
 
