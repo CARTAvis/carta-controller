@@ -1,12 +1,12 @@
 {
     "name": "carta-controller",
-    "version": "6.0.0-beta.1.0.3",
+    "version": "6.0.0",
     "lockfileVersion": 3,
     "requires": true,
     "packages": {
         "": {
             "name": "carta-controller",
-            "version": "6.0.0-beta.1.0.3",
+            "version": "6.0.0",
             "license": "GPLV3",
             "dependencies": {
                 "@pm2/io": "^6.1.0",
