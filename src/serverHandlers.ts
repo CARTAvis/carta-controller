@@ -7,7 +7,7 @@ import * as querystring from "node:querystring";
 import * as url from "node:url";
 import io from "@pm2/io";
 import express, {type NextFunction, type Response} from "express";
-import type Server from "http-proxy";
+import type Server from "http-proxy-3";
 import {LinkedList} from "mnemonist";
 import moment from "moment";
 import * as tcpPortUsed from "tcp-port-used";

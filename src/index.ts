@@ -8,7 +8,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, {type NextFunction, type Request, type Response} from "express";
 import bearerToken from "express-bearer-token";
-import httpProxy from "http-proxy";
+import httpProxy from "http-proxy-3";
 import {authGuard, authRouter} from "./auth";
 import {RuntimeConfig, ServerConfig, testUser} from "./config";
 import {runTests} from "./controllerTests";
