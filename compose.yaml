@@ -1,0 +1,22 @@
+version: "3.9"
+
+services:
+  controller:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    volumes:
+      - ./config.json:/etc/carta/config.json:ro
+    ports:
+      - "8000:8000"
+    command: carta-controller --config /etc/carta/config.json
+    depends_on:
+      - mongodb
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+
+

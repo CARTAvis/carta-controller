@@ -1,0 +1,25 @@
+    {
+      "$schema": "https://cartavis.org/schemas/controller_config_schema_2.json",
+      "controllerConfigVersion": "2.0",
+      "authProviders": {
+        "forwardAuth": { "headerKey": "carta-auth-token" }
+      },
+      "database": {
+        "uri": "mongodb://mongodb:27017",
+        "databaseName": "CARTA"
+      },
+      "serverPort": 8000,
+      "serverInterface": "0.0.0.0",
+      "httpOnly": true,
+      "dashboardAddress": "/dashboard",
+      "processCommand": "",
+      "killCommand": "",
+      "rootFolderTemplate": "/home/{username}",
+      "baseFolderTemplate": "/home/{username}",
+      "logFile": "/var/log/carta/controller.log",
+      "logTypeConsole": "text",
+      "logTypeFile": "text",
+      "logLevelFile": "debug",
+      "logLevelConsole": "debug",
+      "timezone": "America/Vancouver"
+    }
